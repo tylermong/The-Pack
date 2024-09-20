@@ -1,6 +1,7 @@
-<div style="text-align: center;">
+<div align="center">
   <img src="./images/The%20Pack%20Logo.jpg" alt="The Pack Logo" style="width: 50%;">
 </div>
+
 # The Pack - All-in-One Fitness App
 **The Pack** is your go-to fitness companion, providing everything you need to reach your goals. With **prebuilt workout routines**, **workout tracking**, **nutrition tracking**, and a **messaging system** for coaches and clients, it's designed for anyone serious about fitness.
 
@@ -26,4 +27,4 @@ Access The Pack from any mobile or desktop browser, and easily add the web app t
 - **TBD**
 
 ## 🛠️ Installation
-Detailed installation instructions will be provided after initial development is complete.  
+Detailed installation instructions will be provided after initial development is complete.
