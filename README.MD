@@ -24,7 +24,12 @@ Maintain open communication where clients share progress updates and ask questio
 Access The Pack from any mobile or desktop browser, and easily add the web app to your mobile home screen for a smooth, app-like experience.
 
 ## 💻 Tech Stack
-- **TBD**
+- **Frontend**: Next.js (with TypeScript)
+- **Backend**: Nest.js (with TypeScript)
+- **Database**: PostgreSQL
+- **Real-time Communication**: Firebase
+- **Authentication**: NextAuth.js
+- **Notifications**: Firebase Cloud Messaging
 
 ## 🛠️ Installation
 Detailed installation instructions will be provided after initial development is complete.
