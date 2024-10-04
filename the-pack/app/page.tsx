@@ -20,6 +20,7 @@ export default function Welcome() {
         <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
           <button type = "button" onClick={() => router.push("./login")}>Login</button>
           <button type = "button" onClick={() => router.push('./register')}>Register</button>
+          {/*CAN MAKE IT SO THIS FILE AUTO REDIRECT TO LOGIN PAGE IMMEDIATELY*/ }
         </main>
     </div>
     </body>

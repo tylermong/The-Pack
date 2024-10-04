@@ -15,7 +15,7 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Welcome to the Pack",
+  title: "The Pack SSC",
   description: "The Pack SSC Header",
 };
 
