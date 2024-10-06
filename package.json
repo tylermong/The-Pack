@@ -9,6 +9,7 @@
     "@nestjs/mapped-types": "*",
     "@nestjs/platform-express": "^10.4.4",
     "@nestjs/testing": "^10.4.4",
-    "@prisma/client": "^5.20.0"
+    "@prisma/client": "^5.20.0",
+    "nextjs": "^0.0.3"
   }
 }
