@@ -160,7 +160,7 @@ export default function Register()
                     <div className="mt-12">
 
                         <button type="button" className="w-full py-3 px-6 text-sm tracking-wide font-semibold rounded-md bg-white hover:bg-gray-400 text-black focus:outline-none">
-                            Creat an account
+                            Create an account
                         </button>
 
                         <p className="text-sm mt-6 text-gray-200">Already have an account? 
