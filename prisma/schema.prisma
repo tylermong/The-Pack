@@ -14,13 +14,15 @@ datasource db {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
+  id        String      @id @default(uuid())
   name      String
   email     String    @unique
   phoneNum  Int       @unique
   role      Role
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
+
+  Post Announcement[]
 }
 
 //model accountInformation {
@@ -31,4 +33,13 @@ enum Role {
   CLIENT
   COACH
   ADMIN
+}
+
+model Announcement {
+
+  id        String      @id @default(uuid())
+  author User @relation(fields: [authorid], references: [id])
+  authorid String
+  createdAt DateTime
+
 }
