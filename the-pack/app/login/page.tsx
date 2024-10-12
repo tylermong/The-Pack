@@ -2,8 +2,12 @@
 
 import Image from "next/image";
 import Link from 'next/link'
+import {useRouter} from "next/navigation";
 
 export default function Login(){
+    const router = useRouter()
+
+
     return(
         <div>
             <div className="flex min-h-full flex-1 flex-col justify-center px-6 py-12 lg:px-8">
@@ -73,7 +77,9 @@ export default function Login(){
                         <div>
                             <button
                             type="submit"
-                            className="flex w-full justify-center rounded-md bg-white px-3 py-1.5 m-0 text-sm font-semibold leading-6 text-black shadow-sm hover:bg-gray-300 transition duration-300">
+                            className="flex w-full justify-center rounded-md bg-white px-3 py-1.5 m-0 text-sm font-semibold leading-6 text-black shadow-sm hover:bg-gray-300 transition duration-300"
+                            onClick={() => router.push("./home")}
+                            >
                                 Sign in
                             </button>
                         </div>
