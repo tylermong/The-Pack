@@ -30,4 +30,12 @@ export class UserController {
   remove(@Param('id') id: string) {
     return this.userService.remove(+id);
   }
+
+  @Post(':clientId/schedule/:coachID')
+  async scheduleClient(
+    @Param('clientId') clientId: string,
+    @Param('coachId') coachId: string,
+  ){
+    return this.userService.scheduleClientInClass(+clientId, +coachId);
+  }
 }
