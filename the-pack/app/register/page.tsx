@@ -2,9 +2,29 @@
 
 import Image from "next/image";
 import Link from 'next/link'
+import { use, useState } from 'react';
 
-export default function Register()
+
+
+const Register = () =>
 {
+    const [name, setName] = useState('');
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+
+    const sendRegister = async (e: React.FormEvent) =>{
+        const response = await fetch('http://localhost:3000/register', {
+            method: 'POST',
+            headers: {
+            'Content-Type': 'application/JSON',
+            },
+            body: JSON.stringify({name, email, password}),
+        });
+
+
+}
+
+
     return(
     <div className="font-[sans-serif] bg-black md:h-screen">
 
@@ -25,7 +45,7 @@ export default function Register()
 
             <div className="flex items-center p-6 h-full w-full">
 
-                <form className="max-w-lg w-full mx-auto">
+                <form className="max-w-lg w-full mx-auto" onSubmit={sendRegister}>
 
                     <div className="mb-12">
                         <h3 className="text-white md:text-3xl text-2xl font-extrabold max-md:text-center">Create an account</h3>
@@ -40,6 +60,8 @@ export default function Register()
                             <input 
                             name="name" 
                             type="text" 
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
                             required className="w-full bg-transparent text-sm border-b border-gray-300 focus:border-gray-100 px-2 py-3 outline-none" 
                             placeholder="Enter name" />
 
@@ -74,7 +96,9 @@ export default function Register()
                             <div className="relative flex items-center">
                                 <input 
                                 name="email" 
-                                type="text" 
+                                type="email" 
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
                                 required className="w-full bg-transparent text-sm border-b border-gray-300 focus:border-gray-100 px-2 py-3 outline-none" 
                                 placeholder="Enter email" />
 
@@ -123,6 +147,8 @@ export default function Register()
                                 <input 
                                 name="password" 
                                 type="password" 
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
                                 required className="w-full bg-transparent text-sm border-b border-gray-300 focus:border-gray-100 px-2 py-3 outline-none" 
                                 placeholder="Enter password" />
 
@@ -159,9 +185,11 @@ export default function Register()
 
                     <div className="mt-12">
 
-                        <button type="button" className="w-full py-3 px-6 text-sm tracking-wide font-semibold rounded-md bg-white hover:bg-gray-400 text-black focus:outline-none">
+                        <button type="submit" className="w-full py-3 px-6 text-sm tracking-wide font-semibold rounded-md bg-white hover:bg-gray-400 text-black focus:outline-none">
                             Create an account
                         </button>
+                        
+
 
                         <p className="text-sm mt-6 text-gray-200">Already have an account? 
                             <Link className="text-white font-semibold hover:underline ml-1" href = "/login">Login here</Link>
@@ -176,5 +204,8 @@ export default function Register()
         </div>
 
     </div>
-    )
-}
+    );
+};
+
+
+export default Register;
