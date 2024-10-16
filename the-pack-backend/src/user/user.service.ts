@@ -105,10 +105,10 @@ export class UserService {
           coachId,
         },
         include:{
-          user: true,
+          users: true,
         }
       })
-      const availableClass = alternativeClasses.find(cls => !cls.user);
+      const availableClass = alternativeClasses.find(cls => !cls.users);
 
       if(availableClass){
         await this.databaseService.coachesClassroom.create({

@@ -2,27 +2,41 @@
 
 import Image from "next/image";
 import Link from 'next/link'
-import { use, useState } from 'react';
+import { useState } from 'react';
 
-
-
-const Register = () =>
-{
+{/*THIS WHOLE PART IS AI OUNT THIS */}
+const Register = () => {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
 
-    const sendRegister = async (e: React.FormEvent) =>{
+
+    const sendRegister = async (e: React.FormEvent) => {
+        e.preventDefault();
+    
         const response = await fetch('http://localhost:3000/register', {
             method: 'POST',
             headers: {
-            'Content-Type': 'application/JSON',
+                'Content-Type': 'application/json',
             },
-            body: JSON.stringify({name, email, password}),
+            body: JSON.stringify({ name, email, password }),
         });
 
+        if(response.ok)
+        {
+            console.log("GOOD")
+        }
+    
+        if (!response.ok) {
+            // Handle error
+            const data = await response.json();
+            alert(`Error: ${data.message || 'Registration failed'}`);
+            return;
+        }
+    
+    };
 
-}
+
 
 
     return(
