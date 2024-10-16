@@ -13,8 +13,9 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+//Creates a table containing user information
 model User {
-  id        Int      @id @default(autoincrement())
+  id        String      @id @default(uuid())
   name      String    
   email     String    @unique
   password String
@@ -22,12 +23,15 @@ model User {
   role      Role
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
-  coachesClasses CoachesClassroom[] @relation("ClassUsers")
-
+  //The users chosen coach
+  usersCoach Coach @relation(fields: [usersCoachid], references: [id])
+  usersCoachid String
+  // is a foreign key for userClassrooms
+  userClassrooms userClassrooms[]
 }
 
 model Coach{
-  id        Int      @id @default(autoincrement())
+  id        String      @id @default(uuid())
   name      String    
   email     String    @unique
   password String
@@ -35,17 +39,36 @@ model Coach{
   role      Role
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
+  //Foreign keys for these classes
   coachesClasses CoachesClassroom[]
+  User User[]
 }
-
+//Whenever a coach creates a class, creates a uuid,
+//The classroom has the coaches ID as a foreign key
 model CoachesClassroom{
-  id        Int      @id @default(autoincrement())
-  coachId   Int
-  userId    Int
-  coach     Coach    @relation(fields: [coachId], references: [id])  
-  users     User[]   @relation("ClassUsers") 
+  id        String      @id @default(uuid())
+  coach Coach  @relation(fields: [coachid], references: [id])
+  coachid String
+  className String
+  classDescription String
+  currentlyEnrolled Int
+  enrollmentMax Int
+  //is a foreign key for this class
+  userClassrooms userClassrooms[]
 
 }
+//Since users could be enrolled in many classes, this is a way to find
+//which class users are currently enrolled
+model userClassrooms{
+
+  id String @id @default(uuid())
+  user User @relation(fields: [userid], references: [id])
+  userid String
+  classEnrolled CoachesClassroom  @relation(fields: [classEnrolledid], references: [id])
+  classEnrolledid String
+}
+
+
 //model accountInformation {
   //id
 //}
