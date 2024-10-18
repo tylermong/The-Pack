@@ -1,5 +1,6 @@
 'use client'
 
+import FloatingNav from "@/src/components/bottomfloatingnav/FloatingNav";
 
 //THIS WILL ONLY HAVE ANNOUNCEMENT AND SCHEDULING 
 // CAN ALSO PUT LIKE A SMALL JUMBOTRON TO WELCOME THE USER
@@ -13,6 +14,7 @@ export default function Home()
 {
     return(
         <div>
+            <FloatingNav/>
             <nav className="border-gray-200 bg-gray-50 dark:bg-black dark:border-gray-700">
 
                 <div className="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
