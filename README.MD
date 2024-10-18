@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="./images/The%20Pack%20Logo.jpg" alt="The Pack Logo" style="width: 50%;">
+  <img src="./the-pack/public/images/Logo1.jpg" alt="The Pack Logo" style="width: 50%;">
 </div>
 
 # The Pack - All-in-One Fitness App
