@@ -24,8 +24,8 @@ model User {
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   //The users chosen coach
-  usersCoach Coach @relation(fields: [usersCoachid], references: [id])
-  usersCoachid String
+  usersCoach Coach? @relation(fields: [usersCoachid], references: [id])
+  usersCoachid String?
   // is a foreign key for userClassrooms
   userClassrooms userClassrooms[]
 }
@@ -40,7 +40,7 @@ model Coach{
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   //Foreign keys for these classes
-  coachesClasses CoachesClassroom[]
+  coachesClasses CoachesClassroom[] 
   User User[]
 }
 //Whenever a coach creates a class, creates a uuid,
@@ -78,3 +78,5 @@ enum Role {
   COACH
   ADMIN
 }
+
+

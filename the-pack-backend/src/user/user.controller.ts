@@ -12,30 +12,22 @@ export class UserController {
   }
 
   @Get()
-  findAll(@Query('role') role?: 'CLIENT' | 'COACH' | 'ADMIN') {
+  findAll(@Query('role') role?: 'CLIENT' | 'ADMIN' | 'COACH') {
     return this.userService.findAll(role);
   }
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.userService.findOne(+id);
+    return this.userService.findOne(id);
   }
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateUserDto: Prisma.UserUpdateInput) {
-    return this.userService.update(+id, updateUserDto);
+    return this.userService.update(id, updateUserDto);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.userService.remove(+id);
-  }
-
-  @Post(':clientId/schedule/:coachID')
-  async scheduleClient(
-    @Param('clientId') clientId: string,
-    @Param('coachId') coachId: string,
-  ){
-    return this.userService.scheduleClientInClass(+clientId, +coachId);
+    return this.userService.remove(id);
   }
 }
