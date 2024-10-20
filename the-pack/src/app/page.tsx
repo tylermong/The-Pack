@@ -9,7 +9,7 @@ import Jumbotron from "../components/Jumbotron";
 export default function Landing() {
   return (
     <div className="container">
-      <div className="background"></div>
+      <div className="background "></div>
       <div className="jumbotron">
         <Jumbotron/>
       </div>
