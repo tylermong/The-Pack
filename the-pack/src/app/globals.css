@@ -19,6 +19,28 @@ button{
   padding: 20px;
 }
 
+.background{
+  filter: blur(5px);
+  z-index: -1;
+  position: absolute; 
+  background-image: url('/images/Logo1.jpg');
+  width: 100%;
+  height: 100%;
+}
+
+.jumbotron{
+  z-index: 1;
+  position: relative;
+}
+
+.container{
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
 @layer base {
   :root {
     --background: 0 0% 100%;

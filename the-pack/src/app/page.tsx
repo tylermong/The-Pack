@@ -8,8 +8,11 @@ import Jumbotron from "../components/Jumbotron";
 
 export default function Landing() {
   return (
-    <div>
-      <Jumbotron/>
+    <div className="container">
+      <div className="background"></div>
+      <div className="jumbotron">
+        <Jumbotron/>
+      </div>
     </div>
   );
-};
+};  
