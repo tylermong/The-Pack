@@ -11,33 +11,30 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UserService = void 0;
 const common_1 = require("@nestjs/common");
-const database_service_1 = require("../database/database.service");
+const prisma_service_1 = require("../prisma/prisma.service");
 let UserService = class UserService {
-    constructor(databaseService) {
-        this.databaseService = databaseService;
+    constructor(prismaSerivce) {
+        this.prismaSerivce = prismaSerivce;
     }
     async create(createUserDto) {
-        return this.databaseService.user.create({
-            data: createUserDto
-        });
-    }
-    async findAll(role) {
-        return this.databaseService.user.findMany({
-            where: {
-                role,
+        return this.prismaSerivce.user.create({
+            data: {
+                name: createUserDto.name,
+                email: createUserDto.email,
+                password: createUserDto.password,
+                usersCoach: createUserDto.usersCoach,
             }
         });
-        return this.databaseService.user.findMany();
     }
     async findOne(id) {
-        return this.databaseService.user.findUnique({
+        return this.prismaSerivce.user.findUnique({
             where: {
                 id,
             }
         });
     }
     async update(id, updateUserDto) {
-        return this.databaseService.user.update({
+        return this.prismaSerivce.user.update({
             where: {
                 id,
             },
@@ -45,71 +42,16 @@ let UserService = class UserService {
         });
     }
     async remove(id) {
-        return this.databaseService.user.delete({
+        return this.prismaSerivce.user.delete({
             where: {
                 id,
             }
         });
     }
-    async countUserInClass(coachId) {
-        return this.databaseService.coachesClassroom.count({
-            where: {
-                coachId,
-            }
-        });
-    }
-    async isClassFull(coachId) {
-        const classLimit = 8;
-        const userCount = await this.countUserInClass(coachId);
-        return userCount >= classLimit;
-    }
-    async isCoachedAssignedToClass(coachId) {
-        const userCount = await this.countUserInClass(coachId);
-        return userCount > 0;
-    }
-    async scheduleClientInClass(clientId, coachId) {
-        const coachAssigned = await this.isCoachedAssignedToClass(coachId);
-        if (!coachAssigned) {
-            throw new common_1.BadRequestException('The coach must be assigned to a class to schedule clients.');
-        }
-        const isFull = await this.isClassFull(coachId);
-        if (isFull) {
-            const alternativeClasses = await this.databaseService.coachesClassroom.findMany({
-                where: {
-                    coachId,
-                },
-                include: {
-                    users: true,
-                }
-            });
-            const availableClass = alternativeClasses.find(cls => !cls.users);
-            if (availableClass) {
-                await this.databaseService.coachesClassroom.create({
-                    data: {
-                        userId: clientId,
-                        coachId: availableClass.coachId,
-                    }
-                });
-                return 'Client scheduled in another class with coach ID: ${availableClass.coachId}';
-            }
-            else {
-                throw new common_1.NotFoundException("No alternative classes with available spots.");
-            }
-        }
-        else {
-            await this.databaseService.coachesClassroom.create({
-                data: {
-                    userId: clientId,
-                    coachId,
-                }
-            });
-            return "Client scheduled in class with coach ID: ${coachId}";
-        }
-    }
 };
 exports.UserService = UserService;
 exports.UserService = UserService = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [database_service_1.DatabaseService])
+    __metadata("design:paramtypes", [prisma_service_1.PrismaService])
 ], UserService);
 //# sourceMappingURL=user.service.js.map

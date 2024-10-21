@@ -23,6 +23,7 @@ const RegisterForm = () =>{
             body: JSON.stringify({ name, email, password }),
         });
 
+        
         if(response.ok)
         {
             console.log("GOOD")

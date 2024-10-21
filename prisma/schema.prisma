@@ -19,7 +19,7 @@ model User {
   name      String    
   email     String    @unique
   password String
-  phoneNum  Int       @unique
+  phoneNum  Int?       @unique
   role      Role
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt

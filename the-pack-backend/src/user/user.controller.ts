@@ -2,7 +2,7 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestj
 import { UserService } from './user.service';
 import { Prisma } from '@prisma/client';
 
-@Controller('user')
+@Controller('register')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
@@ -11,10 +11,10 @@ export class UserController {
     return this.userService.create(createUserDto);
   }
 
-  @Get()
-  findAll(@Query('role') role?: 'CLIENT' | 'ADMIN' | 'COACH') {
-    return this.userService.findAll(role);
-  }
+  // @Get()
+  // findAll(@Query('role') role?: 'CLIENT' | 'ADMIN' | 'COACH') {
+  //   return this.userService.findAll(role);
+  // }
 
   @Get(':id')
   findOne(@Param('id') id: string) {
