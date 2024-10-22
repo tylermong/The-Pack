@@ -18,13 +18,17 @@ let UserService = class UserService {
     }
     async create(createUserDto) {
         return this.prismaSerivce.user.create({
-            data: {
-                name: createUserDto.name,
-                email: createUserDto.email,
-                password: createUserDto.password,
-                usersCoach: createUserDto.usersCoach,
-            }
+            data: createUserDto
         });
+    }
+    async findAll(role) {
+        if (role)
+            return this.prismaSerivce.user.findMany({
+                where: {
+                    role,
+                }
+            });
+        return this.prismaSerivce.user.findMany();
     }
     async findOne(id) {
         return this.prismaSerivce.user.findUnique({

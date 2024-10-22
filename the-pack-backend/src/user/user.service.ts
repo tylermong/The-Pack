@@ -8,23 +8,18 @@ export class UserService {
 
   async create(createUserDto: Prisma.UserCreateInput ) {
     return this.prismaSerivce.user.create({
-      data: {
-        name: createUserDto.name,
-        email: createUserDto.email, 
-        password: createUserDto.password,
-        usersCoach: createUserDto.usersCoach,
-      }
+      data: createUserDto
     });
   }
 
-  // async findAll(role?: 'CLIENT' | 'COACH' | 'ADMIN') {
-  //   if (role) return this.prismaSerivce.user.findMany({
-  //     where: {
-  //       role,
-  //     }
-  //   })
-  //   return this.prismaSerivce.user.findMany()
-  // }
+  async findAll(role?: 'CLIENT' | 'COACH' | 'ADMIN') {
+    if (role) return this.prismaSerivce.user.findMany({
+      where: {
+        role,
+      }
+    })
+    return this.prismaSerivce.user.findMany()
+  }
 
   async findOne(id: string) {
     return this.prismaSerivce.user.findUnique({
@@ -42,15 +37,12 @@ export class UserService {
       data: updateUserDto,
     })
 
-    //test
-
   }
 
   async remove(id: string) {
     return this.prismaSerivce.user.delete({
       where:{
         id,
-      
       }
     });
   }

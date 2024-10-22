@@ -19,18 +19,18 @@ model User {
   name      String    
   email     String    @unique
   password String
-  phoneNum  Int?       @unique
-  role      Role
+  phoneNum Int?
+  role Role?
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   //The users chosen coach
-  usersCoach Coach? @relation(fields: [usersCoachid], references: [id])
-  usersCoachid String?
+  //usersCoach Coach? @relation(fields: [usersCoachid], references: [id])
+  //usersCoachid String?
   // is a foreign key for userClassrooms
-  userClassrooms userClassrooms[]
+  //userClassrooms userClassrooms[]
 
   //temp
-  announcements   announcements[]
+  //announcements   announcements[]
 }
 
 model Coach{
@@ -44,7 +44,7 @@ model Coach{
   updatedAt DateTime  @updatedAt
   //Foreign keys for these classes
   coachesClasses CoachesClassroom[] 
-  User User[]
+  //User User[]
 }
 //Whenever a coach creates a class, creates a uuid,
 //The classroom has the coaches ID as a foreign key
@@ -65,7 +65,7 @@ model CoachesClassroom{
 model userClassrooms{
 
   id String @id @default(uuid())
-  user User @relation(fields: [userid], references: [id])
+ // user User @relation(fields: [userid], references: [id])
   userid String
   classEnrolled CoachesClassroom  @relation(fields: [classEnrolledid], references: [id])
   classEnrolledid String
@@ -78,7 +78,7 @@ model announcements{
   updatedAt DateTime @updatedAt
   title     String   @db.VarChar(255)
   content   String?
-  author    User     @relation(fields: [authorId], references: [id])
+  //author    User     @relation(fields: [authorId], references: [id])
   authorId  String
 
 }
