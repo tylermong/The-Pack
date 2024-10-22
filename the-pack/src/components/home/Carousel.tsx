@@ -17,14 +17,14 @@ import { type CarouselApi } from "@/components/ui/carousel"
 const AnnouncementCarousel = () =>{
     return(
         <div>
-            <div className="flex flex-col justify-center bg-black md:h-screen">
+            <div className="flex flex-col justify-center bg-black">
 
                 <div className="Announcements">
                     <div className="mb-3">
                         <h3 className="text-white md:text-3xl text-2xl font-extrabold text-center max-md:text-center">ANNOUNCEMENTS</h3>
                     </div>
 
-                    <div className='Carousel mb-16'>
+                    <div className='Carousel mb-8'>
                     <Carousel orientation='horizontal' className = 'max-w-lg border-solid border-gray-5'>
 
                         <CarouselContent>

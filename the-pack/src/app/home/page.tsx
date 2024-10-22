@@ -10,11 +10,11 @@ import HomeCalendar from "@/components/home/HomeCalendar";
 export default function Home()
 {
     return(
-        <div>
+        <main>
             <FloatingNav/>
             <Carousel/>
             <AnnouncementForm/>
             <HomeCalendar/>
-        </div>
+        </main>   
     )
 }
