@@ -8,35 +8,43 @@ export declare class UserService {
         name: string;
         email: string;
         password: string;
+        phoneNum: number | null;
+        role: import(".prisma/client").$Enums.Role | null;
         createdAt: Date;
         updatedAt: Date;
-        usersCoachid: string;
+        usersCoachid: string | null;
     }>;
     findOne(id: string): Promise<{
         id: string;
         name: string;
         email: string;
         password: string;
+        phoneNum: number | null;
+        role: import(".prisma/client").$Enums.Role | null;
         createdAt: Date;
         updatedAt: Date;
-        usersCoachid: string;
+        usersCoachid: string | null;
     }>;
     update(id: string, updateUserDto: Prisma.UserUpdateInput): Promise<{
         id: string;
         name: string;
         email: string;
         password: string;
+        phoneNum: number | null;
+        role: import(".prisma/client").$Enums.Role | null;
         createdAt: Date;
         updatedAt: Date;
-        usersCoachid: string;
+        usersCoachid: string | null;
     }>;
     remove(id: string): Promise<{
         id: string;
         name: string;
         email: string;
         password: string;
+        phoneNum: number | null;
+        role: import(".prisma/client").$Enums.Role | null;
         createdAt: Date;
         updatedAt: Date;
-        usersCoachid: string;
+        usersCoachid: string | null;
     }>;
 }
