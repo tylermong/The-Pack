@@ -21,6 +21,7 @@ model User {
   password String
   phoneNum Int?
   role Role?
+
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   //The users chosen coach
