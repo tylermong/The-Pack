@@ -8,7 +8,6 @@ export declare class UserController {
         name: string;
         email: string;
         password: string;
-        feature/backend-frontToBack-fix
         phoneNum: number;
         role: import(".prisma/client").$Enums.Role;
         createdAt: Date;
