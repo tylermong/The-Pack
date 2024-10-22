@@ -42,6 +42,7 @@ model Coach{
   //Foreign keys for these classes
   coachesClasses CoachesClassroom[] 
   User User[]
+  announcements      Announcement[]
 }
 //Whenever a coach creates a class, creates a uuid,
 //The classroom has the coaches ID as a foreign key
@@ -68,6 +69,15 @@ model userClassrooms{
   classEnrolledid String
 }
 
+model Announcement{
+  id        String   @id @default(uuid())
+  title     String
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  coachId   String
+  coach     Coach    @relation(fields: [coachId], references: [id]) 
+}
 
 //model accountInformation {
   //id
