@@ -19,8 +19,8 @@ model User {
   name      String    
   email     String    @unique
   password String
-  phoneNum  Int       @unique
-  role      Role
+  phoneNum  Int?       @unique
+  role      Role?
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   //The users chosen coach
