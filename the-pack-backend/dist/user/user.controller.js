@@ -23,20 +23,14 @@ let UserController = class UserController {
     create(createUserDto) {
         return this.userService.create(createUserDto);
     }
-    findAll(role) {
-        return this.userService.findAll(role);
-    }
     findOne(id) {
-        return this.userService.findOne(+id);
+        return this.userService.findOne(id);
     }
     update(id, updateUserDto) {
-        return this.userService.update(+id, updateUserDto);
+        return this.userService.update(id, updateUserDto);
     }
     remove(id) {
-        return this.userService.remove(+id);
-    }
-    async scheduleClient(clientId, coachId) {
-        return this.userService.scheduleClientInClass(+clientId, +coachId);
+        return this.userService.remove(id);
     }
 };
 exports.UserController = UserController;
@@ -47,13 +41,6 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", void 0)
 ], UserController.prototype, "create", null);
-__decorate([
-    (0, common_1.Get)(),
-    __param(0, (0, common_1.Query)('role')),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
-    __metadata("design:returntype", void 0)
-], UserController.prototype, "findAll", null);
 __decorate([
     (0, common_1.Get)(':id'),
     __param(0, (0, common_1.Param)('id')),
@@ -76,16 +63,8 @@ __decorate([
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", void 0)
 ], UserController.prototype, "remove", null);
-__decorate([
-    (0, common_1.Post)(':clientId/schedule/:coachID'),
-    __param(0, (0, common_1.Param)('clientId')),
-    __param(1, (0, common_1.Param)('coachId')),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, String]),
-    __metadata("design:returntype", Promise)
-], UserController.prototype, "scheduleClient", null);
 exports.UserController = UserController = __decorate([
-    (0, common_1.Controller)('user'),
+    (0, common_1.Controller)('register'),
     __metadata("design:paramtypes", [user_service_1.UserService])
 ], UserController);
 //# sourceMappingURL=user.controller.js.map
