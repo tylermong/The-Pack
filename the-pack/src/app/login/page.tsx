@@ -1,6 +1,6 @@
 'use client'
 
-import LoginForm from "@/src/components/forms/Login";
+import LoginForm from "@/components/coach/forms/Login";
 
 export default function Login(){
     return(
