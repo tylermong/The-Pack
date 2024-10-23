@@ -1,8 +1,39 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Image from "next/image";
 import Link from 'next/link'
+import {useRouter} from "next/navigation";
 
 const LoginForm = () =>{
+    const router = useRouter()
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+    
+        const response = await fetch('http://localhost:3001/user', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ name, email, password, phoneNum:123-456-7890, role:"CLIENT" }),
+        });
+
+        
+        if(response.ok)
+        {
+            console.log("GOOD")
+            router.push("./login")
+        }
+    
+        if (!response.ok) {
+            throw new Error('Invalid Credentials')
+        }
+
+        router.push('/home');
+    };
+    
+
     return(
         <div>
             <div className="font-[sans-serif] bg-black md:h-screen">
@@ -21,7 +52,7 @@ const LoginForm = () =>{
                     </div>
 
                     <div className="flex items-center md:w-1/2 justify-center p-6 h-full w-full">
-                        <form className="max-w-lg w-full mx-auto">
+                        <form className="max-w-lg w-full mx-auto" onSubmit={handleSubmit}>
                             <div className="mb-12">
                                 <h3 className="text-white md:text-3xl text-2xl font-extrabold max-md:text-center">Log In</h3>
                             </div>
@@ -32,7 +63,10 @@ const LoginForm = () =>{
                                         <input 
                                         name="email" 
                                         type="email" 
-                                        required className="w-full bg-transparent text-sm border-b border-gray-300 focus:border-gray-100 px-2 py-3 outline-none" 
+                                        required 
+                                        value = {email}
+                                        onChange={(e) => setEmail(e.target.value)}
+                                        className="w-full bg-transparent text-sm border-b border-gray-300 focus:border-gray-100 px-2 py-3 outline-none" 
                                         placeholder="Enter email" />
                                         <svg 
                                         xmlns="http://www.w3.org/2000/svg" 
@@ -69,7 +103,10 @@ const LoginForm = () =>{
                                         <input 
                                         name="password" 
                                         type="password" 
-                                        required className="w-full bg-transparent text-sm border-b border-gray-300 focus:border-gray-100 px-2 py-3 outline-none" 
+                                        required
+                                        value = {password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                        className="w-full bg-transparent text-sm border-b border-gray-300 focus:border-gray-100 px-2 py-3 outline-none" 
                                         placeholder="Enter password" />
 
                                         <svg 
@@ -88,7 +125,10 @@ const LoginForm = () =>{
                             </div>
 
                             <div className="mt-12">
-                                <button type="submit" className="w-full py-3 px-6 text-sm tracking-wide font-semibold rounded-md bg-white hover:bg-gray-400 text-black focus:outline-none">
+                                <button 
+                                type="submit" 
+                                className="w-full py-3 px-6 text-sm tracking-wide font-semibold rounded-md bg-white hover:bg-gray-400 text-black focus:outline-none"
+                                >
                                     Sign In
                                 </button>
                                 <p className="text-sm mt-6 text-gray-200">Not a member? 

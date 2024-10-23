@@ -12,6 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.UserService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../prisma/prisma.service");
+const bcrypt = require("bcrypt");
 let UserService = class UserService {
     constructor(prismaSerivce) {
         this.prismaSerivce = prismaSerivce;
@@ -51,6 +52,20 @@ let UserService = class UserService {
                 id,
             }
         });
+    }
+    async validateUser(email, password) {
+        const user = await this.prismaSerivce.user.findUnique({
+            where: { email },
+        });
+        if (!user) {
+            throw new common_1.UnauthorizedException('Invalid credentials');
+        }
+        const isPasswordValid = await bcrypt.compare(password, user.password);
+        if (!isPasswordValid) {
+            throw new common_1.UnauthorizedException('Invalid credentials');
+        }
+        const { password: _, ...result } = user;
+        return result;
     }
 };
 exports.UserService = UserService;
