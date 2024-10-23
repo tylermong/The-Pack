@@ -1,17 +1,6 @@
 import React from 'react';
-import {
-    Carousel,
-    CarouselContent,
-    CarouselItem,
-    CarouselNext,
-    CarouselPrevious,
-  } from "@/components/ui/carousel"
-  import {
-    Card,
-    CardContent,
-    CardHeader,
-    CardTitle,
-  } from "@/components/ui/card"
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel"
+  import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { type CarouselApi } from "@/components/ui/carousel"
 
 const AnnouncementCarousel = () =>{
@@ -25,7 +14,7 @@ const AnnouncementCarousel = () =>{
                     </div>
 
                     <div className='Carousel mb-8'>
-                    <Carousel orientation='horizontal' className = 'max-w-lg border-solid border-gray-5'>
+                    <Carousel orientation='horizontal' className='max-w-lg border-solid border-gray-5'>
 
                         <CarouselContent>
                             <CarouselItem>
@@ -34,7 +23,7 @@ const AnnouncementCarousel = () =>{
                                         <CardTitle>Gym Open Hours</CardTitle>
                                     </CardHeader>
                                     <CardContent className='text-center text-sm font-medium'>
-                                        <p>Mon - Friday: 8AM - 7PM</p>
+                                        <p>Monday - Friday: 8AM - 7PM</p>
                                         <p>Saturday: 9AM - 11PM</p>
                                         <p>Sunday: 8AM - 7PM</p>
                                     </CardContent>
@@ -47,7 +36,7 @@ const AnnouncementCarousel = () =>{
                                         <CardTitle>Gym Open Hours</CardTitle>
                                     </CardHeader>
                                     <CardContent className='text-center text-sm font-medium'>
-                                        <p>Mon - Friday: 8AM - 7PM</p>
+                                        <p>Monday - Friday: 8AM - 7PM</p>
                                         <p>Saturday: 9AM - 11PM</p>
                                         <p>Sunday: 8AM - 7PM</p>
                                     </CardContent>
@@ -60,7 +49,7 @@ const AnnouncementCarousel = () =>{
                                         <CardTitle>Gym Open Hours</CardTitle>
                                     </CardHeader>
                                     <CardContent className='text-center text-sm font-medium'>
-                                        <p>Mon - Friday: 8AM - 7PM</p>
+                                        <p>Monday - Friday: 8AM - 7PM</p>
                                         <p>Saturday: 9AM - 11PM</p>
                                         <p>Sunday: 8AM - 7PM</p>
                                     </CardContent>
