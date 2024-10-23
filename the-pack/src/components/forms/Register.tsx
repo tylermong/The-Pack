@@ -20,7 +20,7 @@ const RegisterForm = () =>{
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ name, email, password }),
+            body: JSON.stringify({ name, email, password, phoneNum:123-456-7890, role:"CLIENT" }),
         });
 
         

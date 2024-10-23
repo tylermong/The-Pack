@@ -8,43 +8,49 @@ export declare class UserController {
         name: string;
         email: string;
         password: string;
-        phoneNum: number | null;
-        role: import(".prisma/client").$Enums.Role | null;
+        phoneNum: number;
+        role: import(".prisma/client").$Enums.Role;
         createdAt: Date;
         updatedAt: Date;
-        usersCoachid: string | null;
     }>;
+    findAll(role?: 'CLIENT' | 'ADMIN' | 'COACH'): Promise<{
+        id: string;
+        name: string;
+        email: string;
+        password: string;
+        phoneNum: number;
+        role: import(".prisma/client").$Enums.Role;
+        createdAt: Date;
+        updatedAt: Date;
+    }[]>;
     findOne(id: string): Promise<{
         id: string;
         name: string;
         email: string;
         password: string;
-        phoneNum: number | null;
-        role: import(".prisma/client").$Enums.Role | null;
+        phoneNum: number;
+        role: import(".prisma/client").$Enums.Role;
         createdAt: Date;
         updatedAt: Date;
-        usersCoachid: string | null;
     }>;
     update(id: string, updateUserDto: Prisma.UserUpdateInput): Promise<{
         id: string;
         name: string;
         email: string;
         password: string;
-        phoneNum: number | null;
-        role: import(".prisma/client").$Enums.Role | null;
+        phoneNum: number;
+        role: import(".prisma/client").$Enums.Role;
         createdAt: Date;
         updatedAt: Date;
-        usersCoachid: string | null;
     }>;
     remove(id: string): Promise<{
         id: string;
         name: string;
         email: string;
         password: string;
-        phoneNum: number | null;
-        role: import(".prisma/client").$Enums.Role | null;
+        phoneNum: number;
+        role: import(".prisma/client").$Enums.Role;
         createdAt: Date;
         updatedAt: Date;
-        usersCoachid: string | null;
     }>;
 }
