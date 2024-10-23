@@ -1,6 +1,6 @@
 'use client'
 
-import RegisterForm from "@/src/components/forms/Register";
+import RegisterForm from "@/components/coach/forms/Register";
 
 const Register = () => {
     return(
