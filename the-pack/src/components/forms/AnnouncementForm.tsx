@@ -45,7 +45,7 @@ const AnnouncementForm = () => {
   };
 
   return (
-    <div>
+    <div className='flex justify-center'>
       <Dialog>
         <DialogTrigger asChild>
           <Button variant="outline">Create Announcement</Button>

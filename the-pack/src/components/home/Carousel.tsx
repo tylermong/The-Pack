@@ -13,7 +13,7 @@ const AnnouncementCarousel = () =>{
                         <h3 className="text-white md:text-3xl text-2xl font-extrabold text-center max-md:text-center">ANNOUNCEMENTS</h3>
                     </div>
 
-                    <div className='Carousel mb-8'>
+                    <div className='Carousel mb-4'>
                     <Carousel orientation='horizontal' className='max-w-lg border-solid border-gray-5'>
 
                         <CarouselContent>
