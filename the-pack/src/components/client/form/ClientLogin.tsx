@@ -2,7 +2,7 @@ import React from 'react';
 import Image from "next/image";
 import Link from 'next/link'
 
-const LoginForm = () =>{
+const ClientLoginForm = () =>{
     return(
         <div>
             <div className="font-[sans-serif] bg-black md:h-screen">
@@ -23,7 +23,7 @@ const LoginForm = () =>{
                     <div className="flex items-center md:w-1/2 justify-center p-6 h-full w-full">
                         <form className="max-w-lg w-full mx-auto">
                             <div className="mb-12">
-                                <h3 className="text-white md:text-3xl text-2xl font-extrabold max-md:text-center">Log In</h3>
+                                <h3 className="text-white md:text-3xl text-2xl font-extrabold max-md:text-center">Client Log In</h3>
                             </div>
 
                             <div className="mt-6">
@@ -92,7 +92,11 @@ const LoginForm = () =>{
                                     Sign In
                                 </button>
                                 <p className="text-sm mt-6 text-gray-200">Not a member? 
-                                    <Link className="text-white font-semibold hover:underline ml-1" href = "/register">Register</Link>
+                                    <Link className="text-white font-semibold hover:underline ml-1" href = "/clientregister">Register</Link>
+                                </p>
+                                <p className="text-sm mt-6 text-gray-200">Coach? 
+                                    <Link className="text-white font-semibold hover:underline ml-1" href = "/coachlogin">Login</Link>
+                                    <Link className="text-white font-semibold hover:underline ml-1" href = "/coachregister">Register</Link>
                                 </p>
                             </div>
 
@@ -104,4 +108,4 @@ const LoginForm = () =>{
         </div>
     );
 };
-export default LoginForm;
+export default ClientLoginForm;
