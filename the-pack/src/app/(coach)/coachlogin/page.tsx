@@ -1,11 +1,11 @@
 'use client'
 
-import LoginForm from "@/components/coach/forms/Login";
+import CoachLoginForm from "@/components/coach/forms/CoachLogin"
 
 export default function Login(){
     return(
         <div>
-            <LoginForm/>
+            <CoachLoginForm/>
         </div>
     )
 }

@@ -1,11 +1,11 @@
 'use client'
 
-import RegisterForm from "@/components/coach/forms/Register";
+import CoachRegisterForm from "@/components/coach/forms/CoachRegister";
 
 const Register = () => {
     return(
         <div>
-            <RegisterForm/>
+            <CoachRegisterForm/>
         </div>
     );
 };
