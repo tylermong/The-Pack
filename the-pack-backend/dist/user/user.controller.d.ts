@@ -8,8 +8,8 @@ export declare class UserController {
         name: string;
         email: string;
         password: string;
-        phoneNum: number;
-        role: import(".prisma/client").$Enums.Role;
+        phoneNum: number | null;
+        role: import(".prisma/client").$Enums.Role | null;
         createdAt: Date;
         updatedAt: Date;
     }>;
@@ -18,8 +18,8 @@ export declare class UserController {
         name: string;
         email: string;
         password: string;
-        phoneNum: number;
-        role: import(".prisma/client").$Enums.Role;
+        phoneNum: number | null;
+        role: import(".prisma/client").$Enums.Role | null;
         createdAt: Date;
         updatedAt: Date;
     }[]>;
@@ -28,8 +28,8 @@ export declare class UserController {
         name: string;
         email: string;
         password: string;
-        phoneNum: number;
-        role: import(".prisma/client").$Enums.Role;
+        phoneNum: number | null;
+        role: import(".prisma/client").$Enums.Role | null;
         createdAt: Date;
         updatedAt: Date;
     }>;
@@ -38,8 +38,8 @@ export declare class UserController {
         name: string;
         email: string;
         password: string;
-        phoneNum: number;
-        role: import(".prisma/client").$Enums.Role;
+        phoneNum: number | null;
+        role: import(".prisma/client").$Enums.Role | null;
         createdAt: Date;
         updatedAt: Date;
     }>;
@@ -48,8 +48,8 @@ export declare class UserController {
         name: string;
         email: string;
         password: string;
-        phoneNum: number;
-        role: import(".prisma/client").$Enums.Role;
+        phoneNum: number | null;
+        role: import(".prisma/client").$Enums.Role | null;
         createdAt: Date;
         updatedAt: Date;
     }>;
