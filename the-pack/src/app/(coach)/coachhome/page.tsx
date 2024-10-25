@@ -1,18 +1,19 @@
 'use client'
 
-import Carousel from "@/components/coach/home/Carousel";
-import CoachSideBar from "@/components/sidebar/CoachSideBar";
-
-
 import React from 'react';
-
+import Carousel from "@/components/coach/home/Carousel";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
+import { AppSidebar } from "@/components/app-sidebar"
 
 export default function Home()
 {
     return(
-        <div>
-            <CoachSideBar/>
-            <Carousel/>
-        </div>
+        <SidebarProvider>
+            <AppSidebar />
+            <main>
+                <SidebarTrigger />
+                <Carousel />
+            </main>
+        </SidebarProvider>  
     )
 }
