@@ -24,16 +24,13 @@ const AnnouncementCarousel = () =>{
 
     return(
         <div>
-            <div className="flex flex-col justify-center bg-black md:h-screen pt-20 pl-48">
-
+            <div className="flex space-x-80 justify-center bg-red-500 md:h-screen md:w-screen pt-20">
                 <div className="Announcements">
-                    <div className="mb-3">
+                    <div className="mb-6">
                         <h3 className="text-white md:text-3xl text-2xl font-extrabold text-center max-md:text-center">ANNOUNCEMENTS</h3>
                     </div>
-
-                    <div className='Carousel mb-16'>
-                    <Carousel orientation='horizontal' className = 'max-w-lg border-solid border-gray-5'>
-
+                    <div className='Carousel mr-10'>
+                    <Carousel orientation='horizontal' className='max-w-lg border-solid border-gray-5'>
                         <CarouselContent>
                             <CarouselItem>
                                 <Card className='bg-black text-white'>
@@ -47,7 +44,6 @@ const AnnouncementCarousel = () =>{
                                     </CardContent>
                                 </Card>
                             </CarouselItem>
-
                             <CarouselItem>
                                 <Card className='bg-black text-white'>
                                     <CardHeader className='text-center'>
@@ -60,7 +56,6 @@ const AnnouncementCarousel = () =>{
                                     </CardContent>
                                 </Card>
                             </CarouselItem>
-
                             <CarouselItem>
                                 <Card className='bg-black text-white'>
                                     <CardHeader className='text-center'>
@@ -78,10 +73,7 @@ const AnnouncementCarousel = () =>{
                         <CarouselNext />
                     </Carousel>
                     </div>
-
-
                 </div>
-
                 <div className="Scheduling">
                     <div className="mb-6">
                         <h3 className="text-white md:text-3xl text-2xl font-extrabold text-center max-md:text-center">SCHEDULING</h3>
@@ -94,10 +86,7 @@ const AnnouncementCarousel = () =>{
                         className="rounded-md border"
                         />
                     </div>
-
-
                 </div>
-
             </div>
         </div>
     );
