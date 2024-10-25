@@ -14,11 +14,6 @@ import {
   } from "@/components/ui/card"
 import { Calendar } from "@/components/ui/calendar"
 
-
-export function SetCarousel(){
-
-}
-
 const AnnouncementCarousel = () =>{
     const [date, setDate] = React.useState<Date | undefined>(new Date())
 
@@ -29,49 +24,57 @@ const AnnouncementCarousel = () =>{
                     <div className="mb-6">
                         <h3 className="text-white md:text-3xl text-2xl font-extrabold text-center max-md:text-center">ANNOUNCEMENTS</h3>
                     </div>
-                    <div className='Carousel mr-10'>
-                    <Carousel orientation='horizontal' className='max-w-lg border-solid border-gray-5'>
-                        <CarouselContent>
-                            <CarouselItem>
-                                <Card className='bg-black text-white'>
-                                    <CardHeader className='text-center'>
-                                        <CardTitle>Gym Open Hours</CardTitle>
-                                    </CardHeader>
-                                    <CardContent className='text-center text-sm font-medium'>
-                                        <p>Mon - Friday: 8AM - 7PM</p>
-                                        <p>Saturday: 9AM - 11PM</p>
-                                        <p>Sunday: 8AM - 7PM</p>
-                                    </CardContent>
-                                </Card>
-                            </CarouselItem>
-                            <CarouselItem>
-                                <Card className='bg-black text-white'>
-                                    <CardHeader className='text-center'>
-                                        <CardTitle>Gym Open Hours</CardTitle>
-                                    </CardHeader>
-                                    <CardContent className='text-center text-sm font-medium'>
-                                        <p>Mon - Friday: 8AM - 7PM</p>
-                                        <p>Saturday: 9AM - 11PM</p>
-                                        <p>Sunday: 8AM - 7PM</p>
-                                    </CardContent>
-                                </Card>
-                            </CarouselItem>
-                            <CarouselItem>
-                                <Card className='bg-black text-white'>
-                                    <CardHeader className='text-center'>
-                                        <CardTitle>Gym Open Hours</CardTitle>
-                                    </CardHeader>
-                                    <CardContent className='text-center text-sm font-medium'>
-                                        <p>Mon - Friday: 8AM - 7PM</p>
-                                        <p>Saturday: 9AM - 11PM</p>
-                                        <p>Sunday: 8AM - 7PM</p>
-                                    </CardContent>
-                                </Card>
-                            </CarouselItem>
-                        </CarouselContent>
-                        <CarouselPrevious />
-                        <CarouselNext />
-                    </Carousel>
+                    <div className='Carousel'>
+                        <Carousel orientation='horizontal' className='max-w-lg border-solid border-gray-5'>
+                            <CarouselContent>
+                                <CarouselItem>
+                                    <Card className='bg-black text-white'>
+                                        <CardHeader className='text-center'>
+                                            <CardTitle>Gym Open Hours</CardTitle>
+                                        </CardHeader>
+                                        <CardContent className='text-center text-sm font-medium'>
+                                            <p>Mon - Friday: 8AM - 7PM</p>
+                                            <p>Saturday: 9AM - 11PM</p>
+                                            <p>Sunday: 8AM - 7PM</p>
+                                        </CardContent>
+                                    </Card>
+                                </CarouselItem>
+                                <CarouselItem>
+                                    <Card className='bg-black text-white'>
+                                        <CardHeader className='text-center'>
+                                            <CardTitle>Gym Open Hours</CardTitle>
+                                        </CardHeader>
+                                        <CardContent className='text-center text-sm font-medium'>
+                                            <p>Mon - Friday: 8AM - 7PM</p>
+                                            <p>Saturday: 9AM - 11PM</p>
+                                            <p>Sunday: 8AM - 7PM</p>
+                                        </CardContent>
+                                    </Card>
+                                </CarouselItem>
+                                <CarouselItem>
+                                    <Card className='bg-black text-white'>
+                                        <CardHeader className='text-center'>
+                                            <CardTitle>Gym Open Hours</CardTitle>
+                                        </CardHeader>
+                                        <CardContent className='text-center text-sm font-medium'>
+                                            <p>Mon - Friday: 8AM - 7PM</p>
+                                            <p>Saturday: 9AM - 11PM</p>
+                                            <p>Sunday: 8AM - 7PM</p>
+                                        </CardContent>
+                                    </Card>
+                                </CarouselItem>
+                            </CarouselContent>
+                            <CarouselPrevious />
+                            <CarouselNext />
+                        </Carousel>
+                    </div>
+                    <div className="flex justify-center mt-4">
+                        <button
+                        className="px-2 py-2 text-sm rounded-lg"
+                        onClick={() => displayForm((isVisible) => !isVisible)}
+                        >
+                            Create Announcement
+                        </button>
                     </div>
                 </div>
                 <div className="Scheduling">
