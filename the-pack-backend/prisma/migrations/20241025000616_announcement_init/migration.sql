@@ -11,4 +11,4 @@ CREATE TABLE "announcements" (
 );
 
 -- AddForeignKey
-ALTER TABLE "announcements" ADD CONSTRAINT "announcements_authorId_fkey" FOREIGN KEY ("authorId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "announcements" ADD CONSTRAINT "announcements_authorId_fkey" FOREIGN KEY ("authorId") REFERENCES "Coach"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
