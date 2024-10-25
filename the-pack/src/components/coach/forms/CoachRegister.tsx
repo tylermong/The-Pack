@@ -239,7 +239,7 @@ const CoachRegisterForm = () =>{
 
 
                         <p className="text-sm mt-6 text-gray-200">Already have a coach account? 
-                            <Link className="text-white font-semibold hover:underline ml-1" href = "/login">Login</Link>
+                            <Link className="text-white font-semibold hover:underline ml-1" href = "/coachlogin">Login</Link>
                         </p>
 
                         <p className="text-sm mt-6 text-gray-200">Not a coach? 

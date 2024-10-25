@@ -1,6 +1,6 @@
 'use client'
 
-import FloatingNav from '@/src/components/bottomfloatingnav/FloatingNav';
+import SideBar from "@/components/sidebar/CoachSideBar";
 
 //USE COMPONENTS SEEPRATELY AS IN TOP WOULD HAVE A PROGRESS BAR
 // AFTERWARDS ARE SEVERAL OTHER DROPDOWN BARS FOR EACH MEAL CATEGORY
@@ -100,7 +100,7 @@ export default function FoodTracker()
 
             </div>
 
-            <FloatingNav/>
+            <SideBar/>
             
         </div>
     )

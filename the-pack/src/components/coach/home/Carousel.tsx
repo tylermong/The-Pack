@@ -12,7 +12,6 @@ import {
     CardHeader,
     CardTitle,
   } from "@/components/ui/card"
-import { type CarouselApi } from "@/components/ui/carousel"
 import { Calendar } from "@/components/ui/calendar"
 
 
@@ -25,7 +24,7 @@ const AnnouncementCarousel = () =>{
 
     return(
         <div>
-            <div className="flex flex-col justify-center bg-black md:h-screen">
+            <div className="flex flex-col justify-center bg-black md:h-screen pt-20 pl-48">
 
                 <div className="Announcements">
                     <div className="mb-3">
