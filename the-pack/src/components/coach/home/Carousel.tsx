@@ -13,7 +13,7 @@ const AnnouncementCarousel = () => {
     const [announcements, setAnnouncements] = useState([
         {
             title: "Gym Open Hours",
-            body: "Mon - Friday: 8AM - 7PM\nSaturday: 9AM - 11PM\nSunday: 8AM - 7PM"
+            body: "Monday - Friday: 8AM - 7PM\nSaturday: 9AM - 11PM\nSunday: 8AM - 7PM"
         }
     ]);
     const [date, setDate] = useState<Date | undefined>(new Date());
