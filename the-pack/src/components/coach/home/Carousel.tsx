@@ -24,7 +24,7 @@ const AnnouncementCarousel = () =>{
 
     return(
         <div>
-            <div className="flex space-x-80 justify-center bg-red-500 md:h-screen md:w-screen pt-20">
+            <div className="flex justify-center bg-red-500 md:h-screen w-full pt-20">
                 <div className="Announcements">
                     <div className="mb-6">
                         <h3 className="text-white md:text-3xl text-2xl font-extrabold text-center max-md:text-center">ANNOUNCEMENTS</h3>
