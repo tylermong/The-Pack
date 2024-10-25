@@ -1,8 +1,10 @@
 import React from 'react';
 import Image from "next/image";
 import Link from 'next/link'
+import {useRouter} from "next/navigation";
 
 const CoachLoginForm = () =>{
+    const router = useRouter()
     return(
         <div>
             <div className="font-[sans-serif] bg-black md:h-screen">
@@ -21,7 +23,7 @@ const CoachLoginForm = () =>{
                     </div>
 
                     <div className="flex items-center md:w-1/2 justify-center p-6 h-full w-full">
-                        <form className="max-w-lg w-full mx-auto">
+                        <form className="max-w-lg w-full mx-auto" onSubmit={() => router.push("./coachhome")}>
                             <div className="mb-12">
                                 <h3 className="text-white md:text-3xl text-2xl font-extrabold max-md:text-center">Coach Log In</h3>
                             </div>
@@ -91,12 +93,11 @@ const CoachLoginForm = () =>{
                                 <button type="submit" className="w-full py-3 px-6 text-sm tracking-wide font-semibold rounded-md bg-white hover:bg-gray-400 text-black focus:outline-none">
                                     Sign In
                                 </button>
-                                <p className="text-sm mt-6 text-gray-200">Not a member? 
+                                <p className="text-sm mt-6 text-gray-200">Need a coach account? 
                                     <Link className="text-white font-semibold hover:underline ml-1" href = "/coachregister">Register</Link>
                                 </p>
                                 <p className="text-sm mt-6 text-gray-200">Client? 
                                     <Link className="text-white font-semibold hover:underline ml-1" href = "/clientlogin">Login</Link>
-                                    <Link className="text-white font-semibold hover:underline ml-1" href = "/clientregister">Register</Link>
                                 </p>
                             </div>
 

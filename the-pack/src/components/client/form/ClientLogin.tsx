@@ -1,8 +1,10 @@
 import React from 'react';
 import Image from "next/image";
 import Link from 'next/link'
+import {useRouter} from "next/navigation";
 
 const ClientLoginForm = () =>{
+    const router = useRouter()
     return(
         <div>
             <div className="font-[sans-serif] bg-black md:h-screen">
@@ -21,7 +23,7 @@ const ClientLoginForm = () =>{
                     </div>
 
                     <div className="flex items-center md:w-1/2 justify-center p-6 h-full w-full">
-                        <form className="max-w-lg w-full mx-auto">
+                        <form className="max-w-lg w-full mx-auto" onSubmit={() => router.push("./clienthome")}>
                             <div className="mb-12">
                                 <h3 className="text-white md:text-3xl text-2xl font-extrabold max-md:text-center">Client Log In</h3>
                             </div>
@@ -96,7 +98,6 @@ const ClientLoginForm = () =>{
                                 </p>
                                 <p className="text-sm mt-6 text-gray-200">Coach? 
                                     <Link className="text-white font-semibold hover:underline ml-1" href = "/coachlogin">Login</Link>
-                                    <Link className="text-white font-semibold hover:underline ml-1" href = "/coachregister">Register</Link>
                                 </p>
                             </div>
 
