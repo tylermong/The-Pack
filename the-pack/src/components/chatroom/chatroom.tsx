@@ -57,67 +57,66 @@ const Chatroom = () =>{
 
     return(
         <div className="flex h-screen">
-                <div className="flex flex-1 overflow-hidden">
-                    <Card className="w-64 flex-none border-r rounded-none">
-                        <CardHeader>
-                            <CardTitle>Inbox</CardTitle>
-                        </CardHeader>
+            <div className="flex flex-1 overflow-hidden text-sm">
+                <Card className="w-64 flex-none border-r rounded-none bg-black text-white">
+                    <CardHeader>
+                        <CardTitle>Inbox</CardTitle>
+                    </CardHeader>
 
-                                <ScrollArea className="flex-1">
-                                    {users.map((user) => (
-                                        <div key={user.id} className="flex items-center gap-3 px-4 py-2 hover:bg-accent">
-                                        <Avatar>
-                                            <AvatarFallback>{user.avatar}</AvatarFallback>
-                                        </Avatar>
-                                        <span>{user.name}</span>
-                                        </div>
-                                    ))}
-                                </ScrollArea>
+                    <ScrollArea className="flex-1">
+                        {users.map((user) => (
+                            <div key={user.id} className="flex items-center gap-3 px-4 py-2 hover:bg-accent">
+                                <Avatar>
+                                    <AvatarFallback>{user.avatar}</AvatarFallback>
+                                </Avatar>
+                                <span>{user.name}</span>
+                                </div>
+                        ))}
+                        </ScrollArea>
                     </Card>
 
-                            <div className="flex-1 flex flex-col">
+                    <div className="flex-1 flex flex-col text-base">
+                        <CardHeader className="border-b">
+                            <CardTitle>Chatroom</CardTitle>
+                            {/*CHANGE TO ELECTED USER TO CHAT */}
+                        </CardHeader>
+                        <ScrollArea className="flex-1 p-4">
+                            {messages.map((message, index) => (
+                                <div key={message.id} className="mb-4 last:mb-0">
+                                    <div className="flex items-center gap-2 mb-1">
 
-                                <CardHeader className="border-b">
-                                    <CardTitle>Chatroom</CardTitle>
-                                    {/*CHANGE TO ELECTED USER TO CHAT */}
-                                </CardHeader>
+                                    <Avatar>
+                                        <AvatarFallback>{message.user[0]}</AvatarFallback>
+                                    </Avatar>
 
-                                <ScrollArea className="flex-1 p-4">
-                                    {messages.map((message, index) => (
-                                        <div key={message.id} className="mb-4 last:mb-0">
-                                        <div className="flex items-center gap-2 mb-1">
-                                            <Avatar>
-                                            <AvatarFallback>{message.user[0]}</AvatarFallback>
-                                            </Avatar>
-                                            <span className="font-semibold">{message.user}</span>
-                                            <span className="text-sm text-muted-foreground">{message.timestamp}</span>
-                                        </div>
-                                        <p className="pl-10">{message.content}</p>
-                                        {index < messages.length - 1 && <Separator className="mt-4" />}
-                                        </div>
-                                    ))}
-                                    <div ref={messagesEndRef} />
-                                </ScrollArea>
+                                    <span className="font-semibold">{message.user}</span>
+                                    <span className="text-sm text-muted-foreground">{message.timestamp}</span>
+                                    </div>
+                                    <p className="pl-10">{message.content}</p>
+                                    {index < messages.length - 1 && <Separator className="mt-4" />}
+                                </div>
+                            ))}
+                            <div ref={messagesEndRef} />
+                        </ScrollArea>
 
-                                <Card className="rounded-none border-t">
-                                    <CardContent className="p-4">
-                                        <form onSubmit={handleSendMessage} className="flex gap-2">
-                                            <Input
-                                                placeholder="Type a message..."
-                                                value={newMessage}
-                                                onChange={(e) => setNewMessage(e.target.value)}
-                                                className="flex-1"
-                                            />
-                                            <Button type="submit" size="icon">
-                                                <Send className="h-4 w-4" />
-                                                <span className="sr-only">Send message</span>
-                                            </Button>
-                                        </form>
-                                    </CardContent>
-                                </Card>
-                            </div>
-                    </div>
-            
+                        <Card className="rounded-none border-t bg-black">
+                            <CardContent className="p-4">
+                                <form onSubmit={handleSendMessage} className="flex gap-2">
+                                    <Input
+                                    placeholder="Type a message..."
+                                    value={newMessage}
+                                    onChange={(e) => setNewMessage(e.target.value)}
+                                    className="flex-1"
+                                    />
+                                    <Button type="submit" size="icon" className='border-white'>
+                                        <Send className="h-4 w-4" />
+                                        <span className="sr-only">Send message</span>
+                                    </Button>
+                                </form>
+                            </CardContent>
+                        </Card>    
+                </div>
+            </div>
         </div>
     );
 };
