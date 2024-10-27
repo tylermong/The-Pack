@@ -1,34 +1,34 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
 import { AnnouncementsService } from './announcements.service';
-import { Prisma } from '@prisma/client';
+import { CreateAnnouncementsDto } from './dto/create-announcements.dto';
+import { UpdateAnnouncementsDto } from './dto/update-announcements.dto';
 
 @Controller('announcements')
 export class AnnouncementsController {
   constructor(private readonly announcementsService: AnnouncementsService) {}
 
   @Post()
-  @UsePipes(ValidationPipe)
-  create(@Body() {author, ...createAnnouncementDto}: Prisma.announcementsCreateInput) {
-    return this.announcementsService.create(author, createAnnouncementDto);
-  }
-
-  @Get()
-  findAll() {
-    return this.announcementsService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.announcementsService.findOne(id);
+  createAnnouncements(@Body() { authorId, ...createAnnouncementsData }: CreateAnnouncementsDto) {
+    return this.announcementsService.create(authorId, createAnnouncementsData);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateAnnouncementDto: Prisma.announcementsUpdateInput) {
-    return this.announcementsService.update(id, updateAnnouncementDto);
-  }
-
+    updateAnnouncements(
+      @Param('id') id:string,
+      @Body() updateAnnouncementsDto: UpdateAnnouncementsDto
+    ){
+      return this.announcementsService.update(id, updateAnnouncementsDto)
+    }
+  @Get()
+  findAll() {
+    return this.announcementsService.findAll();
+  } 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.announcementsService.remove(id);
+  deleteAnnouncements(@Param('id') id:string){
+    return this.announcementsService.delete(id)
+  }
+  @Get('author/:authorId')
+  findAnnouncementsByAuthor(@Param('authorId') authorId: string) {
+    return this.announcementsService.findByAuthor(authorId);
   }
 }
