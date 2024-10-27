@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import axios from 'axios';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,22 +10,37 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogFooter, D
 
 const AnnouncementCarousel = () => {
     const [title, setTitle] = useState('');
-    const [body, setBody] = useState('');
+    const [content, setContent] = useState('');
     const [announcements, setAnnouncements] = useState([
         {
             title: "Gym Open Hours",
-            body: "Monday - Friday: 8AM - 7PM\nSaturday: 9AM - 11PM\nSunday: 8AM - 7PM"
+            content: "Monday - Friday: 8AM - 7PM\nSaturday: 9AM - 11PM\nSunday: 8AM - 7PM"
         }
     ]);
     const [date, setDate] = useState<Date | undefined>(new Date());
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        const newAnnouncement = { title, body };
-        setAnnouncements([...announcements, newAnnouncement]);
-        console.log('Submitted:', newAnnouncement);
-        setTitle('');
-        setBody('');
+        const newAnnouncement = { 
+            title, 
+            content, 
+            authorId: 'f90a8940-190b-4930-9967-be0840c2e1d7'
+        };
+
+        try {
+            // Send POST request to the database
+            const response = await axios.post('http://localhost:3001/announcements', newAnnouncement);
+
+            // Update local state with the response data
+            setAnnouncements([...announcements, response.data]);
+            console.log('Submitted:', response.data);
+
+            // Clear the form fields
+            setTitle('');
+            setContent('');
+        } catch (error) {
+            console.error('Error submitting announcement:', error);
+        }
     }
 
     return (
@@ -44,7 +60,7 @@ const AnnouncementCarousel = () => {
                                                 <CardTitle>{announcement.title}</CardTitle>
                                             </CardHeader>
                                             <CardContent className='text-center text-sm font-medium'>
-                                                <p style={{ whiteSpace: 'pre-line' }}>{announcement.body}</p>
+                                                <p style={{ whiteSpace: 'pre-line' }}>{announcement.content}</p>
                                             </CardContent>
                                         </Card>
                                     </CarouselItem>
@@ -78,11 +94,11 @@ const AnnouncementCarousel = () => {
                                             />
                                         </div>
                                         <div className="grid grid-cols-6 items-center gap-4">
-                                            <label htmlFor="body" className="text-right text-sm">Body</label>
+                                            <label htmlFor="content" className="text-right text-sm">Content</label>
                                             <Textarea
-                                                id="body"
-                                                value={body}
-                                                onChange={(e) => setBody(e.target.value)}
+                                                id="content"
+                                                value={content}
+                                                onChange={(e) => setContent(e.target.value)}
                                                 className="col-span-5"
                                             />
                                         </div>
