@@ -1,19 +1,17 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { CreateAnnouncementsDto } from './dto/create-announcements.dto';
 
 @Injectable()
 export class AnnouncementsService {
   constructor (private prismaService: PrismaService) {}
 
 
-  async create(authorId: string, data: Prisma.announcementsCreateWithoutAuthorInput) {
+  async create(createAnnouncementsDto: Prisma.announcementsCreateInput) {
     return this.prismaService.announcements.create({
-      data: {
-        ...data,
-        authorId
-
-    }});
+      data: createAnnouncementsDto
+    });
   }
   async update(id: string, updateAnnouncementsDto:Prisma.announcementsUpdateInput){
     const existingID = await this.prismaService.announcements.findUnique({
@@ -38,9 +36,9 @@ export class AnnouncementsService {
     })
   }
 
-  async findByAuthor(authorId: string){
-    return this.prismaService.announcements.findMany({
-      where: { authorId},
-    })
-  }
+  //async findByAuthor(authorId: string){
+   // return this.prismaService.announcements.findMany({
+    //  where: { authorId},
+    //})
+  //}
 }
