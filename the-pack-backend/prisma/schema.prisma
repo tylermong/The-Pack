@@ -52,7 +52,7 @@ model Coach{
 
   User User[]
 
-  //announcements   announcements[]
+  announcements   announcements[]
 
 }
 
@@ -61,8 +61,8 @@ model announcements{
   id String @id @default(uuid())
   title     String   @db.VarChar(255)
   content   String?
-  //author    Coach     @relation(fields: [authorId], references: [id])
- // authorId  String
+  author    Coach     @relation(fields: [authorId], references: [id])
+  authorId  String
   
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

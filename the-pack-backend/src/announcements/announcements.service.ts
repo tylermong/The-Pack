@@ -36,9 +36,9 @@ export class AnnouncementsService {
     })
   }
 
-  //async findByAuthor(authorId: string){
-   // return this.prismaService.announcements.findMany({
-    //  where: { authorId},
-    //})
-  //}
+  async findByAuthor(authorId: string){
+   return this.prismaService.announcements.findMany({
+     where: { authorId},
+    })
+  }
 }
