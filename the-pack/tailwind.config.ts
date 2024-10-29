@@ -11,6 +11,7 @@ const config: Config = {
 	'./src/pages/**/*.{ts,tsx}',
     './src/components/**/*.{ts,tsx}',
     './src/app/**/*.{ts,tsx}',
+	"./node_modules/mina-scheduler/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
   	extend: {
