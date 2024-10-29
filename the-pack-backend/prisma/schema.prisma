@@ -33,7 +33,7 @@ model User {
  // userClassrooms userClassrooms[]
 
   // is a foreign key for nutrition tracker
-//  nutritionTracker nutritionTracker[]
+ nutritionTracker nutritionTracker[]
 }
 
 model Coach{
@@ -52,7 +52,7 @@ model Coach{
 
   User User[]
 
-  //announcements   announcements[]
+  announcements   announcements[]
 
 }
 
@@ -61,13 +61,35 @@ model announcements{
   id String @id @default(uuid())
   title     String   @db.VarChar(255)
   content   String?
-  //author    Coach     @relation(fields: [authorId], references: [id])
- // authorId  String
+  author    Coach     @relation(fields: [authorId], references: [id])
+  authorId  String
   
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
+model nutritionTracker {
+  id String @id @default(uuid())
+  category String
+
+  categoryTracker categoryTracker[]
+
+  userTracker User  @relation(fields: [userId], references: [id])
+  userId String
+}
+
+model categoryTracker {
+  id String @id @default(uuid())
+
+  calories Int
+  fat Int 
+  carbs Int 
+  protein Int
+  water Int
+
+  nutritionTracker nutritionTracker @relation(fields: [nutritionTrackerID], references: [id])
+  nutritionTrackerID String
+}
 
 
 
