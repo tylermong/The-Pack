@@ -8,4 +8,5 @@ import { PrismaModule } from 'src/prisma/prisma.module';
   controllers: [CoachController],
   providers: [CoachService],
 })
+
 export class CoachModule {}

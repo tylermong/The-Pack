@@ -6,7 +6,6 @@ import { PrismaService } from 'src/prisma/prisma.service';
 export class AnnouncementsService {
   constructor (private prismaService: PrismaService) {}
 
-
   async create(authorId: string, data: Prisma.announcementsCreateWithoutAuthorInput) {
     return this.prismaService.announcements.create({
       data: {
@@ -15,10 +14,12 @@ export class AnnouncementsService {
 
     }});
   }
+
   async update(id: string, updateAnnouncementsDto:Prisma.announcementsUpdateInput){
     const existingID = await this.prismaService.announcements.findUnique({
       where: {id},
     });
+    
     if(!existingID){
       throw new Error('Announcement with ID not found')
     }

@@ -19,14 +19,17 @@ export class AnnouncementsController {
     ){
       return this.announcementsService.update(id, updateAnnouncementsDto)
     }
+  
   @Get()
   findAll() {
     return this.announcementsService.findAll();
   } 
+
   @Delete(':id')
   deleteAnnouncements(@Param('id') id:string){
     return this.announcementsService.delete(id)
   }
+  
   @Get('author/:authorId')
   findAnnouncementsByAuthor(@Param('authorId') authorId: string) {
     return this.announcementsService.findByAuthor(authorId);
