@@ -7,7 +7,7 @@
 
 ## 🚧 Current Status: In Development
 
-## 📋 Features (Planned)
+## 📋 Features
 - **🏋️ Prebuilt Workout Routines**  
 Curated plans designed for all fitness levels, ensuring both beginners and advanced users have the guidance they need.
 

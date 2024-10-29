@@ -8,8 +8,8 @@ export class AnnouncementsController {
   constructor(private readonly announcementsService: AnnouncementsService) {}
 
   @Post()
-  createAnnouncements(@Body() { authorId, ...createAnnouncementsData }: CreateAnnouncementsDto) {
-    return this.announcementsService.create(authorId, createAnnouncementsData);
+  createAnnouncements(@Body() createAnnouncementsData : CreateAnnouncementsDto) {
+    return this.announcementsService.create(createAnnouncementsData);
   }
 
   @Patch(':id')
@@ -29,7 +29,7 @@ export class AnnouncementsController {
   deleteAnnouncements(@Param('id') id:string){
     return this.announcementsService.delete(id)
   }
-  
+
   @Get('author/:authorId')
   findAnnouncementsByAuthor(@Param('authorId') authorId: string) {
     return this.announcementsService.findByAuthor(authorId);

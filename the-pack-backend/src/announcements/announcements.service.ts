@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { CreateAnnouncementsDto } from './dto/create-announcements.dto';
 
 @Injectable()
 export class AnnouncementsService {
@@ -8,11 +9,8 @@ export class AnnouncementsService {
 
   async create(authorId: string, data: Prisma.announcementsCreateWithoutAuthorInput) {
     return this.prismaService.announcements.create({
-      data: {
-        ...data,
-        authorId
-
-    }});
+      data: createAnnouncementsDto
+    });
   }
 
   async update(id: string, updateAnnouncementsDto:Prisma.announcementsUpdateInput){
@@ -39,9 +37,9 @@ export class AnnouncementsService {
     })
   }
 
-  async findByAuthor(authorId: string){
-    return this.prismaService.announcements.findMany({
-      where: { authorId},
-    })
-  }
+  //async findByAuthor(authorId: string){
+   // return this.prismaService.announcements.findMany({
+    //  where: { authorId},
+    //})
+  //}
 }
