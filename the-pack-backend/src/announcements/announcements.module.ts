@@ -7,4 +7,5 @@ import { PrismaService } from 'src/prisma/prisma.service';
   controllers: [AnnouncementsController],
   providers: [AnnouncementsService, PrismaService],
 })
+
 export class AnnouncementsModule {}

@@ -52,12 +52,10 @@ model Coach{
 
   User User[]
 
-  //announcements   announcements[]
-
+  announcements   announcements[]
 }
 
 model announcements{
-  
   id String @id @default(uuid())
   title     String   @db.VarChar(255)
   content   String?
@@ -68,14 +66,8 @@ model announcements{
   updatedAt DateTime @updatedAt
 }
 
-
-
-
 enum Role {
   CLIENT
   COACH
   ADMIN
 }
-
-
-

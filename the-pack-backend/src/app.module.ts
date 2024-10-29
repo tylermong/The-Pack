@@ -11,4 +11,5 @@ import { AnnouncementsModule } from './announcements/announcements.module';
   controllers: [AppController],
   providers: [AppService],
 })
+
 export class AppModule {}

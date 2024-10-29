@@ -36,7 +36,6 @@ export class CoachService {
       },
       data: updateCoachDto,
     })
-
   }
 
   async remove(id: string) {

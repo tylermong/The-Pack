@@ -7,16 +7,17 @@ import { CreateAnnouncementsDto } from './dto/create-announcements.dto';
 export class AnnouncementsService {
   constructor (private prismaService: PrismaService) {}
 
-
-  async create(createAnnouncementsDto: Prisma.announcementsCreateInput) {
+  async create(authorId: string, data: Prisma.announcementsCreateWithoutAuthorInput) {
     return this.prismaService.announcements.create({
       data: createAnnouncementsDto
     });
   }
+
   async update(id: string, updateAnnouncementsDto:Prisma.announcementsUpdateInput){
     const existingID = await this.prismaService.announcements.findUnique({
       where: {id},
     });
+    
     if(!existingID){
       throw new Error('Announcement with ID not found')
     }

@@ -11,8 +11,7 @@ export class CreateAnnouncementsDto {
     @IsString()
     content?: string | null
 
-    //@IsNotEmpty()
-    //@IsString()
-    //authorId: string 
-
+    @IsNotEmpty()
+    @IsString()
+    authorId: string
 }

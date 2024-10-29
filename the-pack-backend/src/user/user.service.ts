@@ -36,7 +36,6 @@ export class UserService {
       },
       data: updateUserDto,
     })
-
   }
 
   async remove(id: string) {
