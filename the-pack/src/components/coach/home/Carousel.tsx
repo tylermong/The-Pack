@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -18,6 +18,18 @@ const AnnouncementCarousel = () => {
         }
     ]);
     const [date, setDate] = useState<Date | undefined>(new Date());
+
+    useEffect(() => {
+        const currentAnnouncements = async () => {
+            try{
+                const response = await axios.get('http://localhost:3001/announcements');
+                setAnnouncements(response.data);
+            }catch(error){
+                console.error("Error on Fetching Announcements:", error)
+            }
+        };
+        currentAnnouncements();
+    }, []);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -104,7 +116,7 @@ const AnnouncementCarousel = () => {
                                         </div>
                                     </div>
                                     <DialogFooter>
-                                        <Button type="submit" className="bg-secondary text-primary">Create Announcement</Button>
+                                        <Button type="submit" className="bg-secondary text-primary hover:bg-gray-300">Create Announcement</Button>
                                     </DialogFooter>
                                 </form>
                             </DialogContent>
