@@ -32,7 +32,7 @@ model User {
   appointment scheduling[]
   
   // is a foreign key for userClassrooms
-  classJoined classes[]
+  classJoined userClasses[]
 
   // is a foreign key for nutrition tracker
 //  nutritionTracker nutritionTracker[]
@@ -72,13 +72,23 @@ model announcements{
 model classes{
   id String @id @default(uuid())
   name String
+  description String?
   creator Coach @relation(fields: [creatorId], references: [id])
   creatorId String
-  clientsInClass User @relation(fields: [clientId], references: [id])
-  clientId String
+  currentlyEnrolled Int?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  userInClasses userClasses[]
+}
+
+model userClasses{
+  id String @id @default(uuid())
+  class classes @relation(fields: [classId], references: [id])
+  classId String
+  clientsInClass User @relation(fields: [clientId], references: [id])
+  clientId String
 }
 
 model scheduling{
