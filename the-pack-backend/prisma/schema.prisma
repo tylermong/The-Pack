@@ -28,9 +28,11 @@ model User {
   //The users chosen coach
   usersCoach Coach? @relation(fields: [usersCoachid], references: [id])
   usersCoachid String?
+
+  appointment scheduling[]
   
   // is a foreign key for userClassrooms
- // userClassrooms userClassrooms[]
+  classJoined classes[]
 
   // is a foreign key for nutrition tracker
 //  nutritionTracker nutritionTracker[]
@@ -48,11 +50,12 @@ model Coach{
   updatedAt DateTime  @updatedAt
   
   //Foreign keys for these classes
-  //coachesClasses CoachesClassroom[] 
+  coachesClasses classes[]
 
   User User[]
 
   announcements   announcements[]
+  appointmentHolder scheduling[]
 }
 
 model announcements{
@@ -66,6 +69,27 @@ model announcements{
   updatedAt DateTime @updatedAt
 }
 
+model classes{
+  id String @id @default(uuid())
+  name String
+  creator Coach @relation(fields: [creatorId], references: [id])
+  creatorId String
+  clientsInClass User @relation(fields: [clientId], references: [id])
+  clientId String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model scheduling{
+  id String @id @default(uuid())
+  timeSlot Int
+  client User @relation(fields: [clientId], references: [id])
+  clientId String
+  appointmentHolder Coach @relation(fields: [coachId], references: [id])
+  coachId String
+
+}
 enum Role {
   CLIENT
   COACH
