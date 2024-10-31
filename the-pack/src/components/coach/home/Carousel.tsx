@@ -5,7 +5,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Calendar } from "@/components/ui/calendar";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogFooter, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 const AnnouncementCarousel = () => {
@@ -17,7 +16,6 @@ const AnnouncementCarousel = () => {
             content: "Monday - Friday: 8AM - 7PM\nSaturday: 9AM - 11PM\nSunday: 8AM - 7PM"
         }
     ]);
-    const [date, setDate] = useState<Date | undefined>(new Date());
 
     useEffect(() => {
         const currentAnnouncements = async () => {
@@ -57,12 +55,12 @@ const AnnouncementCarousel = () => {
 
     return (
         <div>
-            <div className="flex justify-center md:h-screen md:w-full pt-20 space-x-80">
-                <div className="Announcements">
+            <div className="flex flex-col justify-center md:max-h-screen md:w-full pt-1 space-x-80">
+                <div className='mb-28'>
                     <div className="mb-6">
                         <h3 className="text-white md:text-3xl text-2xl font-extrabold text-center max-md:text-center">ANNOUNCEMENTS</h3>
                     </div>
-                    <div className='Carousel'>
+                    <div className='flex justify-center'>
                         <Carousel orientation='horizontal' className='max-w-lg border-solid border-gray-5'>
                             <CarouselContent>
                                 {announcements.map((announcement, index) => (
@@ -121,19 +119,6 @@ const AnnouncementCarousel = () => {
                                 </form>
                             </DialogContent>
                         </Dialog>
-                    </div>
-                </div>
-                <div className="Scheduling">
-                    <div className="mb-6">
-                        <h3 className="text-white md:text-3xl text-2xl font-extrabold text-center max-md:text-center">SCHEDULING</h3>
-                    </div>
-                    <div className='calendar'>
-                        <Calendar
-                            mode="single"
-                            selected={date}
-                            onSelect={setDate}
-                            className="rounded-md border"
-                        />
                     </div>
                 </div>
             </div>

@@ -6,6 +6,12 @@ import {useRouter} from "next/navigation";
 const CoachLoginForm = () =>{
     const router = useRouter()
 
+    {/*ADD A WAY TO VERiFY IF CREDENTIALS IN THE CURRENT DATABASE */}
+
+
+
+
+
     return(
         <div>
             <div className="font-[sans-serif] bg-black md:h-screen">
