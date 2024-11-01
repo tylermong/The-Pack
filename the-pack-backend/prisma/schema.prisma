@@ -89,6 +89,7 @@ model userClasses{
   classId String
   clientsInClass User @relation(fields: [clientId], references: [id])
   clientId String
+  @@unique([clientId, classId]) //Composite unique constraint 
 }
 
 model scheduling{

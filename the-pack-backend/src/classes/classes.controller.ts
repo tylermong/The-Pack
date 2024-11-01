@@ -4,4 +4,11 @@ import { Prisma } from '@prisma/client';
 
 
 @Controller('classes')
-export class ClassesController {}
+export class ClassesController {
+    constructor(private readonly classesService: classesService) {}
+
+    @Post('join')
+    async joinClass(@Body('userId') userId: string, @Body('classId') classId: string): Promise<string> {
+    return this.classesService.joinClass(userId, classId);
+    }
+}
