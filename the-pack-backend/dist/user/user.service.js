@@ -12,13 +12,17 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.UserService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../prisma/prisma.service");
+const bcrypt_1 = require("bcrypt");
 let UserService = class UserService {
     constructor(prismaSerivce) {
         this.prismaSerivce = prismaSerivce;
     }
     async create(createUserDto) {
         return this.prismaSerivce.user.create({
-            data: createUserDto
+            data: {
+                ...createUserDto,
+                password: await (0, bcrypt_1.hash)(createUserDto.password, 10)
+            }
         });
     }
     async findAll(role) {
