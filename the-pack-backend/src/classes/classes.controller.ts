@@ -22,11 +22,6 @@ export class ClassesController {
         return this.classesService.getClassById(id);
     }
 
-    @Post('join')
-    async joinClass(@Body('userId') userId: string, @Body('classId') classId: string): Promise<string> {
-    return this.classesService.joinClass(userId, classId);
-    }
-
     @Delete(':id')
     async delete(@Param('id') classId: string) {
         return this.classesService.deleteClass(classId);
