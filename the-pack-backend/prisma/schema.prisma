@@ -94,7 +94,7 @@ model userClasses{
 
 model scheduling{
   id String @id @default(uuid())
-  timeSlot Int
+  timeSlot String
   client User @relation(fields: [clientId], references: [id])
   clientId String
   appointmentHolder Coach @relation(fields: [coachId], references: [id])
