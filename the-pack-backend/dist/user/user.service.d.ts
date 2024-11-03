@@ -58,4 +58,15 @@ export declare class UserService {
         updatedAt: Date;
         usersCoachid: string | null;
     }>;
+    findByEmail(email: string): Promise<{
+        id: string;
+        name: string;
+        email: string;
+        password: string;
+        phoneNum: number | null;
+        role: import(".prisma/client").$Enums.Role;
+        createdAt: Date;
+        updatedAt: Date;
+        usersCoachid: string | null;
+    }>;
 }

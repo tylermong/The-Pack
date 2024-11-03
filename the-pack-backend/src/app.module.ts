@@ -10,9 +10,10 @@ import { PrismaService } from './prisma/prisma.service';
 import { ClassesModule } from './classes/classes.module';
 import { userClassesModule } from './userClasses/userClasses.module';
 import { schedulingModule } from './scheduling/scheduling.module';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
-  imports: [PrismaModule, UserModule, CoachModule, 
+  imports: [ConfigModule.forRoot() ,PrismaModule, UserModule, CoachModule, 
     AnnouncementsModule, ClassesModule, userClassesModule, schedulingModule, AuthModule],
   controllers: [AppController],
   providers: [AppService, PrismaService],

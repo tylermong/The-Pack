@@ -37,7 +37,7 @@ let UserService = class UserService {
     async findOne(id) {
         return this.prismaSerivce.user.findUnique({
             where: {
-                id,
+                id: id,
             }
         });
     }
@@ -54,6 +54,13 @@ let UserService = class UserService {
             where: {
                 id,
             }
+        });
+    }
+    async findByEmail(email) {
+        return await this.prismaSerivce.user.findUnique({
+            where: {
+                email: email,
+            },
         });
     }
 };

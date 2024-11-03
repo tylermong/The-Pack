@@ -28,7 +28,7 @@ export class UserService {
   async findOne(id: string) {
     return this.prismaSerivce.user.findUnique({
       where:{
-        id,
+        id: id,
       }
     });
   }
@@ -57,4 +57,6 @@ export class UserService {
       },
     });
   }
+
+  
 }
