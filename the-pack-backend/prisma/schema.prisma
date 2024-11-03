@@ -36,6 +36,10 @@ model User {
 
   // is a foreign key for nutrition tracker
 //  nutritionTracker nutritionTracker[]
+
+  exerciseTracker exerciseTracker[]
+
+  nutritionTracker nutritionTracker[]
 }
 
 model Coach{
@@ -101,6 +105,53 @@ model scheduling{
   coachId String
 
 }
+model nutritionTracker{
+  id String @id @default(uuid()) 
+  title String
+  description String?
+  userNutrition User @relation(fields: [userId], references: [id])
+  userId String
+  timeSlot String?
+  calories Int? //Total calorie count
+  protein Float? //Amount of protein(grams)
+  carbohydrates Float? //Amount of carbohydrates (grams)
+  fats Float? //Amount of dates (gram)
+  notes String? //User's personal notes
+  mealType MealType? //Type of mean(breakfest, lunch, dinner, or snack)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model exerciseTracker{
+  id String @id @default(uuid())
+  title String
+  description String?
+  user User @relation(fields: [userId], references: [id])
+  userId String
+  date           DateTime      @default(now()) // Date of entry
+  timeSlot       String?       // Specific time when the exercise was performed
+  duration       Int?          // Duration of the exercise in minutes
+  intensity      ExerciseIntensity? // Intensity level of the workout
+  caloriesBurned Int?          // Estimated calories burned
+  exerciseType   String?       // Type of exercise (e.g., Running, Weightlifting)
+  notes          String?       // User's personal notes
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum ExerciseIntensity {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum MealType {
+  BREAKFAST
+  LUNCH
+  DINNER
+  SNACK
+}
+
 enum Role {
   CLIENT
   COACH
