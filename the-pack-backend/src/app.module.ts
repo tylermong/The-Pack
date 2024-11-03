@@ -10,10 +10,13 @@ import { PrismaService } from './prisma/prisma.service';
 import { ClassesModule } from './classes/classes.module';
 import { userClassesModule } from './userClasses/userClasses.module';
 import { schedulingModule } from './scheduling/scheduling.module';
+import { ExerciseTrackerModule } from './exerciseTracker/exerciseTracker.module';
+import { NutritionTrackerModule } from './nutritionTracker/nutritionTracker.module';
 
 @Module({
   imports: [PrismaModule, UserModule, CoachModule, 
-    AnnouncementsModule, ClassesModule, userClassesModule, schedulingModule, AuthModule],
+    AnnouncementsModule, ClassesModule, userClassesModule, schedulingModule, AuthModule, 
+    NutritionTrackerModule, ExerciseTrackerModule],
   controllers: [AppController],
   providers: [AppService, PrismaService],
 })
