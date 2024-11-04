@@ -3,12 +3,13 @@ import { LoginDto } from './dto/auth.dto';
 import { UserService } from 'src/user/user.service';
 import { compare } from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
+import { CoachService } from 'src/coach/coach.service';
 
 @Injectable()
 export class AuthService {
-    constructor(private userService: UserService, private jwtService: JwtService) {}
+    constructor(private userService: UserService, private coachService: CoachService, private jwtService: JwtService) {}
 
-    async login(data: LoginDto){
+    async userLogin(data: LoginDto){
 
         const user = await this.validateUser(data)
 
@@ -49,6 +50,46 @@ export class AuthService {
         throw new UnauthorizedException();
     }
 
+    async coachLogin(data: LoginDto){
+
+        const coach = await this.validateCoach(data)
+
+        const payload = {
+
+            username: coach.email,
+            sub:{
+                name:coach.name,
+            }
+        }
+
+        return {
+            coach,
+            backendTokens:{
+                accessToken: await this.jwtService.signAsync(payload,{
+                    expiresIn: '1h',
+                    secret: process.env.jwtSecretKey,
+                }),
+
+                refreshToken: await this.jwtService.signAsync(payload,{
+                    expiresIn: '7d',
+                    secret: process.env.jwtRefreshTokenKey,
+                })
+            }
+        }
+
+    }
+
+    async validateCoach(data: LoginDto){
+
+        const coach = await this.coachService.findByEmail(data.username)
+
+        if (coach && (await compare(data.password, coach.password)) ){
+            const {password, ...result} = coach;
+            return result;
+        }
+
+        throw new UnauthorizedException();
+    }
 
 }
 
