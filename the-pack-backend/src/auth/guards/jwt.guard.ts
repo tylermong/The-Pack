@@ -25,11 +25,8 @@ export class JwtGuard implements CanActivate {
        
             request['user'] = payload;
 
-        } 
-      
-        catch {
-
-            throw new UnauthorizedException();
+        } catch {
+              throw new UnauthorizedException();
 
       }
   

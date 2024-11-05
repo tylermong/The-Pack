@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { hash } from 'bcrypt';
 
 @Injectable()
 export class CoachService {
@@ -8,7 +9,10 @@ export class CoachService {
 
   async create(createCoachDto: Prisma.CoachCreateInput ) {
     return this.prismaSerivce.coach.create({
-      data: createCoachDto
+      data:{ 
+        ...createCoachDto,
+        password: await hash(createCoachDto.password, 10)
+      }
     });
   }
 
@@ -43,6 +47,14 @@ export class CoachService {
       where:{
         id,
       }
+    });
+  }
+
+  async findByEmail(email: string){
+    return await this.prismaSerivce.coach.findUnique({
+      where: {
+        email: email,
+      },
     });
   }
 }
