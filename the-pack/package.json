@@ -27,6 +27,7 @@
     "clsx": "^2.1.1",
     "date-fns": "^3.6.0",
     "embla-carousel-react": "^8.3.0",
+    "firebase": "^11.0.1",
     "flowbite": "^2.5.2",
     "lucide-react": "^0.453.0",
     "mina-scheduler": "^1.0.4",
