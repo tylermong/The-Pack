@@ -49,17 +49,15 @@ model Coach{
   password String
   phoneNum  Int?       @unique
   role      Role      @default(COACH)
-  
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
-  
   //Foreign keys for these classes
   coachesClasses classes[]
-
   User User[]
-
   announcements   announcements[]
   appointmentHolder scheduling[]
+  nutritionTrackers nutritionTracker[] // Relation to nutrition trackers
+  exerciseTrackers  exerciseTracker[]  // Relation to exercise trackers
 }
 
 model announcements{
@@ -111,6 +109,8 @@ model nutritionTracker{
   description String?
   userNutrition User @relation(fields: [userId], references: [id])
   userId String
+  coach         Coach?            @relation(fields: [coachId], references: [id]) 
+  coachId       String?          
   timeSlot String?
   calories Int? //Total calorie count
   protein Float? //Amount of protein(grams)
@@ -128,6 +128,8 @@ model exerciseTracker{
   description String?
   user User @relation(fields: [userId], references: [id])
   userId String
+  coach       Coach?   @relation(fields: [coachId], references: [id]) 
+  coachId     String?  
   date           DateTime      @default(now()) // Date of entry
   timeSlot       String?       // Specific time when the exercise was performed
   duration       Int?          // Duration of the exercise in minutes
