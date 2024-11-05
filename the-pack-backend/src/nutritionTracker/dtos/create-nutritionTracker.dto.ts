@@ -1,4 +1,4 @@
-import {IsString, IsOptional, IsInt, IsEnum, IsUUID, IsDateString, IsNumber, Min, Max} from 'class-validator'
+import {IsString, IsOptional, IsInt, IsEnum, IsUUID, IsDateString, IsNumber, Min} from 'class-validator'
 import { MealType } from '@prisma/client'
 
 export class CreateNutritionTracker{
