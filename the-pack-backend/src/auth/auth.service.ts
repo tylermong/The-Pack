@@ -50,6 +50,30 @@ export class AuthService {
         throw new UnauthorizedException();
     }
 
+    async userRefreshToken(user:any){
+        const payload = {
+
+            username: user.username,
+            sub: user.name
+        };
+
+        return {
+
+            accessToken: await this.jwtService.signAsync(payload,{
+                expiresIn: '1h',
+                secret: process.env.jwtSecretKey,
+            }),
+
+            refreshToken: await this.jwtService.signAsync(payload,{
+                expiresIn: '7d',
+                secret: process.env.jwtRefreshTokenKey,
+            })
+
+        }
+
+    }
+
+    //this is where coach starts
     async coachLogin(data: LoginDto){
 
         const coach = await this.validateCoach(data)
@@ -89,6 +113,29 @@ export class AuthService {
         }
 
         throw new UnauthorizedException();
+    }
+
+    async coachRefreshToken(coach:any){
+        const payload = {
+
+            username: coach.username,
+            sub: coach.name
+        };
+
+        return {
+
+            accessToken: await this.jwtService.signAsync(payload,{
+                expiresIn: '1h',
+                secret: process.env.jwtSecretKey,
+            }),
+
+            refreshToken: await this.jwtService.signAsync(payload,{
+                expiresIn: '7d',
+                secret: process.env.jwtRefreshTokenKey,
+            })
+
+        }
+
     }
 
 }

@@ -1,9 +1,11 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Post, Request, UseGuards } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { UserService } from 'src/user/user.service';
 import { LoginDto } from './dto/auth.dto';
 import { AuthService } from './auth.service';
 import { CoachService } from 'src/coach/coach.service';
+import { RefreshJwtGaurd } from './guards/refresh.gaurd';
+import { request } from 'http';
     
 @Controller('auth')
 export class AuthController {
@@ -21,8 +23,15 @@ export class AuthController {
         return await this.authService.userLogin(data);
     }
 
+    @UseGuards(RefreshJwtGaurd)
+    @Post('userRefresh')
+    async userRefreshToken(@Request() req){
 
+        return await this.authService.userRefreshToken(req)
 
+    }
+
+    //this is where coach starts
     @Post('coachRegister')
     async coachRegister(@Body() createCoachDto: Prisma.CoachCreateInput){
           return this.coachService.create(createCoachDto)
@@ -31,6 +40,14 @@ export class AuthController {
     @Post('coachLogin')
     async coachLogin(@Body() data: LoginDto){
         return await this.authService.coachLogin(data);
+    }
+
+    @UseGuards(RefreshJwtGaurd)
+    @Post('coachRefresh')
+    async coachRefreshToken(@Request() req){
+
+        return await this.authService.coachRefreshToken(req)
+
     }
 
 }
