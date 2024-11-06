@@ -153,7 +153,7 @@ export default function NutritionTracker() {
       <CardContent>
         <div className="mb-6">
           <div className="flex justify-between mb-2">
-            <span>Calories</span>
+            <span className="text-sm font-semibold">Calories</span>
             <span className="text-sm">{totalCalories} / {dailyGoal}</span>
           </div>
           <Progress value={(totalCalories / dailyGoal) * 100} className="h-3" />
