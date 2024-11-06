@@ -47,10 +47,11 @@ const ClientRegisterForm = () =>{
             <div className="md:w-1/2 w-full p-4 bg-black-50 flex justify-center">
 
             <Image
-            src="/The Pack Logo.jpg"
+            src="/images/Logo1.jpg"
             width={500}
             height={500}
             draggable={false}
+            layout='responsive'
             alt="The Pack Logo"
             className="lg:max-w-[90%] w-full h-full object-contain block mx-auto"
             />
