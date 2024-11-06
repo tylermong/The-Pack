@@ -10,7 +10,7 @@ import { PrismaService } from './prisma/prisma.service';
 import { ClassesModule } from './classes/classes.module';
 import { userClassesModule } from './userClasses/userClasses.module';
 import { schedulingModule } from './scheduling/scheduling.module';
-import { ExerciseTrackerModule } from './exerciseTracker/exerciseTracker.module';
+import { ExerciseTrackerModule } from './userExerciseTracker/userExerciseTracker.module';
 import { NutritionTrackerModule } from './userNutritionTracker/userNutritionTracker.module';
 
 @Module({
