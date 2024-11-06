@@ -3,7 +3,7 @@ import { NutritionTrackerService } from './userNutritionTracker.service';
 import { Prisma } from '@prisma/client';
 import { CreateNutritionTracker } from './dtos/create-userNutritionTracker.dto';
 
-@Controller('nutritionTracker')
+@Controller('userNutritionTracker')
 export class NutritionTrackerController{
     constructor(private readonly nutritionTrackerService: NutritionTrackerService){}
     
