@@ -4,6 +4,7 @@ import { UserService } from 'src/user/user.service';
 import { compare } from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { CoachService } from 'src/coach/coach.service';
+import { Role } from '@prisma/client';
 
 @Injectable()
 export class AuthService {
@@ -18,6 +19,7 @@ export class AuthService {
             username: user.email,
             sub:{
                 name:user.name,
+                role:user.role
             }
         }
 
