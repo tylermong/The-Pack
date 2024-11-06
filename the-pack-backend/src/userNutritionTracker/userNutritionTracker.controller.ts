@@ -11,4 +11,9 @@ export class NutritionTrackerController{
     async createNutritionTracker(@Body() data:CreateNutritionTracker){
         return await this.nutritionTrackerService.createNutritionTracker(data)
     }
+
+    @Get('user/:userId')
+    async getUserNutritionData(@Param('userId') userId: string) {
+        return await this.nutritionTrackerService.getUserNutritionData(userId);
+    }
 }

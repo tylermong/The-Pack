@@ -8,7 +8,6 @@ export class NutritionTrackerService{
     constructor(private prisma: PrismaService){}
 
     async createNutritionTracker(data: CreateNutritionTracker){
-        
         const{userId, ...rest} = data;
         return await this.prisma.userNutritionTracker.create({
             data:{
@@ -19,4 +18,16 @@ export class NutritionTrackerService{
             }
         })
     }
+
+    async getUserNutritionData(userId: string){
+        return await this.prisma.userNutritionTracker.findMany({
+            where:{
+                userId: userId,
+            },
+            include: {
+                userNutrition: true,
+            }
+        })
+    }
+
 }
