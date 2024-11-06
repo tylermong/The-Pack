@@ -133,7 +133,7 @@ export default function NutritionTracker() {
                 <TableCell>{item.carbs}g</TableCell>
                 <TableCell>{item.fat}g</TableCell>
                 <TableCell>
-                  <Button variant="ghost" size="icon" onClick={() => handleRemoveItem(item.id, mealType)}>
+                  <Button variant="default" size="icon" onClick={() => handleRemoveItem(item.id, mealType)}>
                     <X className="h-4 w-4" />
                   </Button>
                 </TableCell>
