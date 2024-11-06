@@ -56,6 +56,13 @@ let UserService = class UserService {
             }
         });
     }
+    async findByEmail(email) {
+        return await this.prismaSerivce.user.findUnique({
+            where: {
+                email: email,
+            },
+        });
+    }
 };
 exports.UserService = UserService;
 exports.UserService = UserService = __decorate([

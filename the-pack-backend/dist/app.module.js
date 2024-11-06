@@ -19,13 +19,16 @@ const prisma_service_1 = require("./prisma/prisma.service");
 const classes_module_1 = require("./classes/classes.module");
 const userClasses_module_1 = require("./userClasses/userClasses.module");
 const scheduling_module_1 = require("./scheduling/scheduling.module");
+const exerciseTracker_module_1 = require("./exerciseTracker/exerciseTracker.module");
+const nutritionTracker_module_1 = require("./nutritionTracker/nutritionTracker.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
 exports.AppModule = AppModule = __decorate([
     (0, common_1.Module)({
         imports: [prisma_module_1.PrismaModule, user_module_1.UserModule, coach_module_1.CoachModule,
-            announcements_module_1.AnnouncementsModule, auth_module_1.AuthModule, classes_module_1.ClassesModule, userClasses_module_1.userClassesModule, scheduling_module_1.schedulingModule],
+            announcements_module_1.AnnouncementsModule, classes_module_1.ClassesModule, userClasses_module_1.userClassesModule, scheduling_module_1.schedulingModule, auth_module_1.AuthModule,
+            nutritionTracker_module_1.NutritionTrackerModule, exerciseTracker_module_1.ExerciseTrackerModule],
         controllers: [app_controller_1.AppController],
         providers: [app_service_1.AppService, prisma_service_1.PrismaService],
     })

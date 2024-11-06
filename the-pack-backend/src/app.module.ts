@@ -11,7 +11,7 @@ import { ClassesModule } from './classes/classes.module';
 import { userClassesModule } from './userClasses/userClasses.module';
 import { schedulingModule } from './scheduling/scheduling.module';
 import { ExerciseTrackerModule } from './exerciseTracker/exerciseTracker.module';
-import { NutritionTrackerModule } from './nutritionTracker/nutritionTracker.module';
+import { NutritionTrackerModule } from './userNutritionTracker/userNutritionTracker.module';
 
 @Module({
   imports: [PrismaModule, UserModule, CoachModule, 
