@@ -38,4 +38,10 @@ export class NutritionTrackerService{
             }
         })
     }
+
+    async deleteNutritionTracker(nutritionId: string){
+        return await this.prisma.userNutritionTracker.delete({
+            where: {id: nutritionId}
+        })
+    }
 }

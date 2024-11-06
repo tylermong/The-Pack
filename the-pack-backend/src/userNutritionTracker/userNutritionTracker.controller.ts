@@ -24,4 +24,9 @@ export class NutritionTrackerController{
       ){
         return await this.nutritionTrackerService.modifyNutritionTracker(nutritionId, updateNutritionDto);
       }
+      
+    @Delete(':nutritionId')
+    async deleteUserNutrition(@Param('nutritionId') nutritionId: string){
+        return await this.nutritionTrackerService.deleteNutritionTracker(nutritionId)
+    }
 }
