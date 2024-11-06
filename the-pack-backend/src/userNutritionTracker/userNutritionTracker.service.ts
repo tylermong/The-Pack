@@ -2,6 +2,7 @@ import { Injectable } from "@nestjs/common";
 import { Prisma } from "@prisma/client";
 import { PrismaService } from "src/prisma/prisma.service";
 import { CreateNutritionTracker } from "./dtos/create-userNutritionTracker.dto";
+import { UpdateNutritionTrackerDto } from "./dtos/update-userNutritionTracker.dto";
 
 @Injectable()
 export class NutritionTrackerService{
@@ -29,5 +30,12 @@ export class NutritionTrackerService{
             }
         })
     }
-
+    async modifyNutritionTracker(nutritionId: string, data: UpdateNutritionTrackerDto){
+        return await this.prisma.userNutritionTracker.update({
+            where: {id: nutritionId},
+            data: {
+                ...data,
+            }
+        })
+    }
 }
