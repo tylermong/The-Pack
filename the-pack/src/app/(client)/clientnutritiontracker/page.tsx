@@ -5,6 +5,7 @@ import NutritionTrackerComponent from '@/components/client/nutritionTracker/nutr
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/coach/sidebar/app-sidebar"
 
+
 export default function NutritionTracker()
 {
     return(
