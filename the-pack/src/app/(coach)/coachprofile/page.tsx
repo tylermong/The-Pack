@@ -3,7 +3,7 @@
 import React from 'react';
 import ProfileComponent from '@/components/profile/Profile';
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
-import { AppSidebar } from "@/components/app-sidebar"
+import { AppSidebar } from "@/components/coach/sidebar/app-sidebar"
 
 export default function Profile()
 {

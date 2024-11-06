@@ -2,7 +2,7 @@
 
 import ChatroomComponent from "@/components/chatroom/chatroom";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
-import { AppSidebar } from "@/components/app-sidebar"
+import { AppSidebar } from "@/components/coach/sidebar/app-sidebar"
 import React from 'react';
 
 export default function Chatroom()
