@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { ChevronDown, ChevronUp, Plus, X } from 'lucide-react'
+import { ChevronDown, ChevronRight, Plus, X } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
@@ -105,11 +105,11 @@ export default function NutritionTracker() {
       <CollapsibleTrigger asChild>
         <div className="flex justify-between items-center cursor-pointer">
           <h3 className="text-lg font-semibold">{title}</h3>
-          {collapsedSections[mealType] ? (
-            <ChevronDown className="h-5 w-5" />
-          ) : (
-            <ChevronUp className="h-5 w-5" />
-          )}
+          <ChevronRight
+            className={`h-5 w-5 transform transition-transform duration-150 ${
+              collapsedSections[mealType] ? '' : 'rotate-90'
+            }`}
+          />
         </div>
       </CollapsibleTrigger>
       <CollapsibleContent className="mt-4">
