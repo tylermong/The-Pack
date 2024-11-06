@@ -17,6 +17,8 @@ const common_1 = require("@nestjs/common");
 const user_service_1 = require("./user.service");
 const client_1 = require("@prisma/client");
 const jwt_guard_1 = require("../auth/guards/jwt.guard");
+const roles_decorator_1 = require("../auth/decorators/roles.decorator");
+const roles_gaurd_1 = require("../auth/guards/roles.gaurd");
 let UserController = class UserController {
     constructor(userService) {
         this.userService = userService;
@@ -69,6 +71,9 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], UserController.prototype, "update", null);
 __decorate([
+    (0, roles_decorator_1.Roles)(client_1.Role.ADMIN),
+    (0, common_1.UseGuards)(roles_gaurd_1.RolesGaurd),
+    (0, common_1.UseGuards)(jwt_guard_1.JwtGuard),
     (0, common_1.Delete)(':id'),
     __param(0, (0, common_1.Param)('id')),
     __metadata("design:type", Function),
