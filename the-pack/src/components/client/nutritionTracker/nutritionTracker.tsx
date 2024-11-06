@@ -121,7 +121,7 @@ export default function NutritionTracker() {
               <TableHead className="text-[#B0B0B0]">Protein</TableHead>
               <TableHead className="text-[#B0B0B0]">Carbs</TableHead>
               <TableHead className="text-[#B0B0B0]">Fat</TableHead>
-              <TableHead></TableHead>
+              <TableHead className="text-[#B0B0B0] w-2"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -132,7 +132,7 @@ export default function NutritionTracker() {
                 <TableCell>{item.protein}g</TableCell>
                 <TableCell>{item.carbs}g</TableCell>
                 <TableCell>{item.fat}g</TableCell>
-                <TableCell>
+                <TableCell className="w-fit">
                   <Button variant="default" size="icon" onClick={() => handleRemoveItem(item.id, mealType)}>
                     <X className="h-4 w-4" />
                   </Button>
