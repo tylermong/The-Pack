@@ -57,6 +57,11 @@ export class UserService {
       },
     });
   }
-
+  async assignCoachToClient(clientId: string, coachId: string) {
+    return await this.prismaSerivce.user.update({
+      where: { id: clientId },
+      data: { coach: { connect: { id: coachId } } },
+    });
+  }
   
 }
