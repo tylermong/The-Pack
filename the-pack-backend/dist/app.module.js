@@ -20,13 +20,15 @@ const classes_module_1 = require("./classes/classes.module");
 const userClasses_module_1 = require("./userClasses/userClasses.module");
 const scheduling_module_1 = require("./scheduling/scheduling.module");
 const config_1 = require("@nestjs/config");
+const chatroom_module_1 = require("./chatroom/chatroom.module");
+const messages_module_1 = require("./messages/messages.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
 exports.AppModule = AppModule = __decorate([
     (0, common_1.Module)({
         imports: [config_1.ConfigModule.forRoot({ isGlobal: true }), prisma_module_1.PrismaModule, user_module_1.UserModule, coach_module_1.CoachModule,
-            announcements_module_1.AnnouncementsModule, classes_module_1.ClassesModule, userClasses_module_1.userClassesModule, scheduling_module_1.schedulingModule, auth_module_1.AuthModule],
+            announcements_module_1.AnnouncementsModule, classes_module_1.ClassesModule, userClasses_module_1.userClassesModule, scheduling_module_1.schedulingModule, auth_module_1.AuthModule, chatroom_module_1.ChatroomModule, messages_module_1.MessagesModule],
         controllers: [app_controller_1.AppController],
         providers: [app_service_1.AppService, prisma_service_1.PrismaService],
     })
