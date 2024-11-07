@@ -62,6 +62,7 @@ export class UserService {
       where: { id: clientId },
       data: { coach: { connect: { id: coachId } } },
     });
+  }
 
   
 }
