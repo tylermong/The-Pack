@@ -63,37 +63,5 @@ export class UserService {
       data: { coach: { connect: { id: coachId } } },
     });
   }
-  async getClientNutritionEntries(clientId: string, coachId: string) {
-    // Verify the client-coach relationship
-    const client = await this.prismaSerivce.user.findUnique({
-      where: { id: clientId },
-      select: { coachId: true },
-    });
-  
-    if (client?.coachId !== coachId) {
-      throw new Error("Unauthorized access: You are not the assigned coach for this client.");
-    }
-  
-    // Retrieve client's nutrition entries
-    return await this.prismaSerivce.nutritionTracker.findMany({
-      where: { userId: clientId },
-    });
-  }
-  async getClientExerciseEntries(clientId: string, coachId: string) {
-    // Verify the client-coach relationship
-    const client = await this.prismaSerivce.user.findUnique({
-      where: { id: clientId },
-      select: { coachId: true },
-    });
-  
-    if (client?.coachId !== coachId) {
-      throw new Error("Unauthorized access: You are not the assigned coach for this client.");
-    }
-  
-    // Retrieve client's nutrition entries
-    return await this.prismaSerivce.ExerciseTracker.findMany({
-      where: { userId: clientId },
-    });
-  }
   
 }
