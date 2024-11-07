@@ -3,10 +3,9 @@
 import React from 'react';
 import Carousel from "@/components/coach/home/Carousel";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
-import { AppSidebar } from "@/components/app-sidebar"
+import { AppSidebar } from "@/components/client/sidebar/app-sidebar"
 import Scheduler from '@/components/coach/home/Scheduler';
 import { Separator } from "@/components/ui/separator"
-import AppointmentList from '@/components/coach/home/AppointmentList';
 
 export default function Home()
 {
@@ -20,10 +19,6 @@ export default function Home()
                     <Separator/>
                     <div className='pt-24'>
                         <Scheduler/>
-                    </div>
-                    <Separator/>
-                    <div className='pt-24'>
-                        <AppointmentList/>
                     </div>
                 </div>
             </main>

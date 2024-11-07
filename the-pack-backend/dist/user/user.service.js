@@ -37,7 +37,7 @@ let UserService = class UserService {
     async findOne(id) {
         return this.prismaSerivce.user.findUnique({
             where: {
-                id,
+                id: id,
             }
         });
     }

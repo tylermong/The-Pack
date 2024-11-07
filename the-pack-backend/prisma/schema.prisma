@@ -25,58 +25,41 @@ model User {
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   
-  //The users chosen coach
-  usersCoach Coach? @relation(fields: [usersCoachid], references: [id])
-  usersCoachid String?
+  //Assign a personal coach to clients
+  coach       User?      @relation("ClientCoach", fields: [coachId], references: [id])
+  coachId     String?
 
-  appointment scheduling[]
-  
-  // is a foreign key for userClassrooms
+  //Clients associated with Coach
+  clients User[]  @relation("ClientCoach")
+
+  //Relationship for scheduling and classes
+  announcements   announcements[]
+  appointmentForClient scheduling[] @relation("clientAppointments")
+  appointmentForCoach scheduling[]  @relation("coachAppointments")
+  createdClass Class[]
   classJoined userClasses[]
 
-  // is a foreign key for nutrition tracker
-//  nutritionTracker nutritionTracker[]
-
-  userExerciseTracker userExerciseTracker[]
-
-  userNutritionTracker userNutritionTracker[]
-}
-
-model Coach{
-  id        String    @id @default(uuid())
-  name      String    
-  email     String    @unique
-  password String
-  phoneNum  Int?       @unique
-  role      Role      @default(COACH)
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  //Foreign keys for these classes
-  coachesClasses classes[]
-  User User[]
-  announcements   announcements[]
-  appointmentHolder scheduling[]
-  
-  CoachExerciseTracker CoachExerciseTracker[]
-  CoachNutritionTracker CoachNutritionTracker[]
+  //The nutrition and exercise trackers for user
+  nutritionEntries     NutritionTracker[]
+  exerciseEntries      ExerciseTracker[]
 }
 
 model announcements{
   id String @id @default(uuid())
   title     String   @db.VarChar(255)
   content   String?
-  author    Coach     @relation(fields: [authorId], references: [id])
+  author    User     @relation(fields: [authorId], references: [id])
   authorId  String
   
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
-model classes{
+model Class{
   id String @id @default(uuid())
   name String
   description String?
-  creator Coach @relation(fields: [creatorId], references: [id])
+  creator User @relation(fields: [creatorId], references: [id])
   creatorId String
   currentlyEnrolled Int?
 
@@ -88,7 +71,7 @@ model classes{
 
 model userClasses{
   id String @id @default(uuid())
-  class classes @relation(fields: [classId], references: [id])
+  class Class @relation(fields: [classId], references: [id])
   classId String
   clientsInClass User @relation(fields: [clientId], references: [id])
   clientId String
@@ -98,69 +81,46 @@ model userClasses{
 model scheduling{
   id String @id @default(uuid())
   timeSlot String
-  client User @relation(fields: [clientId], references: [id])
+  client User @relation(fields: [clientId], references: [id], name: "clientAppointments")
   clientId String
-  appointmentHolder Coach @relation(fields: [coachId], references: [id])
+  appointmentHolder User @relation(fields: [coachId], references: [id], name: "coachAppointments")
   coachId String
 
 }
-model userNutritionTracker{
-  id String @id @default(uuid()) 
-  title String
-  description String?
-  userNutrition User @relation(fields: [userId], references: [id])
-  userId String     
-  timeSlot String?
-  calories Int? //Total calorie count
-  protein Float? //Amount of protein(grams)
-  carbohydrates Float? //Amount of carbohydrates (grams)
-  fats Float? //Amount of dates (gram)
-  notes String? //User's personal notes
-  mealType MealType? //Type of mean(breakfest, lunch, dinner, or snack)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
 
-  CoachNutritionTracker CoachNutritionTracker[]
+model NutritionTracker {
+  id              String     @id @default(uuid())
+  title           String
+  description     String?
+  user            User       @relation(fields: [userId], references: [id])
+  userId          String
+  timeSlot        String?
+  calories        Int?       // Total calorie count
+  protein         Float?     // Amount of protein (grams)
+  carbohydrates   Float?     // Amount of carbohydrates (grams)
+  fats            Float?     // Amount of fats (grams)
+  notes           String?    // User's personal notes
+  mealType        MealType?  // Type of meal (breakfast, lunch, dinner, snack)
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
 }
 
-model userExerciseTracker{
-  id String @id @default(uuid())
-  title String
-  description String?
-  user User @relation(fields: [userId], references: [id])
-  userId String
-  date           DateTime      @default(now()) // Date of entry
-  timeSlot       String?       // Specific time when the exercise was performed
-  duration       Int?          // Duration of the exercise in minutes
-  intensity      ExerciseIntensity? // Intensity level of the workout
-  caloriesBurned Int?          // Estimated calories burned
-  exerciseType   String?       // Type of exercise (e.g., Running, Weightlifting)
-  notes          String?       // User's personal notes
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  CoachExerciseTracker CoachExerciseTracker[]
+model ExerciseTracker {
+  id              String           @id @default(uuid())
+  title           String
+  description     String?
+  user            User             @relation(fields: [userId], references: [id])
+  userId          String
+  date            DateTime         @default(now()) // Date of entry
+  timeSlot        String?          // Specific time when the exercise was performed
+  duration        Int?             // Duration of the exercise in minutes
+  intensity       ExerciseIntensity? // Intensity level of the workout
+  caloriesBurned  Int?             // Estimated calories burned
+  exerciseType    String?          // Type of exercise (e.g., Running, Weightlifting)
+  notes           String?          // User's personal notes
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
 }
-
-model CoachExerciseTracker {
-  id                 String           @id @default(uuid())
-  coachId            String
-  exerciseTrackerId String
-  coach              Coach            @relation(fields: [coachId], references: [id])
-  userExerciseTracker   userExerciseTracker  @relation(fields: [exerciseTrackerId], references: [id])
-  createdAt          DateTime         @default(now())
-  updatedAt          DateTime         @updatedAt
-}
-model CoachNutritionTracker {
-  id                String          @id @default(uuid())
-  coachId           String
-  nutritionTrackerId String
-  coach             Coach           @relation(fields: [coachId], references: [id])
-  userNutritionTracker  userNutritionTracker @relation(fields: [nutritionTrackerId], references: [id])
-  createdAt         DateTime        @default(now())
-  updatedAt         DateTime        @updatedAt
-}
-
 
 enum ExerciseIntensity {
   LOW

@@ -1,6 +1,8 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
 import { CoachService } from './coach.service';
-import { Prisma } from '@prisma/client';
+import { Prisma, Role } from '@prisma/client';
+import { JwtGuard } from 'src/auth/guards/jwt.guard';
+import { Roles } from 'src/auth/decorators/roles.decorator';
 
 @Controller('coach')
 export class CoachController {
@@ -16,6 +18,7 @@ export class CoachController {
     return this.coachService.findAll();
   }
 
+  @UseGuards(JwtGuard)
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.coachService.findOne(id);
