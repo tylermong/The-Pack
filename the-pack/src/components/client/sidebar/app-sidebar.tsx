@@ -1,4 +1,4 @@
-import { Home, Dumbbell, MessageSquareMore, User } from "lucide-react"
+import { Home, Dumbbell, Apple, MessageSquareMore, User } from "lucide-react"
 
 import {
   Sidebar,
@@ -26,6 +26,11 @@ const items = [
   {
     title: "Nutrition Tracker",
     url: "/clientnutritiontracker",
+    icon: Apple,
+  },
+  {
+    title: "Chat Rooms",
+    url: "/clientchatroom",
     icon: MessageSquareMore,
   },
   {
