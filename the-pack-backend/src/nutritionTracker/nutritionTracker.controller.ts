@@ -1,5 +1,5 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-import { NutritionTrackerService } from './userNutritionTracker.service';
+import { NutritionTrackerService } from './nutritionTracker.service';
 import { Prisma } from '@prisma/client';
 import { CreateNutritionTracker } from './dtos/create-userNutritionTracker.dto';
 import { UpdateNutritionTrackerDto } from './dtos/update-userNutritionTracker.dto';
