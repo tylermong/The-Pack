@@ -21,6 +21,7 @@ import {
     Dialog,
     DialogContent,
     DialogTrigger,
+    DialogTitle,
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -34,6 +35,17 @@ import {
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+  } from "@/components/ui/table"
+
 
 //Format data of appointment
 const FormSchema = z.object({
@@ -49,7 +61,18 @@ const Scheduler = () => {
     //Used for current date of the monthly schedule
     const [date, setDate] = useState<Date | undefined>(new Date());
     const [appointmentDate, setAppointmentDate] = React.useState<Date | undefined>()
+
+    //Used for appointment making
     const [schedule, setSchedule] = useState([]);
+
+    //State handler for schedule viewing on EACH DAY ONLY
+    const [selectedDate, setSelectedDate] = useState(null);
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+    //Schedule viewer data (UNCOMMENT AFTER DB AND BACKEND API CALLS ARE IMPLEMENTED)
+    // const [events, setEvents] = useState([]);
+    // const [classes, setClasses] = useState([]);
+    // const [appointments, setAppointments] = useState([]);
 
     //User Input Calendar Format
     const { register, handleSubmit, formState: { errors }, reset, setValue } = useForm({
@@ -70,6 +93,8 @@ const Scheduler = () => {
         currentSchedule();
     }, []);
 
+
+    //Handler for making appointments
     const onSubmit = async (data) => {
         try {
 
@@ -92,6 +117,98 @@ const Scheduler = () => {
         }
     };
 
+    //Handler for checking day schedule (displays and update respective info)
+    const handleDayClick = async (date) => {
+        setSelectedDate(date);
+        setIsDialogOpen(true);
+      
+        try {
+          const formattedDate = date.toISOString().split('T')[0]; // Format date as YYYY-MM-DD
+          const response = await axios.get(`http://localhost:3001/schedule`, {
+            params: { date: formattedDate },
+          });
+          const { events, classes, appointments } = response.data;
+          setEvents(events);
+          setClasses(classes);
+          setAppointments(appointments);
+        } catch (error) {
+          console.error('Error fetching schedule data:', error);
+        }
+      };
+
+      
+//EXAMPLE DATA DELETE ONCE DONE
+const events = [
+    {
+      name: "EVENT001",
+      availability: "ALL",
+      time: "10:00AM",
+    },
+    {
+        name: "EVENT002",
+        availability: "ALL",
+        time: "1:00PM",
+    },
+    {
+        name: "EVENT003",
+        availability: "ALL",
+        time: "2:00PM",
+    },
+    {
+        name: "EVENT004",
+        availability: "ALL",
+        time: "3:00PM",
+    },
+    {
+        name: "EVENT005",
+        availability: "ALL",
+        time: "5:00PM",
+    },
+    {
+        name: "EVENT006",
+        availability: "ALL",
+        time: "8:00PM",
+    },
+    {
+        name: "EVENT007",
+        availability: "ALL",
+        time: "10:00PM",
+    },
+]
+
+
+//EXAMPLE DATA DELETE ONCE DONE
+const classes = [
+    {
+        name: "EVENT001",
+        coach: "Bob",
+        time: "10:00AM",
+    },
+    {
+        name: "EVENT002",
+        coach: "Alfred",
+        time: "1:00PM",
+    },
+    {
+        name: "EVENT003",
+        coach: "John",
+        time: "2:00PM",
+    },
+]
+
+//EXAMPLE DATA DELETE ONCE DONE
+const appointments = [
+    {
+        coach: "Danny",
+        type: "Inquiry",
+        time: "10:00AM",
+    },
+]
+
+
+
+
+
     return(
         <div className='main flex w-full flex-col items-center justify-center'>
             
@@ -106,12 +223,105 @@ const Scheduler = () => {
                         selected={date}
                         onSelect={setDate}
                         className="rounded-md border"
+                        onDayClick={(date) => handleDayClick(date)}
                     />
-
-
-                    {/*PROBABLY MAKE IT SO THAT WHEN A USER CLICKS ON THE DATE IT WOULD POP UP A NEW CARD AND GRAY OUT
-                    THE BACKGROUND TO SHOWCASE THE CURRENT SCHEDULES AND TIME FOR THAT DAY */}
                 </div>
+                
+                <Dialog open = {isDialogOpen} onOpenChange={setIsDialogOpen}>
+                    <DialogContent className="sm:max-w-md flex flex-col w-full h-auto bg-black">
+                        <DialogTitle>
+                            DAY SCHEDULE
+                        </DialogTitle>
+
+                        <Tabs defaultValue="events" className="w-auto h-auto pt-5">
+
+                            <TabsList className="flex flex-row bg-primary text-white border border-white">
+                                <TabsTrigger value="events" className='bg-primary w-full text-white hover:bg-gray-300'>Events</TabsTrigger>
+                                <TabsTrigger value="classes" className='bg-primary w-full text-white hover:bg-gray-300'>Classes</TabsTrigger>
+                                <TabsTrigger value="appointments" className='bg-primary w-full text-white hover:bg-gray-300'>Appointments</TabsTrigger>
+                            </TabsList>
+
+                            <TabsContent value = "events">
+                                <Card className='bg-primary text-white'>
+                                    <Table>
+                                        <TableHeader className='flex flex-row w-full'>
+                                            <TableRow className='w-full'>
+                                                <TableHead className='text-lg w-full'>Event Name</TableHead>
+                                                <TableHead className='text-lg w-full'>Availability</TableHead>
+                                                <TableHead className='text-lg w-full'>Time</TableHead>
+                                            </TableRow>
+                                        </TableHeader>
+
+                                        <ScrollArea className="h-auto w-full p-4">
+                                            <TableBody className='flex flex-col w-full h-auto'>
+                                                {events.map((event) => (
+                                                    <TableRow key={event.name} className='w-full'>
+                                                        <TableCell className="text-base w-full">{event.name}</TableCell>
+                                                        <TableCell className="text-base w-full">{event.availability}</TableCell>
+                                                        <TableCell className="text-base w-full">{event.time}</TableCell>
+                                                    </TableRow>
+                                                ))}
+                                            </TableBody>
+                                        </ScrollArea>
+                                    </Table>
+                                </Card>
+                            </TabsContent>
+
+                            <TabsContent value = "classes">
+                                <Card className='bg-primary text-white'>
+                                    <Table>
+                                        <TableHeader className='flex flex-row w-full'>
+                                            <TableRow className='w-full'>
+                                                <TableHead className='text-lg w-full'>Class Name</TableHead>
+                                                <TableHead className='text-lg w-full'>Coach</TableHead>
+                                                <TableHead className='text-lg w-full'>Time</TableHead>
+                                            </TableRow>
+                                        </TableHeader>
+
+                                        <ScrollArea className="h-auto w-full p-4">
+                                            <TableBody className='flex flex-col w-full h-auto'>
+                                                {classes.map((event) => (
+                                                    <TableRow key={event.name} className='w-full'>
+                                                        <TableCell className="text-base w-full">{event.name}</TableCell>
+                                                        <TableCell className="text-base w-full">{event.coach}</TableCell>
+                                                        <TableCell className="text-base w-full">{event.time}</TableCell>
+                                                    </TableRow>
+                                                ))}
+                                            </TableBody>
+                                        </ScrollArea>
+                                    </Table>
+                                </Card>
+                            </TabsContent>
+
+                            <TabsContent value = "appointments">
+                                <Card className='bg-primary text-white'>
+                                    <Table>
+                                        <TableHeader className='flex flex-row w-full'>
+                                            <TableRow className='w-full'>
+                                                <TableHead className='text-lg w-full'>Coach</TableHead>
+                                                <TableHead className='text-lg w-full'>Type</TableHead>
+                                                <TableHead className='text-lg w-full'>Time</TableHead>
+                                            </TableRow>
+                                        </TableHeader>
+
+                                        <ScrollArea className="h-auto w-full p-4">
+                                            <TableBody className='flex flex-col w-full h-auto'>
+                                                {appointments.map((event) => (
+                                                    <TableRow key={event.coach} className='w-full'>
+                                                        <TableCell className="text-base w-full">{event.coach}</TableCell>
+                                                        <TableCell className="text-base w-full">{event.type}</TableCell>
+                                                        <TableCell className="text-base w-full">{event.time}</TableCell>
+                                                    </TableRow>
+                                                ))}
+                                            </TableBody>
+                                        </ScrollArea>
+                                    </Table>
+                                </Card>
+                            </TabsContent>
+
+                        </Tabs>
+                    </DialogContent>
+                </Dialog>
             </div>
 
             <div className='AppointmentForm mb-20 mt-1'>
@@ -127,7 +337,6 @@ const Scheduler = () => {
                             </CardHeader>
 
                             <CardContent>
-
                                 <form onSubmit={handleSubmit(onSubmit)}>
                                         <div className="grid w-full items-center gap-4">
 
@@ -197,9 +406,7 @@ const Scheduler = () => {
                             <CardFooter className="flex justify-between">
                                 <Button type = "submit" variant="outline">Submit</Button>
                             </CardFooter>
-
                         </Card>
-
                     </DialogContent>
                 </Dialog>
             </div>
