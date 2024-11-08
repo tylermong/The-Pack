@@ -11,4 +11,22 @@ export class ExerciseTrackerController{
     async createExercise(@Body() CreateExerciseTrackerDto: CreateExerciseTrackerDto){
         return await this.exerciseTrackerService.createUserExerciseEntry(CreateExerciseTrackerDto)
     }
+    @Get('user/:userId')
+    async getUserExerciseDataForUser(@Param('userId') userId: string){
+        return await this.exerciseTrackerService.getUserExerciseEntries(userId)
+    }
+    @Get('coach/:coachId/all')
+    async getAllExerciseDataForCoach(@Param('coachId') coachId: string){
+        return await this.exerciseTrackerService.getUserExerciseEntriesForCoach(coachId);
+    }
+
+    @Get('coach/:userId')
+    async getUserExerciseEntryForCoach(@Param('userId') userId: string){
+        return await this.exerciseTrackerService.getUserExerciseEntries(userId)
+    }
+
+    @Delete(':exerciseId')
+    async deleteUserExerciseEntry(@Param('exerciseId') exerciseId: string){
+        return await this.exerciseTrackerService.deleteUserExerciseEntry(exerciseId)
+    }
 }
