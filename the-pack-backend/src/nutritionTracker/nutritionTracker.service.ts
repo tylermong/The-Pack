@@ -10,28 +10,36 @@ export class NutritionTrackerService{
 
     async createNutritionTracker(data: CreateNutritionTracker){
         const{userId, ...rest} = data;
-        return await this.prisma.userNutritionTracker.create({
+        return await this.prisma.nutritionTracker.create({
             data:{
                 ...rest,
-                userNutrition:{
+                user:{
                     connect: {id: data.userId},
                 },
             }
         })
     }
 
+    async getAllNutritionDataForCoach(coachId: string){
+        return await this.prisma.nutritionTracker.findMany({
+            include: {
+                user: true
+            }
+        })
+    }
+//User can view their own nutrition they have created. 
     async getUserNutritionData(userId: string){
-        return await this.prisma.userNutritionTracker.findMany({
+        return await this.prisma.nutritionTracker.findMany({
             where:{
                 userId: userId,
             },
             include: {
-                userNutrition: true,
+                user: true,
             }
         })
     }
     async modifyNutritionTracker(nutritionId: string, data: UpdateNutritionTrackerDto){
-        return await this.prisma.userNutritionTracker.update({
+        return await this.prisma.nutritionTracker.update({
             where: {id: nutritionId},
             data: {
                 ...data,
@@ -40,7 +48,7 @@ export class NutritionTrackerService{
     }
 
     async deleteNutritionTracker(nutritionId: string){
-        return await this.prisma.userNutritionTracker.delete({
+        return await this.prisma.nutritionTracker.delete({
             where: {id: nutritionId}
         })
     }

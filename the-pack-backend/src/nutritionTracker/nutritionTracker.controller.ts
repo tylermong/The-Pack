@@ -4,7 +4,7 @@ import { Prisma } from '@prisma/client';
 import { CreateNutritionTracker } from './dtos/create-userNutritionTracker.dto';
 import { UpdateNutritionTrackerDto } from './dtos/update-userNutritionTracker.dto';
 
-@Controller('userNutritionTracker')
+@Controller('nutritionTracker')
 export class NutritionTrackerController{
     constructor(private readonly nutritionTrackerService: NutritionTrackerService){}
     
@@ -16,6 +16,16 @@ export class NutritionTrackerController{
     @Get('user/:userId')
     async getUserNutritionData(@Param('userId') userId: string) {
         return await this.nutritionTrackerService.getUserNutritionData(userId);
+    }
+
+    @Get('coach/:coachId/all')
+    async getAllNutritionDataForCoach(@Param('coachId') coachId: string){
+        return this.nutritionTrackerService.getAllNutritionDataForCoach(coachId)
+    }
+
+    @Get("coach/:userId")
+    async getUserNutritionDataForCoach(@Param('userId') userId:string){
+        return this.nutritionTrackerService.getUserNutritionData(userId)
     }
     @Patch(':nutritionId')
     async modifyNutrition(
@@ -29,4 +39,5 @@ export class NutritionTrackerController{
     async deleteUserNutrition(@Param('nutritionId') nutritionId: string){
         return await this.nutritionTrackerService.deleteNutritionTracker(nutritionId)
     }
+
 }
