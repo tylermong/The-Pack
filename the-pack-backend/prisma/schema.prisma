@@ -42,6 +42,12 @@ model User {
   //The nutrition and exercise trackers for user
   nutritionEntries     NutritionTracker[]
   exerciseEntries      ExerciseTracker[]
+
+  //The chatroom that coaches can create
+  Chatroom Chatroom[]
+
+  // the messages user or coaches can send to a chatroom
+  Messages Messages[]
 }
 
 model announcements{
@@ -120,6 +126,25 @@ model ExerciseTracker {
   notes           String?          // User's personal notes
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
+}
+
+model Chatroom{
+
+    id              String           @id @default(uuid())
+    name            String 
+    coach           User             @relation(fields: [coachId], references: [id])
+    coachId         String 
+
+}
+
+model Messages{
+
+    id              String           @id @default(uuid())
+    content         String
+    user            User             @relation(fields: [userID], references: [id])
+    userID          String
+
+  
 }
 
 enum ExerciseIntensity {

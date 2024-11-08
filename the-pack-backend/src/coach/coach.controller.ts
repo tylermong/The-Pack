@@ -9,28 +9,8 @@ export class CoachController {
   constructor(private readonly coachService: CoachService) {}
 
   @Post()
-  create(@Body() createCoachDto: Prisma.CoachCreateInput) {
+  create(@Body() createCoachDto: Prisma.UserCreateInput) {
     return this.coachService.create(createCoachDto);
   }
 
-  @Get()
-  findAll() {
-    return this.coachService.findAll();
-  }
-
-  @UseGuards(JwtGuard)
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.coachService.findOne(id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateCoachDto: Prisma.CoachUpdateInput) {
-    return this.coachService.update(id, updateCoachDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.coachService.remove(id);
-  }
 }
