@@ -18,6 +18,11 @@ export class AuthController {
           return this.userService.create(createUserDto)
     }
 
+    @Post('coachRegister')
+    async coachRegister(@Body() createUserDto: Prisma.UserCreateInput){
+          return this.coachService.create(createUserDto)
+    }
+
     @Post('userLogin')
     async userLogin(@Body() data: LoginDto){
         return await this.authService.userLogin(data);
@@ -32,8 +37,9 @@ export class AuthController {
     }
 
     //this is where coach starts
+    /*
     @Post('coachRegister')
-    async coachRegister(@Body() createCoachDto: Prisma.CoachCreateInput){
+    async coachRegister(@Body() createCoachDto: Prisma.UserCreateInput){
           return this.coachService.create(createCoachDto)
     }
 
@@ -49,5 +55,6 @@ export class AuthController {
         return await this.authService.coachRefreshToken(req)
 
     }
+    */
 
 }

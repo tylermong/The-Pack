@@ -3,12 +3,12 @@ import { LoginDto } from './dto/auth.dto';
 import { UserService } from 'src/user/user.service';
 import { compare } from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
-import { CoachService } from 'src/coach/coach.service';
+//import { CoachService } from 'src/coach/coach.service';
 import { Role } from '@prisma/client';
 
 @Injectable()
 export class AuthService {
-    constructor(private userService: UserService, private coachService: CoachService, private jwtService: JwtService) {}
+    constructor(private userService: UserService, /*private coachService: CoachService,*/ private jwtService: JwtService) {}
 
     async userLogin(data: LoginDto){
 
@@ -75,10 +75,11 @@ export class AuthService {
 
     }
 
+    /*
     //this is where coach starts
     async coachLogin(data: LoginDto){
 
-        const coach = await this.validateCoach(data)
+        const user = await this.validateUser(data)
 
         const payload = {
 
@@ -104,6 +105,7 @@ export class AuthService {
         }
 
     }
+    
 
     async validateCoach(data: LoginDto){
 
@@ -139,6 +141,8 @@ export class AuthService {
         }
 
     }
+
+    */
 
 }
 

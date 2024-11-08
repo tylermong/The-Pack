@@ -16,10 +16,12 @@ const coach_module_1 = require("./coach/coach.module");
 const announcements_module_1 = require("./announcements/announcements.module");
 const auth_module_1 = require("./auth/auth.module");
 const prisma_service_1 = require("./prisma/prisma.service");
-const classes_module_1 = require("./classes/classes.module");
+const class_module_1 = require("./classes/class.module");
 const userClasses_module_1 = require("./userClasses/userClasses.module");
 const scheduling_module_1 = require("./scheduling/scheduling.module");
 const config_1 = require("@nestjs/config");
+const chatroom_module_1 = require("./chatroom/chatroom.module");
+const messages_module_1 = require("./messages/messages.module");
 const userExerciseTracker_module_1 = require("./userExerciseTracker/userExerciseTracker.module");
 const userNutritionTracker_module_1 = require("./userNutritionTracker/userNutritionTracker.module");
 const coachNutritionTracker_module_1 = require("./coachNutritionTracker/coachNutritionTracker.module");
@@ -29,6 +31,7 @@ exports.AppModule = AppModule;
 exports.AppModule = AppModule = __decorate([
     (0, common_1.Module)({
         imports: [config_1.ConfigModule.forRoot({ isGlobal: true }), prisma_module_1.PrismaModule, user_module_1.UserModule, coach_module_1.CoachModule,
+            announcements_module_1.AnnouncementsModule, class_module_1.ClassModule, userClasses_module_1.userClassesModule, scheduling_module_1.schedulingModule, auth_module_1.AuthModule, chatroom_module_1.ChatroomModule, messages_module_1.MessagesModule],
             announcements_module_1.AnnouncementsModule, classes_module_1.ClassesModule, userClasses_module_1.userClassesModule, scheduling_module_1.schedulingModule, auth_module_1.AuthModule],
         imports: [prisma_module_1.PrismaModule, user_module_1.UserModule, coach_module_1.CoachModule,
             announcements_module_1.AnnouncementsModule, classes_module_1.ClassesModule, userClasses_module_1.userClassesModule, scheduling_module_1.schedulingModule, auth_module_1.AuthModule,
