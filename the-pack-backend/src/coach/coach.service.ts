@@ -7,21 +7,22 @@ import { CoachKeyService } from 'src/coach-key/coach-key.service';
 
 @Injectable()
 export class CoachService {
-  constructor (private prismaSerivce: PrismaService, private coackKeyService: CoachKeyService) {}
+  constructor (private prismaSerivce: PrismaService, private coachKeyService: CoachKeyService) {}
 
   async create(id: string, createCoachDto: Prisma.UserCreateInput ) {
 
-    const coachKey = await this.coackKeyService.findOne(id)
+    const coachKey = await this.coachKeyService.findOne(id)
 
     if(!coachKey){
       throw new NotFoundException('Key does not exist');
     }
 
-    this.coackKeyService.remove(id)
+    await this.coachKeyService.remove(id)
+    const { id: _, ...userData } = createCoachDto;
 
     return this.prismaSerivce.user.create({
       data:{ 
-        ...createCoachDto,
+        ...userData,
         password: await hash(createCoachDto.password, 10),
         role: 'COACH'
       }
