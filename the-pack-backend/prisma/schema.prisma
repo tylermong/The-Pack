@@ -147,6 +147,12 @@ model Messages{
   
 }
 
+model CoachKey{
+  
+  id              String           @id @default(uuid())
+
+}
+
 enum ExerciseIntensity {
   LOW
   MEDIUM

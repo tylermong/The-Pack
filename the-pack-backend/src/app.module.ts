@@ -13,10 +13,11 @@ import { schedulingModule } from './scheduling/scheduling.module';
 import { ConfigModule } from '@nestjs/config';
 import { ChatroomModule } from './chatroom/chatroom.module';
 import { MessagesModule } from './messages/messages.module';
+import { CoachKeyModule } from './coach-key/coach-key.module';
 
 @Module({
   imports: [ConfigModule.forRoot({isGlobal: true}) ,PrismaModule, UserModule, CoachModule, 
-    AnnouncementsModule, ClassModule, userClassesModule, schedulingModule, AuthModule, ChatroomModule, MessagesModule],
+    AnnouncementsModule, ClassModule, userClassesModule, schedulingModule, AuthModule, ChatroomModule, MessagesModule, CoachKeyModule],
   controllers: [AppController],
   providers: [AppService, PrismaService],
 })
