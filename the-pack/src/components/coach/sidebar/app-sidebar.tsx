@@ -19,7 +19,7 @@ const items = [
     icon: Home,
   },
   {
-    title: "Fitness Tracker",
+    title: "Fitness Dashboard",
     url: "/coachfitnesstracker",
     icon: Dumbbell,
   },
