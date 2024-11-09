@@ -146,7 +146,7 @@ export default function NutritionTracker() {
   )
 
   return (
-    <Card className="w-full max-w-4xl mx-auto bg-primary text-secondary">
+    <Card className="w-full max-w-4xl mx-auto mb-8 bg-primary text-secondary">
       <CardHeader>
         <CardTitle className="text-2xl font-bold">Nutrition Tracker</CardTitle>
       </CardHeader>
