@@ -15,6 +15,8 @@ interface Exercise {
   reps: string;
   weight: string;
   completedSets?: boolean[];
+  setReps?: string[];
+  setWeights?: string[];
 }
 
 interface Day {
@@ -37,8 +39,23 @@ export default function ProgramDetails({ program }: { program: Program }) {
     setSelectedDay(day)
     setExercises(day.exercises.map(exercise => ({
       ...exercise,
-      completedSets: new Array(parseInt(exercise.sets)).fill(false)
+      completedSets: new Array(parseInt(exercise.sets)).fill(false),
+      setReps: new Array(parseInt(exercise.sets)).fill(exercise.reps),
+      setWeights: new Array(parseInt(exercise.sets)).fill(exercise.weight)
     })))
+  }
+
+  const handleSetValueChange = (exerciseId: string, setIndex: number, field: 'setReps' | 'setWeights', value: string) => {
+    setExercises(prevExercises =>
+      prevExercises.map(exercise =>
+        exercise.id === exerciseId ? {
+          ...exercise,
+          [field]: exercise[field]?.map((v: string, i: number) =>
+            i === setIndex ? value : v
+          )
+        } : exercise
+      )
+    )
   }
 
   const handleExerciseChange = (exerciseId: string, field: 'sets' | 'reps' | 'weight', value: number) => {
@@ -114,19 +131,25 @@ export default function ProgramDetails({ program }: { program: Program }) {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
+                  <div className="grid grid-cols-4 gap-4 items-center font-semibold">
+                    <div className="text-sm">Set</div>
+                    <div className="text-sm">Reps</div>
+                    <div className="text-sm">Weight</div>
+                    <div className="text-sm">Status</div>
+                  </div>
                   {generateSetRows(exercise).map((setNumber, index) => (
                     <div key={`${exercise.id}-set-${setNumber}`} className="grid grid-cols-4 gap-4 items-center">
                       <div className="text-sm font-medium">Set {setNumber}</div>
                       <Input
                         type="number"
-                        value={exercise.reps}
-                        onChange={(e) => handleExerciseChange(exercise.id, 'reps', parseInt(e.target.value))}
+                        value={exercise.setReps?.[index] || ''}
+                        onChange={(e) => handleSetValueChange(exercise.id, index, 'setReps', e.target.value)}
                         className="w-full"
                       />
                       <Input
                         type="number"
-                        value={exercise.weight}
-                        onChange={(e) => handleExerciseChange(exercise.id, 'weight', parseFloat(e.target.value))}
+                        value={exercise.setWeights?.[index] || ''}
+                        onChange={(e) => handleSetValueChange(exercise.id, index, 'setWeights', e.target.value)}
                         className="w-full"
                       />
                       <Button
@@ -134,7 +157,7 @@ export default function ProgramDetails({ program }: { program: Program }) {
                         onClick={() => handleSetCompletion(exercise.id, index)}
                         className="w-full"
                       >
-                        {exercise.completedSets?.[index] ? "Completed" : "Mark Complete"}
+                        {exercise.completedSets?.[index] ? "✓" : "✓"}
                       </Button>
                     </div>
                   ))}
