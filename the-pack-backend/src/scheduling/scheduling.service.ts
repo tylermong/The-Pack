@@ -8,13 +8,14 @@ import { PrismaService } from 'src/prisma/prisma.service';
 export class schedulingService {
     constructor(private prisma: PrismaService) {}
 
-    async scheduleAppointment(clientId: string, coachId: string, timeSlot: string){
+    async scheduleAppointment(clientId: string, coachId: string, timeSlot: string, date: Date){
         
         await this.prisma.scheduling.create({
             data: {
                 clientId,
                 coachId,
                 timeSlot,
+                date,
             },
         });
 

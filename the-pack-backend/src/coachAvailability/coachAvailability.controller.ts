@@ -11,7 +11,8 @@ export class CoachAvailabilityController {
   async createAvailability(
     @Body('coachId') coachId: string,
     @Body('timeSlot') timeSlot: string,
-    @Body('date') date: Date
+    @Body('date') date: Date,
+
   ) {
     return this.coachAvailabilityService.createAvailability(coachId, timeSlot, date);
   }
