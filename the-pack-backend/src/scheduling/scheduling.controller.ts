@@ -8,8 +8,8 @@ export class SchedulingController {
     constructor(private schedulingService: schedulingService) {}
 
     @Post()
-    async scheduleAppointment(@Body() body: { clientId: string; coachId: string; timeSlot: string}) {
-        return this.schedulingService.scheduleAppointment(body.clientId, body.coachId, body.timeSlot);
+    async scheduleAppointment(@Body() body: { clientId: string; coachId: string; timeSlot: string, date: Date}) {
+        return this.schedulingService.scheduleAppointment(body.clientId, body.coachId, body.timeSlot, body.date);
     }
 
     @Delete(':id')

@@ -8,11 +8,12 @@ export class CoachAvailabilityService {
   constructor(private readonly prisma: PrismaService) {}
 
   // Create a new coach availability
-  async createAvailability(coachId: string, timeSlot: string): Promise<coachAvailability> {
+  async createAvailability(coachId: string, timeSlot: string, date: Date): Promise<coachAvailability> {
     return this.prisma.coachAvailability.create({
       data: {
         coachId,
         timeSlot,
+        date,
       },
     });
   }
