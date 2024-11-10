@@ -6,11 +6,6 @@
   - You are about to drop the `classes` table. If the table is not empty, all the data it contains will be lost.
 
 */
--- CreateEnum
-CREATE TYPE "ExerciseIntensity" AS ENUM ('LOW', 'MEDIUM', 'HIGH');
-
--- CreateEnum
-CREATE TYPE "MealType" AS ENUM ('BREAKFAST', 'LUNCH', 'DINNER', 'SNACK');
 
 -- DropForeignKey
 ALTER TABLE "User" DROP CONSTRAINT "User_usersCoachid_fkey";
@@ -31,8 +26,6 @@ ALTER TABLE "userClasses" DROP CONSTRAINT "userClasses_classId_fkey";
 ALTER TABLE "User" DROP COLUMN "usersCoachid",
 ADD COLUMN     "coachId" TEXT;
 
--- DropTable
-DROP TABLE "Coach";
 
 -- DropTable
 DROP TABLE "classes";
