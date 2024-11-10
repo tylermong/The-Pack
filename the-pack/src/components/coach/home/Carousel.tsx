@@ -66,7 +66,7 @@ const AnnouncementCarousel = () => {
     }
 
     //For deleting announcements
-    const handleDelete = async (id) => {
+    const handleDelete = async (id: number) => {
         try {
             await axios.delete(`http://localhost:3001/announcements/${id}`);
             setAnnouncements(announcements.filter((announcement) => announcement.id !== id));
