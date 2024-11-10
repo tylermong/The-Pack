@@ -10,7 +10,6 @@ import { PrismaService } from './prisma/prisma.service';
 import { ClassModule } from './classes/class.module';
 import { userClassesModule } from './userClasses/userClasses.module';
 import { schedulingModule } from './scheduling/scheduling.module';
-import { ExerciseTrackerModule } from './exerciseTracker/exerciseTracker.module';
 import { NutritionTrackerModule } from './nutritionTracker/nutritionTracker.module';
 import { ConfigModule } from '@nestjs/config';
 import { ChatroomModule } from './chatroom/chatroom.module';
