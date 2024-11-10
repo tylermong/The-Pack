@@ -10,9 +10,10 @@ export class CoachAvailabilityController {
   @Post()
   async createAvailability(
     @Body('coachId') coachId: string,
-    @Body('timeSlot') timeSlot: string
+    @Body('timeSlot') timeSlot: string,
+    @Body('date') date: Date
   ) {
-    return this.coachAvailabilityService.createAvailability(coachId, timeSlot);
+    return this.coachAvailabilityService.createAvailability(coachId, timeSlot, date);
   }
 
   @Get()

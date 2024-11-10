@@ -181,6 +181,8 @@ const Scheduler = () => {
         currentSchedule();
     }, []);
 
+    const time = watch('time');
+
     //Handler for making appointments
     const onAppointmentSubmit = async (data) => {
         console.log('Form Submitted:', data);
@@ -188,14 +190,17 @@ const Scheduler = () => {
             // Assuming you already have clientId and coachId available (perhaps from user context or form input)
             // const clientId = data.clientId;  // Replace with actual clientId from context or form
             // const coachId = data.coachId;    // Replace with actual coachId from context or form
+
     
             // Create the appointment data matching the Prisma schema
             const appointmentData = {
                 clientId: "a215a03b-0fff-4f0f-94e9-43dba6f8046b",  // The ID of the client
                 coachId: "1e42b84a-077d-4411-9249-cc0d6334f6ee",    // The ID of the coach
-                timeSlot: appointmentDate?.toISOString(),  // Adjust this to match your time format
-                date: appDate
+                timeSlot: time,  // Adjust this to match your time format
+                date: appointmentDate?.toISOString(),
             };
+
+            console.log("HELLO", appointmentData.timeSlot)
     
             // Send POST request to the database
             const response = await axios.post('http://localhost:3001/scheduling', appointmentData);
@@ -439,8 +444,8 @@ const Scheduler = () => {
                                             </div>
 
                                             <div className="flex flex-col space-y-1.5">
-                                                <Label htmlFor="coach" className='mb-1'>Time</Label>
-                                                <Input id="time" placeholder="Time" {...register('time')} />
+                                                <Label htmlFor="time" className='mb-1'>Time</Label>
+                                                <Input id="time" placeholder="Time" {...register("time")}/>
                                             </div>
 
                                             <div className="flex flex-col space-y-1.5">
