@@ -12,7 +12,7 @@ export declare class UserController {
         role: import(".prisma/client").$Enums.Role;
         createdAt: Date;
         updatedAt: Date;
-        usersCoachid: string | null;
+        coachId: string | null;
     }>;
     findAll(role?: 'CLIENT' | 'ADMIN' | 'COACH'): Promise<{
         id: string;
@@ -23,7 +23,7 @@ export declare class UserController {
         role: import(".prisma/client").$Enums.Role;
         createdAt: Date;
         updatedAt: Date;
-        usersCoachid: string | null;
+        coachId: string | null;
     }[]>;
     findOne(id: string): Promise<{
         id: string;
@@ -34,7 +34,7 @@ export declare class UserController {
         role: import(".prisma/client").$Enums.Role;
         createdAt: Date;
         updatedAt: Date;
-        usersCoachid: string | null;
+        coachId: string | null;
     }>;
     update(id: string, updateUserDto: Prisma.UserUpdateInput): Promise<{
         id: string;
@@ -45,7 +45,7 @@ export declare class UserController {
         role: import(".prisma/client").$Enums.Role;
         createdAt: Date;
         updatedAt: Date;
-        usersCoachid: string | null;
+        coachId: string | null;
     }>;
     remove(id: string): Promise<{
         id: string;
@@ -56,6 +56,6 @@ export declare class UserController {
         role: import(".prisma/client").$Enums.Role;
         createdAt: Date;
         updatedAt: Date;
-        usersCoachid: string | null;
+        coachId: string | null;
     }>;
 }
