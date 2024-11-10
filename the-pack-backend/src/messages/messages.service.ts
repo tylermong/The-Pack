@@ -6,15 +6,19 @@ import { PrismaService } from 'src/prisma/prisma.service';
 export class MessagesService {
   constructor (private prismaService: PrismaService) {}
 
-  async create(userID: string, data: Prisma.MessagesCreateWithoutUserInput) {
+  async create(userID: string, data: { content: string; chatroomId: string }) {
     return this.prismaService.messages.create({
       data: {
-
-        userID,
-        ...data
-
-      }
-    })  
+        content: data.content,
+        createdAt: new Date(),
+        user: {
+          connect: { id: userID }, // Connect the user
+        },
+        chatroomId: {
+          connect: { id: data.chatroomId }, // Connect the chatroom
+        },
+      },
+    });
   }
 
   findAll() {
@@ -27,21 +31,19 @@ export class MessagesService {
     });
   }
 
-  async update(id: string, updateMessagesDto: Prisma.MessagesUpdateInput) {
-
-    const existingID = await this.prismaService.messages.findUnique({
-      where: {id},
-    });
-    
-    if(!existingID){
-      throw new Error('Chatroom with ID not found')
-    }
+  async update(messageId: string, data: { content?: string; chatroomId?: string }) {
     return this.prismaService.messages.update({
-      where: {id},
-      data: updateMessagesDto
-    })
-
-    }
+      where: { id: messageId },
+      data: {
+        content: data.content, // Update content if provided
+        ...(data.chatroomId && {
+          chatroom: {
+            connect: { id: data.chatroomId }, // Connect the chatroom if provided
+          },
+        }),
+      },
+    });
+  }
 
   remove(id: string) {
     return this.prismaService.messages.delete({
