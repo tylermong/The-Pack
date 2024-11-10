@@ -40,60 +40,12 @@ import {
 
 
 
-//EXAMPLE DATA FOR THE CLASSES LIST
-export type Class = {
-    id: string
-    name: string
-    creator: string 
-    currentlyEnrolled: number
-    usersInClasses: string[]
-  }
-   
-const hardCodedClasses: Class[] = [
-{
-    id: "1",
-    name: "Morning Class",
-    creator: "Joe",
-    currentlyEnrolled: 3,
-    usersInClasses: ["Ellen", "Arnold", "Bob"]
-},
-{
-    id: "2",
-    name: "Night Class",
-    creator: "Al",
-    currentlyEnrolled: 3,
-    usersInClasses: ["Dan", "Alice", "Xun"]
-},
-]
-
-
-//EXMAPLE DATA FOR THE USERS LIsST
-export type User = {
-    id: string
-    name: string
-    email: string
-  }
-   
-const hardcodedUsers: User[] = [
-{
-    id: "728ed52f",
-    name: "Bob",
-    email: "bob@yahoo.com",
-},
-{
-    id: "489e1d42",
-    name: "Angela",
-    email: "angela@gmail.com",
-},
-]
-
-
 
 const Dashboard = () => {
 
     //Data display values
-    //const [users, setUsers] = useState([]); UNCOMMENT AFTER DONE WITH DB AND BACKEND IMPLEMENTATION
-    //const [classes, setClasses] = useState([]); UNCOMMENT AFTER DONE WITH DB AND BACKEND IMPLEMENTATION
+    const [users, setUsers] = useState([]); 
+    const [classes, setClasses] = useState([]); 
 
     //Selection States
     const [userRowSelection, setUserRowSelection] = useState({});
@@ -103,19 +55,6 @@ const Dashboard = () => {
     const [coachKey, setCoachKey] = useState('');
     const [isKeyGenerated, setIsKeyGenerated] = useState(false);
 
-    //HARDCODED IMPLEMENTATION FOR NOW DELETE AFTER
-    const [classes, setClasses] = useState<Class[]>([]);
-    const [users, setUsers] = useState<User[]>([]);
-
-    // Set the classes with hardcoded values when the component mounts
-    useEffect(() => {
-        setClasses(hardCodedClasses); // Set static data instead of fetching from API (CHANGE THIS WHEN DB AND BACKEND ADDED)
-    }, []);
-
-    // Set the classes with hardcoded values when the component mounts
-    useEffect(() => {
-        setUsers(hardcodedUsers); // Set static data instead of fetching from API (CHANGE THIS WHEN DB AND BACKEND ADDED)
-    }, []);
 
     //Table configuration for classes
     const classColumns: ColumnDef<Class>[] = [
@@ -189,7 +128,7 @@ const Dashboard = () => {
     //Gets the data from DB
     useEffect(() => {
         const fetchClasses = async () => {
-            const response = await axios.get('http://localhost:3001/classes');
+            const response = await axios.get('http://localhost:3001/class');
             setClasses(response.data);
         };
         fetchClasses();
@@ -198,14 +137,14 @@ const Dashboard = () => {
     //backend handler for deleting selected classes
     const handleDeleteSelected = async () => {
         const selectedIds = classTable.getSelectedRowModel().rows.map(row => row.original.id);
-        await Promise.all(selectedIds.map(id => axios.delete(`http://localhost:3001/classes/${id}`)));
+        await Promise.all(selectedIds.map(id => axios.delete(`http://localhost:3001/class/${id}`)));
         setClasses(prevClasses => prevClasses.filter(cls => !selectedIds.includes(cls.id)));
     };
 
     //backend handler for deleting selected users
     const handleDeleteSelectedUsers = async () => {
         const selectedIds = userTable.getSelectedRowModel().rows.map(row => row.original.id);
-        await Promise.all(selectedIds.map(id => axios.delete(`http://localhost:3001/users/${id}`)));
+        await Promise.all(selectedIds.map(id => axios.delete(`http://localhost:3001/user/${id}`)));
         setUsers(prevAccounts => prevAccounts.filter(acc => !selectedIds.includes(acc.id)));
     };
 
@@ -222,7 +161,7 @@ const Dashboard = () => {
 
         // Send the key to the backend to store in the database
         try {
-            await axios.post('http://localhost:3001/coachkey', { key });
+            await axios.post('http://localhost:3001/coach-key', { key });
             console.log('Key saved to database');
         } catch (error) {
             console.error('Error saving key:', error);
@@ -248,7 +187,7 @@ const Dashboard = () => {
                         <CardContent className='flex flex-col'>
 
                             {/* THIS IS IMPLEMENTATION FOR DYNAMIC UPDATING UNCOMMENT AFTER BACKEDN AND DB ARE DONE */}
-                            {/* <Table>
+                            <Table>
                                 <TableHeader>
                                     {classTable.getHeaderGroups().map(headerGroup => (
                                         <TableRow key={headerGroup.id}>
@@ -271,40 +210,6 @@ const Dashboard = () => {
                                         classTable.getRowModel().rows.map(row => (
                                             <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
                                                 {row.getVisibleCells().map(cell => (
-                                                    <TableCell key={cell.id}>
-                                                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                                                    </TableCell>
-                                                ))}
-                                            </TableRow>
-                                        ))
-                                    )}
-                                </TableBody>
-                            </Table> */}
-
-                            {/* DELETE THIS TABLE WHEN DONE DB AND BACKEND */}
-                            <Table>
-                                <TableHeader>
-                                    {classTable.getHeaderGroups().map((headerGroup) => (
-                                        <TableRow key={headerGroup.id}>
-                                            {headerGroup.headers.map((header) => (
-                                                <TableHead key={header.id}>
-                                                    {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
-                                                </TableHead>
-                                            ))}
-                                        </TableRow>
-                                    ))}
-                                </TableHeader>
-                                <TableBody>
-                                    {classTable.getRowModel().rows.length === 0 ? (
-                                        <TableRow>
-                                            <TableCell colSpan={classColumns.length} className="text-center">
-                                                No data available
-                                            </TableCell>
-                                        </TableRow>
-                                    ) : (
-                                        classTable.getRowModel().rows.map((row) => (
-                                            <TableRow key={row.id} data-state={row.getIsSelected() && "selected"} className={row.getIsSelected() ? "bg-gray-50 text-black" : ""}>
-                                                {row.getVisibleCells().map((cell) => (
                                                     <TableCell key={cell.id}>
                                                         {flexRender(cell.column.columnDef.cell, cell.getContext())}
                                                     </TableCell>
@@ -349,41 +254,6 @@ const Dashboard = () => {
                             <CardContent className='flex flex-col'>
 
                                 {/* THIS IS IMPLEMENTATION FOR DYNAMIC UPDATING UNCOMMENT AFTER BACKEDN AND DB ARE DONE */}
-                                {/* <Table>
-                                    <TableHeader>
-                                        {userTable.getHeaderGroups().map((headerGroup) => (
-                                            <TableRow key={headerGroup.id}>
-                                                {headerGroup.headers.map((header) => (
-                                                    <TableHead key={header.id}>
-                                                        {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
-                                                    </TableHead>
-                                                ))}
-                                            </TableRow>
-                                        ))}
-                                    </TableHeader>
-                                    <TableBody>
-                                        {userTable.getRowModel().rows.length === 0 ? (
-                                            <TableRow>
-                                                <TableCell colSpan={userColumns.length} className="text-center">
-                                                    No data available
-                                                </TableCell>
-                                            </TableRow>
-                                        ) : (
-                                            userTable.getRowModel().rows.map((row) => (
-                                                <TableRow key={row.id} data-state={row.getIsSelected() && "selected"} className={row.getIsSelected() ? "bg-gray-50 text-black" : ""}>
-                                                    {row.getVisibleCells().map((cell) => (
-                                                        <TableCell key={cell.id}>
-                                                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                                                        </TableCell>
-                                                    ))}
-                                                </TableRow>
-                                            ))
-                                        )}
-                                    </TableBody>
-                                </Table> */}
-
-
-                                {/* DELETE THIS TABLE WHEN DONE DB AND BACKEND */}
                                 <Table>
                                     <TableHeader>
                                         {userTable.getHeaderGroups().map((headerGroup) => (
