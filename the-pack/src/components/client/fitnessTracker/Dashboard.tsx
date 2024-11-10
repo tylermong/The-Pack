@@ -3,7 +3,6 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { Button } from "@/components/ui/button"
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
@@ -13,28 +12,27 @@ import { Label } from "@/components/ui/label"
 import { PlusCircle, MoreVertical, Edit, Trash, Copy } from "lucide-react"
 
 interface Program {
-  id: number;
+  id: string;
   name: string;
   description: string;
   tags: string[];
 }
 
-// Mock data for demonstration
 const initialPrograms: Program[] = [
   { 
-    id: 1, 
+    id: "strength-building", 
     name: "Strength Building", 
     description: "A 12-week program focused on building overall strength.",
     tags: ["4x/week", "Strength", "Intermediate"]
   },
   { 
-    id: 2, 
+    id: "weight-loss", 
     name: "Weight Loss", 
     description: "An 8-week program designed for effective weight loss.",
     tags: ["5x/week", "Cardio", "Beginner"]
   },
   { 
-    id: 3, 
+    id: "muscle-gain", 
     name: "Muscle Gain", 
     description: "A 16-week program for muscle hypertrophy and mass gain.",
     tags: ["6x/week", "Hypertrophy", "Advanced"]
@@ -68,17 +66,18 @@ export default function ProgramList() {
     }
   }
 
-  const handleDelete = (id: number) => {
+  const handleDelete = (id: string) => {
     setPrograms(prev => prev.filter(p => p.id !== id))
   }
 
   const handleCopy = (program: Program) => {
-    const newProgram = { ...program, id: Date.now(), name: `${program.name} (Copy)` }
+    const newId = `${program.id}-copy-${Date.now()}`
+    const newProgram = { ...program, id: newId, name: `${program.name} (Copy)` }
     setPrograms(prev => [...prev, newProgram])
   }
 
   return (
-    <div className="flex flex-col p-8">
+    <div className="flex flex-col mx-12">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Workout Programs</h1>
         <Button>
@@ -87,25 +86,10 @@ export default function ProgramList() {
       </div>
       <div className="space-y-4">
         {programs.map((program) => (
-          <Card key={program.id} className="hover:shadow-lg transition-shadow">
-            <div className="flex items-center p-4">
-              <div className="flex-grow">
-                <CardHeader className="p-0">
-                  <CardTitle className="text-xl">{program.name}</CardTitle>
-                  <CardDescription className="text-sm mt-1">{program.description}</CardDescription>
-                </CardHeader>
-                <CardContent className="p-0 mt-2">
-                  <div className="flex flex-wrap gap-2">
-                    {program.tags.map((tag, index) => (
-                      <Badge key={index} variant="secondary">{tag}</Badge>
-                    ))}
-                  </div>
-                </CardContent>
-              </div>
-              <div className="flex items-center gap-2 ml-4">
-                <Link href={`/programs/${program.id}`} passHref>
-                  <Button variant="ghost">View Details</Button>
-                </Link>
+          <div key={program.id} className="bg-background border rounded-lg shadow-sm hover:shadow-md transition-shadow p-4">
+            <div className="flex flex-col space-y-2">
+              <div className="flex justify-between items-start">
+                <h2 className="text-xl text-primary font-semibold">{program.name}</h2>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" className="h-8 w-8 p-0">
@@ -129,8 +113,19 @@ export default function ProgramList() {
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
+              <p className="text-sm text-muted-foreground">{program.description}</p>
+              <div className="flex flex-wrap gap-2">
+                {program.tags.map((tag, index) => (
+                  <Badge key={index} variant="secondary">{tag}</Badge>
+                ))}
+              </div>
+              <div className="pt-2">
+                <Link href={`/client/fitness-tracker/programs/${program.id}`} passHref>
+                  <Button variant="outline" className="w-full sm:w-auto">View Details</Button>
+                </Link>
+              </div>
             </div>
-          </Card>
+          </div>
         ))}
       </div>
 
