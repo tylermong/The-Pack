@@ -19,7 +19,7 @@ export class UserController {
     return this.userService.findAll(role);
   }
 
-  @UseGuards(JwtGuard)
+  //@UseGuards(JwtGuard)
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.userService.findOne(id);

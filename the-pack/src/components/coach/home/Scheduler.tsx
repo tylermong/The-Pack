@@ -70,14 +70,51 @@ const Scheduler = () => {
     const [isDialogOpen, setIsDialogOpen] = useState(false);
 
     //Schedule viewer data (UNCOMMENT AFTER DB AND BACKEND API CALLS ARE IMPLEMENTED)
-    // const [events, setEvents] = useState([]);
-    // const [classes, setClasses] = useState([]);
-    // const [appointments, setAppointments] = useState([]);
+    const [events, setEvents] = useState([]);
+    const [classes, setClasses] = useState([]);
+    const [appointments, setAppointments] = useState([]);
+    const [coach, setCoach] = useState<Record<string, string>>({});
+    const [appointment, setAppointment] = useState<any[]>([]);
 
     //User Input Calendar Format
     const { register, handleSubmit, formState: { errors }, reset, setValue } = useForm({
         resolver: zodResolver(FormSchema),
     });
+
+    // Fetch coach
+    useEffect(() => {
+        const fetchCoach = async () => {
+            try {
+                const response = await axios.get('http://localhost:3001/user'); // Update endpoint
+                const usersMap = response.data.reduce((acc: Record<string, string>, user: { id: string, name: string }) => {
+                    acc[user.id] = user.name;
+                    return acc;
+                }, {});
+                setCoach(usersMap);
+                console.log(usersMap)
+            } catch (error) {
+                console.error('Error fetching users:', error);
+            }
+        };
+        fetchCoach();
+    }, []);
+
+    // Fetch appointment
+    useEffect(() => {
+        const fetchAppointments = async () => {
+            try {
+                const response = await axios.get('http://localhost:3001/scheduling'); // Update endpoint
+                const appointmentsWithClientNames = await Promise.all(response.data.map(async (appointment) => {
+                    const clientResponse = await axios.get(`http://localhost:3001/user/${appointment.clientId}`);
+                    return { ...appointment, name: clientResponse.data.name };
+                }));
+                setAppointment(appointmentsWithClientNames);
+            } catch (error) {
+                console.error('Error fetching appointments:', error);
+            }
+        };
+        fetchAppointments();
+    }, []);
 
 
 
@@ -85,8 +122,12 @@ const Scheduler = () => {
     useEffect(() => {
         const currentSchedule = async () => {
             try{
-                const response = await axios.post('http://localhost:3001/schedule');
-                setSchedule(response.data);
+                const events = await axios.get('http://localhost:3001/announcements')
+                const classes = await axios.get('http://localhost:3001/class')
+                const appointments = await axios.get('http://localhost:3001/scheduling')
+                setEvents(events.data)
+                setClasses(classes.data)
+                setAppointments(appointments.data)
             }catch(error){
                 console.error("Error Fetching Schedule:", error)
             }
@@ -104,7 +145,7 @@ const Scheduler = () => {
             };
 
             // Send POST request to the database
-            const response = await axios.post('http://localhost:3001/schedule', appointmentData);
+            const response = await axios.post('http://localhost:3001/scheduling', appointmentData);
 
             // Update local state with the response data
             setSchedule([...schedule, response.data]);
@@ -123,90 +164,18 @@ const Scheduler = () => {
         setIsDialogOpen(true);
       
         try {
-          const formattedDate = date.toISOString().split('T')[0]; // Format date as YYYY-MM-DD
-          const response = await axios.get(`http://localhost:3001/schedule`, {
-            params: { date: formattedDate },
-          });
-          const { events, classes, appointments } = response.data;
-          setEvents(events);
-          setClasses(classes);
-          setAppointments(appointments);
+          const events = await axios.get('http://localhost:3001/announcements')
+          const classes = await axios.get('http://localhost:3001/class')
+          const appointments = await axios.get('http://localhost:3001/scheduling')
+          setEvents(events.data)
+          setClasses(classes.data)
+          setAppointments(appointments.data)
         } catch (error) {
           console.error('Error fetching schedule data:', error);
         }
       };
 
       
-//EXAMPLE DATA DELETE ONCE DONE
-const events = [
-    {
-      name: "EVENT001",
-      availability: "ALL",
-      time: "10:00AM",
-    },
-    {
-        name: "EVENT002",
-        availability: "ALL",
-        time: "1:00PM",
-    },
-    {
-        name: "EVENT003",
-        availability: "ALL",
-        time: "2:00PM",
-    },
-    {
-        name: "EVENT004",
-        availability: "ALL",
-        time: "3:00PM",
-    },
-    {
-        name: "EVENT005",
-        availability: "ALL",
-        time: "5:00PM",
-    },
-    {
-        name: "EVENT006",
-        availability: "ALL",
-        time: "8:00PM",
-    },
-    {
-        name: "EVENT007",
-        availability: "ALL",
-        time: "10:00PM",
-    },
-]
-
-
-//EXAMPLE DATA DELETE ONCE DONE
-const classes = [
-    {
-        name: "EVENT001",
-        coach: "Bob",
-        time: "10:00AM",
-    },
-    {
-        name: "EVENT002",
-        coach: "Alfred",
-        time: "1:00PM",
-    },
-    {
-        name: "EVENT003",
-        coach: "John",
-        time: "2:00PM",
-    },
-]
-
-//EXAMPLE DATA DELETE ONCE DONE
-const appointments = [
-    {
-        coach: "Danny",
-        type: "Inquiry",
-        time: "10:00AM",
-    },
-]
-
-
-
 
 
     return(
@@ -247,20 +216,24 @@ const appointments = [
                                         <TableHeader className='flex flex-row w-full'>
                                             <TableRow className='w-full'>
                                                 <TableHead className='text-lg w-full'>Event Name</TableHead>
-                                                <TableHead className='text-lg w-full'>Availability</TableHead>
-                                                <TableHead className='text-lg w-full'>Time</TableHead>
+                                                <TableHead className='text-lg w-full'>Content</TableHead>
                                             </TableRow>
                                         </TableHeader>
 
                                         <ScrollArea className="h-auto w-full p-4">
                                             <TableBody className='flex flex-col w-full h-auto'>
-                                                {events.map((event) => (
-                                                    <TableRow key={event.name} className='w-full'>
-                                                        <TableCell className="text-base w-full">{event.name}</TableCell>
-                                                        <TableCell className="text-base w-full">{event.availability}</TableCell>
-                                                        <TableCell className="text-base w-full">{event.time}</TableCell>
+                                            {events?.length > 0 ? (
+                                                events.map((event) => (
+                                                    <TableRow key={event.title} className="w-full">
+                                                        <TableCell className="text-base w-full">{event.title}</TableCell>
+                                                        <TableCell className="text-base w-full">{event.content}</TableCell>
                                                     </TableRow>
-                                                ))}
+                                                ))
+                                            ) : (
+                                                <TableRow>
+                                                    <TableCell colSpan={2}>No events available</TableCell>
+                                                </TableRow>
+                                            )}
                                             </TableBody>
                                         </ScrollArea>
                                     </Table>
@@ -274,19 +247,25 @@ const appointments = [
                                             <TableRow className='w-full'>
                                                 <TableHead className='text-lg w-full'>Class Name</TableHead>
                                                 <TableHead className='text-lg w-full'>Coach</TableHead>
-                                                <TableHead className='text-lg w-full'>Time</TableHead>
+                                                <TableHead className='text-lg w-full'>Start Time</TableHead>
                                             </TableRow>
                                         </TableHeader>
 
                                         <ScrollArea className="h-auto w-full p-4">
                                             <TableBody className='flex flex-col w-full h-auto'>
-                                                {classes.map((event) => (
-                                                    <TableRow key={event.name} className='w-full'>
+                                            {classes?.length > 0 ? (
+                                                classes.map((event) => (
+                                                    <TableRow key={event.name} className="w-full">
                                                         <TableCell className="text-base w-full">{event.name}</TableCell>
-                                                        <TableCell className="text-base w-full">{event.coach}</TableCell>
+                                                        <TableCell className="text-base w-full">{coach[event.creatorId]}</TableCell>
                                                         <TableCell className="text-base w-full">{event.time}</TableCell>
                                                     </TableRow>
-                                                ))}
+                                                ))
+                                            ) : (
+                                                <TableRow>
+                                                    <TableCell colSpan={2}>No classes available</TableCell>
+                                                </TableRow>
+                                            )}
                                             </TableBody>
                                         </ScrollArea>
                                     </Table>
@@ -298,21 +277,25 @@ const appointments = [
                                     <Table>
                                         <TableHeader className='flex flex-row w-full'>
                                             <TableRow className='w-full'>
-                                                <TableHead className='text-lg w-full'>Coach</TableHead>
-                                                <TableHead className='text-lg w-full'>Type</TableHead>
+                                                <TableHead className='text-lg w-full'>Client</TableHead>
                                                 <TableHead className='text-lg w-full'>Time</TableHead>
                                             </TableRow>
                                         </TableHeader>
 
                                         <ScrollArea className="h-auto w-full p-4">
-                                            <TableBody className='flex flex-col w-full h-auto'>
-                                                {appointments.map((event) => (
-                                                    <TableRow key={event.coach} className='w-full'>
-                                                        <TableCell className="text-base w-full">{event.coach}</TableCell>
-                                                        <TableCell className="text-base w-full">{event.type}</TableCell>
-                                                        <TableCell className="text-base w-full">{event.time}</TableCell>
+                                            <TableBody className='flex flex-col w-auto h-auto'>
+                                            {appointment?.length > 0 ? (
+                                                appointment.map((appointment) => (
+                                                    <TableRow key={appointment.id} className="w-full">
+                                                        <TableCell className="text-base w-full">{appointment.name}</TableCell>
+                                                        <TableCell className="text-base w-full">{appointment.timeSlot}</TableCell>
                                                     </TableRow>
-                                                ))}
+                                                ))
+                                            ) : (
+                                                <TableRow>
+                                                    <TableCell colSpan={2}>No appointments available</TableCell>
+                                                </TableRow>
+                                            )}
                                             </TableBody>
                                         </ScrollArea>
                                     </Table>
