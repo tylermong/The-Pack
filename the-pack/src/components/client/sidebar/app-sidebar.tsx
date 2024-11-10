@@ -20,7 +20,7 @@ const items = [
   },
   {
     title: "Fitness Tracker",
-    url: "/clientfitnesstracker",
+    url: "/client/fitness-tracker/dashboard",
     icon: Dumbbell,
   },
   {
