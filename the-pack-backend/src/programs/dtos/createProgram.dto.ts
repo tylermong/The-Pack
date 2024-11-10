@@ -1,5 +1,10 @@
+import { IsString, IsNotEmpty, IsUUID } from 'class-validator';
+
 export class CreateProgramDto {
-    readonly programName: string;
-    readonly userId: string;
-  }
-  
+  @IsString()
+  @IsNotEmpty()
+  programName: string;
+
+  @IsUUID()
+  userId: string;
+}
