@@ -21,7 +21,7 @@ export class userClassesService {
         });
     
         // Restrict enrollment if the class is full (8 users)
-        if (enrollmentCount >= 8) {
+        if (enrollmentCount >= 10) {
           throw new ConflictException('Class enrollment is full');
         }
     
@@ -40,14 +40,28 @@ export class userClassesService {
             classId: classId,
           },
         });
+        
+        await this.prisma.class.update({
+          where: { id: classId },
+          data: {
+              currentlyEnrolled: { increment: 1 },
+          },
+      });
         return 'User successfully joined the class';
       }
+
       async leaveClass(userId: string, classId: string) {
         await this.prisma.userClasses.delete({
             where: {
                 clientId_classId: { clientId: userId, classId },
             },
         });
+        await this.prisma.class.update({
+          where: { id: classId },
+          data: {
+              currentlyEnrolled: { decrement: 1 },
+          },
+      });
 
         return 'User successfully left the class';
     }
