@@ -68,7 +68,8 @@ model Class{
   creator User @relation(fields: [creatorId], references: [id])
   creatorId String
   currentlyEnrolled Int?
-  time String
+  
+  timeSlot String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
