@@ -15,7 +15,7 @@ const programs = [
         exercises: [
           { id: "bench-press", name: "Bench Press", sets: "3", reps: "8-12", weight: "225lbs" },
           { id: "incline-dumbbell-press", name: "Incline Dumbbell Press", sets: "3", reps: "10-12", weight: "100lbs" },
-          { id: "chest-flyes", name: "Chest Flyes", sets: "3", reps: "12-15", weight: "60lbs" },
+          { id: "chest-flys", name: "Chest Flys", sets: "3", reps: "12-15", weight: "60lbs" },
         ]
       },
       {
