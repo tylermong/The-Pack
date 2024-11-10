@@ -41,7 +41,7 @@ interface Chatroom {
 
 
 //WebSocket for testing without DB and Backend (DELETE ONCE DONE)
-const socket = process.env.NODE_ENV === 'test' ? new SocketMock() : io('http://localhost:3001');
+const socket = process.env.NODE_ENV === 'test' ? new SocketMock() : io('http://localhost:3002');
 
 
 
