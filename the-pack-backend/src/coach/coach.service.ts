@@ -1,21 +1,33 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma, Role } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { hash } from 'bcrypt';
 import { UserService } from 'src/user/user.service';
+import { CoachKeyService } from 'src/coach-key/coach-key.service';
 
 @Injectable()
 export class CoachService {
-  constructor (private prismaSerivce: PrismaService) {}
+  constructor (private prismaSerivce: PrismaService, private coachKeyService: CoachKeyService) {}
 
-  async create(createCoachDto: Prisma.UserCreateInput ) {
+  async create(id: string, createCoachDto: Prisma.UserCreateInput ) {
+
+    const coachKey = await this.coachKeyService.findOne(id)
+
+    if(!coachKey){
+      throw new NotFoundException('Key does not exist');
+    }
+
+    await this.coachKeyService.remove(id)
+    const { id: _, ...userData } = createCoachDto;
+
     return this.prismaSerivce.user.create({
       data:{ 
-        ...createCoachDto,
+        ...userData,
         password: await hash(createCoachDto.password, 10),
         role: 'COACH'
       }
     });
+
   }
 
   //This is where the other coach functions are located

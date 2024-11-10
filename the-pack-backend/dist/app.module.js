@@ -24,6 +24,7 @@ const nutritionTracker_module_1 = require("./nutritionTracker/nutritionTracker.m
 const config_1 = require("@nestjs/config");
 const chatroom_module_1 = require("./chatroom/chatroom.module");
 const messages_module_1 = require("./messages/messages.module");
+const coach_key_module_1 = require("./coach-key/coach-key.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
