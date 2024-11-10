@@ -47,6 +47,7 @@ import {
     TableRow,
   } from "@/components/ui/table"
 import { Textarea } from "@/components/ui/textarea"
+import Script from 'next/script';
 
 
 
@@ -143,25 +144,32 @@ const Scheduler = () => {
 
 
     //Handler for making appointments
-    const onSubmit = async (data) => {
+    const onAppointmentSubmit = async (data) => {
+        console.log('Form Submitted:', data);
         try {
-
+            // Assuming you already have clientId and coachId available (perhaps from user context or form input)
+            const clientId = data.clientId;  // Replace with actual clientId from context or form
+            const coachId = data.coachId;    // Replace with actual coachId from context or form
+    
+            // Create the appointment data matching the Prisma schema
             const appointmentData = {
-                ...data,
-                appointmentDate: appointmentDate?.toISOString(),
+                timeSlot: appointmentDate?.toISOString(),  // Adjust this to match your time format
+                clientId: clientId,  // The ID of the client
+                coachId: coachId,    // The ID of the coach
             };
-
+    
             // Send POST request to the database
             const response = await axios.post('http://localhost:3001/scheduling', appointmentData);
-
+    
             // Update local state with the response data
             setSchedule([...schedule, response.data]);
             console.log('Submitted:', response.data);
-
+    
+            // Reset form state
             reset();
             setAppointmentDate(undefined);
         } catch (error) {
-            console.error('Error submitting announcement:', error);
+            console.error('Error submitting appointment:', error);
         }
     };
 
@@ -176,7 +184,6 @@ const Scheduler = () => {
         try {
             const response = await axios.post('http://localhost:3001/coachAvailability', scheduleData);
             console.log('Schedule saved:', response.data);
-            reset();
             setTimeslots('');
             setCoachDate(undefined);
         } catch (error) {
@@ -186,6 +193,7 @@ const Scheduler = () => {
 
     //Handler for checking day schedule (displays and update respective info)
     const handleDayClick = async (date) => {
+        console.log('Day clicked:', date);
         setSelectedDate(date);
         setIsDialogOpen(true);
       
@@ -333,7 +341,7 @@ const Scheduler = () => {
                 </Dialog>
             </div>
 
-            <div className='AppointmentForm mt-1'>
+            <div className='mt-1'>
                 <Dialog>
                     <DialogTrigger asChild>
                         <Button variant="outline" className='bg-white text-black hover:bg-gray-300'>Create an Appointment</Button>
@@ -346,12 +354,11 @@ const Scheduler = () => {
                             </CardHeader>
 
                             <CardContent>
-                                <form onSubmit={handleSubmit(onSubmit)}>
+                                <form onSubmit={handleSubmit(onAppointmentSubmit)}>
                                         <div className="grid w-full items-center gap-4">
-
                                             <div className="flex flex-col space-y-1.5">
                                                 <Label htmlFor="name" className='mb-1'>Name</Label>
-                                                <Input id="name" placeholder="Your name" />
+                                                <Input id="name" placeholder="Your name" {...register('name')} />
                                             </div>
 
                                             <div className="flex flex-col space-y-1.5">
@@ -409,19 +416,17 @@ const Scheduler = () => {
                                                 </Popover>
                                             </div>
                                         </div>
+                                        <Button type = "submit" variant="outline">Submit</Button>
                                     </form>
                             </CardContent>
 
-                            <CardFooter className="flex justify-between">
-                                <Button type = "submit" variant="outline">Submit</Button>
-                            </CardFooter>
                         </Card>
                     </DialogContent>
                 </Dialog>
             </div>
 
 
-            <div className='AppointmentForm mb-20 mt-1'>
+            <div className='mb-20 mt-1'>
                 <Dialog>
                     <DialogTrigger asChild>
                         <Button variant="outline" className='bg-white text-black hover:bg-gray-300'>Create Day Schedule</Button>
@@ -477,9 +482,8 @@ const Scheduler = () => {
                                             </div>
                                         </div>
 
-                                        <DialogFooter className="flex justify-between pt-5">
-                                            <Button type="submit" variant="outline">Save Availability</Button>
-                                        </DialogFooter>
+                                        
+                                        <Button type="submit" variant="outline">Save Availability</Button>
                                     </form>
                             </CardContent>
                         </Card>
