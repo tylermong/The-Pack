@@ -45,7 +45,7 @@ export function AppSidebar() {
     <Sidebar>
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>The Pack • User</SidebarGroupLabel>
+          <SidebarGroupLabel>The Pack • Client</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {items.map((item) => (
