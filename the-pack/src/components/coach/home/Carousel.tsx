@@ -46,7 +46,7 @@ const AnnouncementCarousel = () => {
         const newAnnouncement = { 
             title, 
             content, 
-            authorId: 'f90a8940-190b-4930-9967-be0840c2e1d7'
+            authorId: '09037e03-b49f-4f9f-9a18-57853e0c231a'
         };
 
         try {
