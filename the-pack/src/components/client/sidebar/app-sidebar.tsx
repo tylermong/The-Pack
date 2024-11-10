@@ -1,4 +1,4 @@
-import { Home, Dumbbell, MessageSquareMore, User } from "lucide-react"
+import { Home, Dumbbell, Apple, MessageSquareMore, User } from "lucide-react"
 
 import {
   Sidebar,
@@ -20,12 +20,17 @@ const items = [
   },
   {
     title: "Fitness Tracker",
-    url: "/clientfitnesstracker",
+    url: "/client/fitness-tracker/dashboard",
     icon: Dumbbell,
   },
   {
     title: "Nutrition Tracker",
     url: "/clientnutritiontracker",
+    icon: Apple,
+  },
+  {
+    title: "Chat Rooms",
+    url: "/clientchatroom",
     icon: MessageSquareMore,
   },
   {
@@ -40,7 +45,7 @@ export function AppSidebar() {
     <Sidebar>
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>The Pack • User</SidebarGroupLabel>
+          <SidebarGroupLabel>The Pack • Client</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {items.map((item) => (

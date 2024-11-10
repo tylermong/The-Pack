@@ -17,7 +17,7 @@ export class AuthController {
     }
 
     @Post('coachRegister')
-    async coachRegister(@Param() id: string, @Body() createUserDto: Prisma.UserCreateInput){
+    async coachRegister(@Body('id') id: string, @Body() createUserDto: Prisma.UserCreateInput){
           return this.coachService.create(id, createUserDto)
     }
 
