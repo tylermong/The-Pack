@@ -14,6 +14,7 @@ interface Exercise {
   sets: string;
   reps: string;
   weight: string;
+  completedSets?: boolean[];
 }
 
 interface Day {
@@ -34,7 +35,10 @@ export default function ProgramDetails({ program }: { program: Program }) {
 
   const handleDayClick = (day: Day) => {
     setSelectedDay(day)
-    setExercises(day.exercises)
+    setExercises(day.exercises.map(exercise => ({
+      ...exercise,
+      completedSets: new Array(parseInt(exercise.sets)).fill(false)
+    })))
   }
 
   const handleExerciseChange = (exerciseId: string, field: 'sets' | 'reps' | 'weight', value: number) => {
@@ -43,6 +47,23 @@ export default function ProgramDetails({ program }: { program: Program }) {
         exercise.id === exerciseId ? { ...exercise, [field]: value } : exercise
       )
     )
+  }
+
+  const handleSetCompletion = (exerciseId: string, setIndex: number) => {
+    setExercises(prevExercises =>
+      prevExercises.map(exercise =>
+        exercise.id === exerciseId ? {
+          ...exercise,
+          completedSets: exercise.completedSets?.map((completed, i) =>
+            i === setIndex ? !completed : completed
+          )
+        } : exercise
+      )
+    )
+  }
+
+  const generateSetRows = (exercise: Exercise) => {
+    return Array.from({ length: parseInt(exercise.sets) }, (_, i) => i + 1)
   }
 
   return (
@@ -70,7 +91,7 @@ export default function ProgramDetails({ program }: { program: Program }) {
                     <div key={exercise.id} className="text-sm">
                       <p className="font-medium">{exercise.name}</p>
                       <p className="text-muted-foreground">
-                        {exercise.sets} × {exercise.reps} @ {exercise.weight}
+                        {exercise.sets} × {exercise.reps} reps @ {exercise.weight}
                       </p>
                     </div>
                   ))}
@@ -92,34 +113,31 @@ export default function ProgramDetails({ program }: { program: Program }) {
                 <CardTitle>{exercise.name}</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-3 gap-4">
-                  <div>
-                    <Label htmlFor={`sets-${exercise.id}`}>Sets</Label>
-                    <Input
-                      id={`sets-${exercise.id}`}
-                      type="number"
-                      value={exercise.sets}
-                      onChange={(e) => handleExerciseChange(exercise.id, 'sets', parseInt(e.target.value))}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor={`reps-${exercise.id}`}>Reps</Label>
-                    <Input
-                      id={`reps-${exercise.id}`}
-                      type="number"
-                      value={exercise.reps}
-                      onChange={(e) => handleExerciseChange(exercise.id, 'reps', parseInt(e.target.value))}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor={`weight-${exercise.id}`}>Weight</Label>
-                    <Input
-                      id={`weight-${exercise.id}`}
-                      type="number"
-                      value={exercise.weight}
-                      onChange={(e) => handleExerciseChange(exercise.id, 'weight', parseFloat(e.target.value))}
-                    />
-                  </div>
+                <div className="space-y-4">
+                  {generateSetRows(exercise).map((setNumber, index) => (
+                    <div key={`${exercise.id}-set-${setNumber}`} className="grid grid-cols-4 gap-4 items-center">
+                      <div className="text-sm font-medium">Set {setNumber}</div>
+                      <Input
+                        type="number"
+                        value={exercise.reps}
+                        onChange={(e) => handleExerciseChange(exercise.id, 'reps', parseInt(e.target.value))}
+                        className="w-full"
+                      />
+                      <Input
+                        type="number"
+                        value={exercise.weight}
+                        onChange={(e) => handleExerciseChange(exercise.id, 'weight', parseFloat(e.target.value))}
+                        className="w-full"
+                      />
+                      <Button
+                        variant={exercise.completedSets?.[index] ? "default" : "outline"}
+                        onClick={() => handleSetCompletion(exercise.id, index)}
+                        className="w-full"
+                      >
+                        {exercise.completedSets?.[index] ? "Completed" : "Mark Complete"}
+                      </Button>
+                    </div>
+                  ))}
                 </div>
               </CardContent>
             </Card>
