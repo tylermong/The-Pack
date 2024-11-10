@@ -16,10 +16,11 @@ import { ConfigModule } from '@nestjs/config';
 import { ChatroomModule } from './chatroom/chatroom.module';
 import { MessagesModule } from './messages/messages.module';
 import { CoachKeyModule } from './coach-key/coach-key.module';
+import { CoachAvailabilityModule } from './coachAvailability/coachAvailability.module';
 
 @Module({
   imports: [ConfigModule.forRoot({isGlobal: true}) ,PrismaModule, UserModule, CoachModule, 
-    AnnouncementsModule, ClassModule, userClassesModule, schedulingModule, AuthModule, ChatroomModule, MessagesModule, CoachKeyModule],
+    AnnouncementsModule, ClassModule, userClassesModule, schedulingModule, AuthModule, ChatroomModule, MessagesModule, CoachKeyModule, CoachAvailabilityModule],
   controllers: [AppController],
   providers: [AppService, PrismaService],
 })
