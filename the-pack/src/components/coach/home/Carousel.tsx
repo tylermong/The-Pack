@@ -45,8 +45,8 @@ const AnnouncementCarousel = () => {
         e.preventDefault();
         const newAnnouncement = { 
             title, 
-            content, 
-            authorId: '09037e03-b49f-4f9f-9a18-57853e0c231a'
+            content,
+            authorId: '1e42b84a-077d-4411-9249-cc0d6334f6ee' // hardcoded for now
         };
 
         try {

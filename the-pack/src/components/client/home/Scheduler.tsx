@@ -47,7 +47,6 @@ import {
     TableRow,
   } from "@/components/ui/table"
 import { Textarea } from "@/components/ui/textarea"
-import Script from 'next/script';
 
 
 
@@ -80,12 +79,13 @@ const Scheduler = () => {
     const [coach, setCoach] = useState<Record<string, string>>({});
     const [appointment, setAppointment] = useState<any[]>([]);
 
-    //Used for coach schedules
-    const [coachDate, setCoachDate] = React.useState<Date | undefined>()
-    const [timeslots, setTimeslots] = useState<string>("");
+    //Coach availability
+    const [availability, setAvailability] = useState([]);
+    const [selectedCoachId, setSelectedCoachId] = useState<string | undefined>();
+
 
     //User Input Calendar Format
-    const { register, handleSubmit, formState: { errors }, reset, setValue } = useForm({
+    const { register, handleSubmit, formState: { errors }, reset, setValue, watch } = useForm({
         resolver: zodResolver(FormSchema),
     });
 
@@ -124,6 +124,47 @@ const Scheduler = () => {
         fetchAppointments();
     }, []);
 
+    // Monitor the coach input to update selectedCoachId dynamically
+    useEffect(() => {
+        const coachName = watch('coach');
+        if (coachName && coach[coachName]) {
+            setSelectedCoachId(coach[coachName]);
+            console.log(coach)
+        }
+    }, [watch('coach'), coach]);
+
+    //fetches avaialbility of coaches for the respective date
+    const fetchAvailability = async () => {
+        if (appointmentDate) {
+            try {
+                const response = await axios.get(
+                    `http://localhost:3001/coachAvailability?coachId=${selectedCoachId}&date=${format(appointmentDate, 'yyyy-MM-dd')}`
+                );
+                setAvailability(response.data);
+            } catch (error) {
+                console.error("Error fetching availability:", error);
+            }
+        }
+    };
+
+    useEffect(() => {
+        fetchAvailability();  // fetch availability when a coach and appointment date are set
+    }, [appointmentDate, selectedCoachId]);  // Only refetch when date or selected coach changes
+
+    // Fetch coach availability when selectedCoachId and appointmentDate change
+    useEffect(() => {
+        if (selectedCoachId && appointmentDate) {
+            const fetchAvailability = async () => {
+                try {
+                    const response = await axios.get(`http://localhost:3001/coachAvailability?coachId=${selectedCoachId}&date=${format(appointmentDate, 'yyyy-MM-dd')}`);
+                    setAvailability(response.data);
+                } catch (error) {
+                    console.error("Error fetching availability:", error);
+                }
+            };
+            fetchAvailability();
+        }
+    }, [selectedCoachId, appointmentDate]);
 
 
     //Used for updating the monthly schedule with the current events
@@ -143,57 +184,32 @@ const Scheduler = () => {
         currentSchedule();
     }, []);
 
+
     //Handler for making appointments
-    const onAppointmentSubmit = async (data) => {
-        console.log('Form Submitted:', data);
+    const onSubmit = async (data) => {
         try {
-            // Assuming you already have clientId and coachId available (perhaps from user context or form input)
-            const clientId = data.clientId;  // Replace with actual clientId from context or form
-            const coachId = data.coachId;    // Replace with actual coachId from context or form
-    
-            // Create the appointment data matching the Prisma schema
+
             const appointmentData = {
-                timeSlot: appointmentDate?.toISOString(),  // Adjust this to match your time format
-                clientId: clientId,  // The ID of the client
-                coachId: coachId,    // The ID of the coach
+                ...data,
+                appointmentDate: appointmentDate?.toISOString(),
             };
-    
+
             // Send POST request to the database
             const response = await axios.post('http://localhost:3001/scheduling', appointmentData);
-    
+
             // Update local state with the response data
             setSchedule([...schedule, response.data]);
             console.log('Submitted:', response.data);
-    
-            // Reset form state
+
             reset();
             setAppointmentDate(undefined);
         } catch (error) {
-            console.error('Error submitting appointment:', error);
-        }
-    };
-
-    // Handle form submission to save coach schedule
-    const onCoachSubmit = async (data) => {
-        const scheduleData = {
-            coachId: "coach-id", // You need to get the coach ID (probably from logged-in user)
-            date: coachDate?.toISOString(),
-            timeslots: timeslots,
-        };
-
-        try {
-            const response = await axios.post('http://localhost:3001/coachAvailability', scheduleData);
-            console.log('Schedule saved:', response.data);
-            setTimeslots('');
-            setCoachDate(undefined);
-        } catch (error) {
-            console.error('Error submitting schedule:', error);
+            console.error('Error submitting announcement:', error);
         }
     };
 
     //Handler for checking day schedule (displays and update respective info)
     const handleDayClick = async (date) => {
-        console.log('Day clicked:', date);
         setSelectedDate(date);
         setIsDialogOpen(true);
       
@@ -341,7 +357,7 @@ const Scheduler = () => {
                 </Dialog>
             </div>
 
-            <div className='mt-1'>
+            <div className='AppointmentForm mt-1'>
                 <Dialog>
                     <DialogTrigger asChild>
                         <Button variant="outline" className='bg-white text-black hover:bg-gray-300'>Create an Appointment</Button>
@@ -354,11 +370,12 @@ const Scheduler = () => {
                             </CardHeader>
 
                             <CardContent>
-                                <form onSubmit={handleSubmit(onAppointmentSubmit)}>
+                                <form onSubmit={handleSubmit(onSubmit)}>
                                         <div className="grid w-full items-center gap-4">
+
                                             <div className="flex flex-col space-y-1.5">
                                                 <Label htmlFor="name" className='mb-1'>Name</Label>
-                                                <Input id="name" placeholder="Your name" {...register('name')} />
+                                                <Input id="name" placeholder="Your name" />
                                             </div>
 
                                             <div className="flex flex-col space-y-1.5">
@@ -415,82 +432,30 @@ const Scheduler = () => {
                                                     </PopoverContent>
                                                 </Popover>
                                             </div>
-                                        </div>
-                                        <Button type = "submit" variant="outline">Submit</Button>
-                                    </form>
-                            </CardContent>
 
-                        </Card>
-                    </DialogContent>
-                </Dialog>
-            </div>
-
-
-            <div className='mb-20 mt-1'>
-                <Dialog>
-                    <DialogTrigger asChild>
-                        <Button variant="outline" className='bg-white text-black hover:bg-gray-300'>Create Day Schedule</Button>
-                    </DialogTrigger>
-
-                    <DialogContent className="sm:max-w-md bg-black">
-                        <Card className="w-[350px] bg-black text-white border-none">
-                            <CardHeader>
-                                <CardTitle className='text-base'>Day Schedule Details</CardTitle>
-                            </CardHeader>
-
-                            <CardContent>
-                                <form onSubmit={handleSubmit(onCoachSubmit)}>
-                                        <div className="grid w-full items-center gap-4">
-                                            <div className='flex flex-col space-y-1.5'>
-                                                <Label htmlFor="appointmentDate">Date</Label>
-                                                <Popover>
-                                                    <PopoverTrigger asChild>
-                                                        <Button
-                                                        variant={"outline"}
-                                                        className={cn(
-                                                            "w-[280px] justify-start text-left font-normal bg-black text-white border-solid border-white",
-                                                            !coachDate && "text-muted-foreground"
-                                                        )}
-                                                        >
-                                                        <CalendarIcon />
-                                                        {coachDate ? format(coachDate, "PPP") : <span>Pick a date</span>}
-                                                        </Button>
-                                                    </PopoverTrigger>
-                                                    <PopoverContent className="w-auto h-auto p-0">
-                                                        <div className='bg-black text-white'>
-                                                        <Calendar
-                                                        mode="single"
-                                                        selected={coachDate}
-                                                        onSelect={(date) => {
-                                                            setCoachDate(date);
-                                                            setValue('coachDate', date);
-                                                        }}
-                                                        initialFocus
-                                                        />
-                                                        </div>
-                                                    </PopoverContent>
-                                                </Popover>
-
-                                                <div className="flex flex-col space-y-1.5 pt-4">
-                                                    <Label htmlFor="name" className='mb-1'>Time Slots</Label>
-                                                    <Textarea 
-                                                    placeholder="Type your time slots (i.e 10AM - 5PM)..."
-                                                    value={timeslots}
-                                                    onChange={(e) => setTimeslots(e.target.value)}
-                                                    />
-                                                </div>
+                                            <div className="flex flex-col space-y-1.5">
+                                                <Label htmlFor="coachAvailability" className='mb-1'>Coach Availability</Label>
+                                                <Card className='flex bg-primary text-white'>
+                                                {availability.length > 0 ? (
+                                                    availability.map((slot, index) => (
+                                                        <div key={index} className="px-2">{slot.timeSlot}</div>
+                                                    ))
+                                                ) : (
+                                                    <div className="px-2">No availability</div>
+                                                )}
+                                                </Card>
                                             </div>
                                         </div>
-
-                                        
-                                        <Button type="submit" variant="outline">Save Availability</Button>
                                     </form>
                             </CardContent>
+
+                            <CardFooter className="flex justify-between">
+                                <Button type = "submit" variant="outline">Submit</Button>
+                            </CardFooter>
                         </Card>
                     </DialogContent>
                 </Dialog>
             </div>
-            
         </div>
     );
 };
