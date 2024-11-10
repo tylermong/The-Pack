@@ -1,7 +1,6 @@
 import { IsString, IsNotEmpty, IsUUID, IsOptional } from 'class-validator';
 
 export class UpdateExerciseDto {
-  @IsUUID()
   @IsNotEmpty()
   exerciseId: string;  
 

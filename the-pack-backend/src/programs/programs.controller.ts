@@ -1,11 +1,15 @@
 // src/programs/programs.controller.ts
-import { Controller, Get, Post, Body, Param } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Patch } from '@nestjs/common';
 import { ProgramsService } from './programs.service';
 import { CreateProgramDto } from './dtos/createProgram.dto';
 import { CreateDayDto } from './dtos/createDay.dto';
 import { CreateWeekDto } from './dtos/createWeek.dto';
 import { CreateExerciseDto } from './dtos/createExercise.dto';
 import { Programs } from '@prisma/client';
+import { UpdateProgramDto } from './dtos/updateProgram.dto';
+import { UpdateWeekDto } from './dtos/updateWeek.dto';
+import { UpdateDayDto } from './dtos/updateDay.dto';
+import { UpdateExerciseDto } from './dtos/updateExercise.dto';
 
 @Controller('programs')
 export class ProgramsController {
@@ -28,15 +32,65 @@ export class ProgramsController {
   async createExercise(@Body() createExerciseDto: CreateExerciseDto){
     return this.programsService.createExercise(createExerciseDto)
   }
+
+@Patch('update/program/:programId')
+async updateProgram(
+  @Param('programId') programId: string, 
+  @Body() updateProgramDto: UpdateProgramDto
+) {
+  // Assign the programId from the URL to the DTO
+  updateProgramDto.programId = programId;
+
+  // Now pass the DTO directly to the service method
+  return this.programsService.updateProgram(updateProgramDto);
+}
   
-  @Get()
-  async findAll(){
-    return this.programsService.findAll(); // Delegate to service
+  @Patch('update/week/:weekId')
+  async updateProgramWeek(
+    @Param('weekId') weekId: string,  
+    @Body() updateWeekDto: UpdateWeekDto
+  ) {
+    return this.programsService.updateProgramWeek({ ...updateWeekDto, programId: weekId });
   }
 
-  // Get program by ID
-  @Get(':id')
-  async findOne(@Param('id') id: string){
-    return this.programsService.findOne(id); // Delegate to service
+  @Patch('update/day/:dayId')
+  async updateProgramDay(
+    @Param('dayId') dayId: string,  
+    @Body() updateDayDto: UpdateDayDto
+  ) {
+    return this.programsService.updateProgramDay({ ...updateDayDto, dayId });
   }
+
+  @Patch('update/exercise/:exerciseId')
+  async updateExercise(
+    @Param('exerciseId') exerciseId: string,  
+    @Body() updateExerciseDto: UpdateExerciseDto
+  ) {
+    return this.programsService.updateExercise({ ...updateExerciseDto, exerciseId });
+  }
+
+  
+  @Get('all')
+  async getAllPrograms() {
+    return this.programsService.getAllPrograms();
+  }
+
+  // GET endpoint to fetch all weeks
+  @Get('weeks')
+  async getAllWeeks() {
+    return this.programsService.getAllWeeks();
+  }
+
+  // GET endpoint to fetch all days
+  @Get('days')
+  async getAllDays() {
+    return this.programsService.getAllDays();
+  }
+
+  // GET endpoint to fetch all exercises
+  @Get('exercises')
+  async getAllExercises() {
+    return this.programsService.getAllExercises();
+  }
+
 }

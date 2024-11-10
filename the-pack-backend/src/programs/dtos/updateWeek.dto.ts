@@ -1,10 +1,10 @@
 import { IsString, IsOptional, IsUUID } from 'class-validator';
 
-export class UpdateProgramWeekDto {
-  @IsUUID()
-  programWeekId: string;  
+export class UpdateWeekDto {
+
+  programId: string;  
 
   @IsString()
   @IsOptional()
-  numOfWeeks?: string;  
+  numOfWeeks: string;
 }

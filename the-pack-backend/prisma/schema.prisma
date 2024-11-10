@@ -90,6 +90,7 @@ model userClasses{
 model scheduling{
   id String @id @default(uuid())
   timeSlot String
+  date DateTime @db.Date
   client User @relation(fields: [clientId], references: [id], name: "clientAppointments")
   clientId String
   appointmentHolder User @relation(fields: [coachId], references: [id], name: "coachAppointments")
@@ -99,6 +100,7 @@ model scheduling{
 model coachAvailability{
   id String @id @default(uuid())
   timeSlot String
+  date DateTime @db.Date
   timeSlotCreator User @relation(fields: [coachId], references: [id], name: "timeAvailability")
   coachId String
 }

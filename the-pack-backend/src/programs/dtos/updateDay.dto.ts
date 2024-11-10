@@ -1,7 +1,7 @@
 import { IsString, IsOptional, IsUUID } from 'class-validator';
 
-export class UpdateProgramDayDto {
-  @IsUUID()
+export class UpdateDayDto {
+    
   dayId: string;  
 
   @IsString()
