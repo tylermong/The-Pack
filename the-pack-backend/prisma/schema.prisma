@@ -164,6 +164,7 @@ model Chatroom{
     coach           User             @relation(fields: [coachId], references: [id])
     coachId         String 
 
+    Messages Messages[]
 }
 
 model Messages{
@@ -173,7 +174,10 @@ model Messages{
     user            User             @relation(fields: [userID], references: [id])
     userID          String
 
-  
+    chatroomId      Chatroom         @relation(fields: [chatroomID], references: [id])
+    chatroomID      String 
+
+    createdAt       DateTime         @default(now())
 }
 
 model CoachKey{
