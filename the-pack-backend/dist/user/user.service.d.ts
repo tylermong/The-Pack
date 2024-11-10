@@ -12,7 +12,7 @@ export declare class UserService {
         role: import(".prisma/client").$Enums.Role;
         createdAt: Date;
         updatedAt: Date;
-        coachId: string | null;
+        usersCoachid: string | null;
     }>;
     findAll(role?: 'CLIENT' | 'COACH' | 'ADMIN'): Promise<{
         id: string;
@@ -23,7 +23,7 @@ export declare class UserService {
         role: import(".prisma/client").$Enums.Role;
         createdAt: Date;
         updatedAt: Date;
-        coachId: string | null;
+        usersCoachid: string | null;
     }[]>;
     findOne(id: string): Promise<{
         id: string;
@@ -34,7 +34,7 @@ export declare class UserService {
         role: import(".prisma/client").$Enums.Role;
         createdAt: Date;
         updatedAt: Date;
-        coachId: string | null;
+        usersCoachid: string | null;
     }>;
     update(id: string, updateUserDto: Prisma.UserUpdateInput): Promise<{
         id: string;
@@ -45,7 +45,7 @@ export declare class UserService {
         role: import(".prisma/client").$Enums.Role;
         createdAt: Date;
         updatedAt: Date;
-        coachId: string | null;
+        usersCoachid: string | null;
     }>;
     remove(id: string): Promise<{
         id: string;
@@ -56,7 +56,7 @@ export declare class UserService {
         role: import(".prisma/client").$Enums.Role;
         createdAt: Date;
         updatedAt: Date;
-        coachId: string | null;
+        usersCoachid: string | null;
     }>;
     findByEmail(email: string): Promise<{
         id: string;
@@ -67,7 +67,7 @@ export declare class UserService {
         role: import(".prisma/client").$Enums.Role;
         createdAt: Date;
         updatedAt: Date;
-        coachId: string | null;
+        usersCoachid: string | null;
     }>;
     assignCoachToClient(clientId: string, coachId: string): Promise<{
         id: string;
@@ -78,6 +78,6 @@ export declare class UserService {
         role: import(".prisma/client").$Enums.Role;
         createdAt: Date;
         updatedAt: Date;
-        coachId: string | null;
+        usersCoachid: string | null;
     }>;
 }

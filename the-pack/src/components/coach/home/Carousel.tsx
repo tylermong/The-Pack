@@ -6,6 +6,17 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogFooter, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 
 const AnnouncementCarousel = () => {
     const [title, setTitle] = useState('');
@@ -13,7 +24,8 @@ const AnnouncementCarousel = () => {
     const [announcements, setAnnouncements] = useState([
         {
             title: "Gym Open Hours",
-            content: "Monday - Friday: 8AM - 7PM\nSaturday: 9AM - 11PM\nSunday: 8AM - 7PM"
+            content: "Monday - Friday: 8AM - 7PM\nSaturday: 9AM - 11PM\nSunday: 8AM - 7PM",
+            id: 1 //Exmaple ID
         }
     ]);
 
@@ -53,6 +65,16 @@ const AnnouncementCarousel = () => {
         }
     }
 
+    //For deleting announcements
+    const handleDelete = async (id) => {
+        try {
+            await axios.delete(`http://localhost:3001/announcements/${id}`);
+            setAnnouncements(announcements.filter((announcement) => announcement.id !== id));
+        } catch (error) {
+            console.error('Error deleting announcement:', error);
+        }
+    };
+
     return (
         <div>
             <div className="flex flex-col justify-center md:max-h-screen md:w-full pt-1 space-x-80">
@@ -72,6 +94,27 @@ const AnnouncementCarousel = () => {
                                             <CardContent className='text-center text-sm font-medium'>
                                                 <p style={{ whiteSpace: 'pre-line' }}>{announcement.content}</p>
                                             </CardContent>
+                                            <div className="flex justify-center mt-4">
+                                                <AlertDialog>
+                                                    <AlertDialogTrigger asChild>
+                                                        <Button variant="destructive" onClick={() => handleDelete(announcement.id)}>
+                                                            Delete
+                                                        </Button>
+                                                    </AlertDialogTrigger>
+                                                    <AlertDialogContent className='bg-primary'>
+                                                        <AlertDialogHeader>
+                                                            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                                            <AlertDialogDescription className='text-white font-bold'>
+                                                                This action cannot be undone. This will permanently delete the announcement.
+                                                            </AlertDialogDescription>
+                                                        </AlertDialogHeader>
+                                                        <AlertDialogFooter>
+                                                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                            <AlertDialogAction className='border border-solid'>Continue</AlertDialogAction>
+                                                        </AlertDialogFooter>
+                                                    </AlertDialogContent>
+                                                </AlertDialog>
+                                            </div>
                                         </Card>
                                     </CarouselItem>
                                 ))}

@@ -17,6 +17,7 @@
     "@nestjs/testing": "^10.4.4",
     "@prisma/client": "^5.20.0",
     "firebase": "^11.0.1",
+    "bcrypt": "^5.1.1",
     "flowbite": "^2.5.2",
     "nextjs": "^0.0.3"
   }
