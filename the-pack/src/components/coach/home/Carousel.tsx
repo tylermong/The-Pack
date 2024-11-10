@@ -6,6 +6,17 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogFooter, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 
 const AnnouncementCarousel = () => {
     const [title, setTitle] = useState('');
@@ -13,12 +24,11 @@ const AnnouncementCarousel = () => {
     const [announcements, setAnnouncements] = useState([
         {
             title: "Gym Open Hours",
-            content: "Monday - Friday: 8AM - 7PM\nSaturday: 9AM - 11PM\nSunday: 8AM - 7PM"
+            content: "Monday - Friday: 8AM - 7PM\nSaturday: 9AM - 11PM\nSunday: 8AM - 7PM",
+            id: 1 //Exmaple ID
         }
     ]);
-    const [selectedAnnouncement, setSelectedAnnouncement] = useState(null);
 
-    //Loads announcements
     useEffect(() => {
         const currentAnnouncements = async () => {
             try{
@@ -31,34 +41,21 @@ const AnnouncementCarousel = () => {
         currentAnnouncements();
     }, []);
 
-
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         const newAnnouncement = { 
             title, 
             content, 
-            authorId: 'f90a8940-190b-4930-9967-be0840c2e1d7'
+            authorId: '09037e03-b49f-4f9f-9a18-57853e0c231a'
         };
 
         try {
-            //NOT SURE IF WE STILL NEED THIS
-            // // Send POST request to the database
-            // const response = await axios.post('http://localhost:3001/announcements', newAnnouncement);
+            // Send POST request to the database
+            const response = await axios.post('http://localhost:3001/announcements', newAnnouncement);
 
-            // // Update local state with the response data
-            // setAnnouncements([...announcements, response.data]);
-            // console.log('Submitted:', response.data);
-
-            const response = selectedAnnouncement
-                ? await axios.put(`http://localhost:3001/announcements/${selectedAnnouncement.id}`, newAnnouncement)
-                : await axios.post('http://localhost:3001/announcements', newAnnouncement);
-            
-            if (selectedAnnouncement) {
-                setAnnouncements(announcements.map((ann) => ann.id === selectedAnnouncement.id ? response.data : ann));
-                setSelectedAnnouncement(null); // Reset selection
-            } else {
-                setAnnouncements([...announcements, response.data]);
-            }
+            // Update local state with the response data
+            setAnnouncements([...announcements, response.data]);
+            console.log('Submitted:', response.data);
 
             // Clear the form fields
             setTitle('');
@@ -68,11 +65,14 @@ const AnnouncementCarousel = () => {
         }
     }
 
-    //Handler for during edit state
-    const handleEditClick = (announcement) => {
-        setSelectedAnnouncement(announcement);
-        setTitle(announcement.title);
-        setContent(announcement.content);
+    //For deleting announcements
+    const handleDelete = async (id) => {
+        try {
+            await axios.delete(`http://localhost:3001/announcements/${id}`);
+            setAnnouncements(announcements.filter((announcement) => announcement.id !== id));
+        } catch (error) {
+            console.error('Error deleting announcement:', error);
+        }
     };
 
     return (
@@ -94,8 +94,26 @@ const AnnouncementCarousel = () => {
                                             <CardContent className='text-center text-sm font-medium'>
                                                 <p style={{ whiteSpace: 'pre-line' }}>{announcement.content}</p>
                                             </CardContent>
-                                            <div className="flex justify-center mt-2">
-                                                <Button onClick={() => handleEditClick(announcement)} variant="secondary">Edit</Button>
+                                            <div className="flex justify-center mt-4">
+                                                <AlertDialog>
+                                                    <AlertDialogTrigger asChild>
+                                                        <Button variant="destructive" onClick={() => handleDelete(announcement.id)}>
+                                                            Delete
+                                                        </Button>
+                                                    </AlertDialogTrigger>
+                                                    <AlertDialogContent className='bg-primary'>
+                                                        <AlertDialogHeader>
+                                                            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                                            <AlertDialogDescription className='text-white font-bold'>
+                                                                This action cannot be undone. This will permanently delete the announcement.
+                                                            </AlertDialogDescription>
+                                                        </AlertDialogHeader>
+                                                        <AlertDialogFooter>
+                                                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                            <AlertDialogAction className='border border-solid'>Continue</AlertDialogAction>
+                                                        </AlertDialogFooter>
+                                                    </AlertDialogContent>
+                                                </AlertDialog>
                                             </div>
                                         </Card>
                                     </CarouselItem>
@@ -106,18 +124,16 @@ const AnnouncementCarousel = () => {
                         </Carousel>
                     </div>
                     <div className="flex justify-center mt-4">
-                    <Dialog open={Boolean(selectedAnnouncement)} onOpenChange={() => setSelectedAnnouncement(null)}>
+                        <Dialog>
                             <DialogTrigger asChild>
-                                <Button variant="secondary" className="text-primary px-2 py-2 text-sm rounded-lg">
-                                    {selectedAnnouncement ? "Edit Announcement" : "Create Announcement"}
-                                </Button>
+                                <Button variant="secondary" className="text-primary px-2 py-2 text-sm rounded-lg">Create Announcement</Button>
                             </DialogTrigger>
                             <DialogContent className="bg-primary sm:max-w-[625px]">
                                 <form onSubmit={handleSubmit}>
                                     <DialogHeader>
-                                        <DialogTitle>{selectedAnnouncement ? "Edit Announcement" : "Create Announcement"}</DialogTitle>
+                                        <DialogTitle>Create Announcement</DialogTitle>
                                         <DialogDescription>
-                                            {selectedAnnouncement ? "Update the details of this announcement." : "Fill in the details for your new announcement."}
+                                            Fill in the details for your new announcement.
                                         </DialogDescription>
                                     </DialogHeader>
                                     <div className="grid gap-4 py-4">
@@ -141,9 +157,7 @@ const AnnouncementCarousel = () => {
                                         </div>
                                     </div>
                                     <DialogFooter>
-                                        <Button type="submit" className="bg-secondary text-primary hover:bg-gray-300">
-                                            {selectedAnnouncement ? "Update Announcement" : "Create Announcement"}
-                                        </Button>
+                                        <Button type="submit" className="bg-secondary text-primary hover:bg-gray-300">Create Announcement</Button>
                                     </DialogFooter>
                                 </form>
                             </DialogContent>
