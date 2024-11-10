@@ -125,6 +125,7 @@ const Scheduler = () => {
     }, []);
 
 
+
     //Used for updating the monthly schedule with the current events
     useEffect(() => {
         const currentSchedule = async () => {
@@ -141,7 +142,6 @@ const Scheduler = () => {
         };
         currentSchedule();
     }, []);
-
 
     //Handler for making appointments
     const onAppointmentSubmit = async (data) => {
@@ -490,6 +490,7 @@ const Scheduler = () => {
                     </DialogContent>
                 </Dialog>
             </div>
+            
         </div>
     );
 };

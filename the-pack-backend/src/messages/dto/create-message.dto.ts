@@ -10,4 +10,8 @@ export class CreateMessagesDto {
     @IsNotEmpty()
     @IsString()
     userID: string 
+
+    @IsNotEmpty()
+    @IsString()
+    chatroomId: string 
 }

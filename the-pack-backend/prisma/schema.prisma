@@ -41,13 +41,14 @@ model User {
 
   //The nutrition and exercise trackers for user
   nutritionEntries     NutritionTracker[]
-  exerciseEntries      ExerciseTracker[]
+  programEntries      Programs[]
 
   //The chatroom that coaches can create
   Chatroom Chatroom[]
 
   // the messages user or coaches can send to a chatroom
   Messages Messages[]
+  availability coachAvailability[] @relation("timeAvailability")
 }
 
 model announcements{
@@ -68,6 +69,8 @@ model Class{
   creator User @relation(fields: [creatorId], references: [id])
   creatorId String
   currentlyEnrolled Int?
+  
+  timeSlot String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -91,7 +94,13 @@ model scheduling{
   clientId String
   appointmentHolder User @relation(fields: [coachId], references: [id], name: "coachAppointments")
   coachId String
+}
 
+model coachAvailability{
+  id String @id @default(uuid())
+  timeSlot String
+  timeSlotCreator User @relation(fields: [coachId], references: [id], name: "timeAvailability")
+  coachId String
 }
 
 model NutritionTracker {
@@ -111,21 +120,41 @@ model NutritionTracker {
   updatedAt       DateTime   @updatedAt
 }
 
-model ExerciseTracker {
+model Programs {
   id              String           @id @default(uuid())
-  title           String
-  description     String?
+  programName     String
   user            User             @relation(fields: [userId], references: [id])
   userId          String
-  date            DateTime         @default(now()) // Date of entry
-  timeSlot        String?          // Specific time when the exercise was performed
-  duration        Int?             // Duration of the exercise in minutes
-  intensity       ExerciseIntensity? // Intensity level of the workout
-  caloriesBurned  Int?             // Estimated calories burned
-  exerciseType    String?          // Type of exercise (e.g., Running, Weightlifting)
-  notes           String?          // User's personal notes
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
+  weekEntries   programWeeks[]
+}
+
+model programWeeks{
+  id String @id @default(uuid())
+  programName Programs @relation(fields: [programId], references: [id])
+  programId String
+  numOfWeeks String
+  daysEntries   programDays[]
+}
+
+model programDays{
+  id String @id @default(uuid())
+  name String
+  week programWeeks @relation(fields: [weekNum], references: [id])
+  weekNum String
+  exerciseEntries   dailyExercise[]
+}
+
+model dailyExercise{
+  id String @id @default(uuid())
+  day programDays @relation(fields: [dayNum], references: [id])
+  dayNum String
+  exerciseName String
+  numOfSets String
+  numOfReps String
+  weightLifted String
+  
 }
 
 model Chatroom{
@@ -135,6 +164,7 @@ model Chatroom{
     coach           User             @relation(fields: [coachId], references: [id])
     coachId         String 
 
+    Messages Messages[]
 }
 
 model Messages{
@@ -144,7 +174,17 @@ model Messages{
     user            User             @relation(fields: [userID], references: [id])
     userID          String
 
+    chatroomId      Chatroom         @relation(fields: [chatroomID], references: [id])
+    chatroomID      String 
+
+    createdAt       DateTime         @default(now())
+    @@unique([userID, chatroomID]) //Composite unique constraint 
+}
+
+model CoachKey{
   
+  id              String           @id @default(uuid())
+
 }
 
 enum ExerciseIntensity {

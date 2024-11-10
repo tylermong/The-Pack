@@ -1,4 +1,4 @@
-import { Body, Controller, Post, Request, UseGuards } from '@nestjs/common';
+import { Body, Controller, Param, Post, Request, UseGuards } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { UserService } from 'src/user/user.service';
 import { LoginDto } from './dto/auth.dto';
@@ -11,16 +11,14 @@ import { request } from 'http';
 export class AuthController {
     constructor (private userService: UserService, private coachService: CoachService, private authService: AuthService ){}
    
-
-
     @Post('userRegister')
     async userRegister(@Body() createUserDto: Prisma.UserCreateInput){
           return this.userService.create(createUserDto)
     }
 
     @Post('coachRegister')
-    async coachRegister(@Body() createUserDto: Prisma.UserCreateInput){
-          return this.coachService.create(createUserDto)
+    async coachRegister(@Body('id') id: string, @Body() createUserDto: Prisma.UserCreateInput){
+          return this.coachService.create(id, createUserDto)
     }
 
     @Post('userLogin')
