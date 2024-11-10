@@ -48,6 +48,7 @@ model User {
 
   // the messages user or coaches can send to a chatroom
   Messages Messages[]
+  availability coachAvailability[] @relation("timeAvailability")
 }
 
 model announcements{
@@ -68,6 +69,8 @@ model Class{
   creator User @relation(fields: [creatorId], references: [id])
   creatorId String
   currentlyEnrolled Int?
+  
+  timeSlot String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -91,7 +94,13 @@ model scheduling{
   clientId String
   appointmentHolder User @relation(fields: [coachId], references: [id], name: "coachAppointments")
   coachId String
+}
 
+model coachAvailability{
+  id String @id @default(uuid())
+  timeSlot String
+  timeSlotCreator User @relation(fields: [coachId], references: [id], name: "timeAvailability")
+  coachId String
 }
 
 model NutritionTracker {
