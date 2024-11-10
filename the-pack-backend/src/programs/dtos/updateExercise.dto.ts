@@ -1,0 +1,23 @@
+import { IsString, IsNotEmpty, IsUUID, IsOptional } from 'class-validator';
+
+export class UpdateExerciseDto {
+  @IsUUID()
+  @IsNotEmpty()
+  exerciseId: string;  
+
+  @IsString()
+  @IsOptional()
+  exerciseName?: string;  
+
+  @IsString()
+  @IsOptional()
+  numOfSets?: string; 
+
+  @IsString()
+  @IsOptional()
+  numOfReps?: string;  
+
+  @IsString()
+  @IsOptional()
+  weightLifted?: string; 
+}

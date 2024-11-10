@@ -6,6 +6,7 @@ import { CreateWeekDto } from './dtos/createWeek.dto';
 import { CreateDayDto } from './dtos/createDay.dto';
 import { CreateExerciseDto } from './dtos/createExercise.dto';
 import { Programs } from '@prisma/client'; 
+import { UpdateProgramDto } from './dtos/updateProgram.dto';
 
 @Injectable()
 export class ProgramsService {
@@ -54,6 +55,19 @@ async createExercise(createExerciseDto: CreateExerciseDto){
         }
     })
 }
+
+ // Update Program
+ async updateProgram(updateProgramDto: UpdateProgramDto) {
+    const { programId, programName } = updateProgramDto;
+
+    // Update program
+    return this.prisma.programs.update({
+      where: { id: programId },
+      data: {
+        programName,  // Only the programName is updated here, it can be optional
+      },
+    });
+  }
 
 
   async findAll() {
