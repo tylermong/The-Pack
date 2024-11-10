@@ -3,12 +3,11 @@ import { LoginDto } from './dto/auth.dto';
 import { UserService } from 'src/user/user.service';
 import { compare } from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
-//import { CoachService } from 'src/coach/coach.service';
 import { Role } from '@prisma/client';
 
 @Injectable()
 export class AuthService {
-    constructor(private userService: UserService, /*private coachService: CoachService,*/ private jwtService: JwtService) {}
+    constructor(private userService: UserService,  private jwtService: JwtService) {}
 
     async userLogin(data: LoginDto){
 
