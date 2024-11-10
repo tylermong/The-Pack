@@ -25,10 +25,15 @@ interface Day {
   exercises: Exercise[];
 }
 
+interface Week {
+  weekNumber: number;
+  days: Day[];
+}
+
 interface Program {
   id: string;
   name: string;
-  days: Day[];
+  weeks: Week[];
 }
 
 export default function ProgramDetails({ program }: { program: Program }) {
@@ -96,25 +101,32 @@ export default function ProgramDetails({ program }: { program: Program }) {
       <h1 className="text-3xl font-bold mb-6">{program.name}</h1>
       
       {!selectedDay ? (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {program.days.map((day) => (
-            <Card key={day.id} className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => handleDayClick(day)}>
-              <CardHeader>
-                <CardTitle>{day.name}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  {day.exercises.map((exercise) => (
-                    <div key={exercise.id} className="text-sm">
-                      <p className="font-medium">{exercise.name}</p>
-                      <p className="text-muted-foreground">
-                        {exercise.sets} × {exercise.reps} reps @ {exercise.weight}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+        <div className="space-y-8">
+          {program.weeks.map((week) => (
+            <div key={week.weekNumber} className="space-y-4">
+              <h2 className="text-2xl font-bold">Week {week.weekNumber}</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {week.days.map((day) => (
+                  <Card key={day.id} className="hover:bg-accent/50 cursor-pointer" onClick={() => handleDayClick(day)}>
+                    <CardHeader>
+                      <CardTitle>{day.name}</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-2">
+                        {day.exercises.map((exercise) => (
+                          <div key={exercise.id} className="text-sm">
+                            <p className="font-medium">{exercise.name}</p>
+                            <p className="text-muted-foreground">
+                              {exercise.sets} × {exercise.reps} reps @ {exercise.weight}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
           ))}
         </div>
       ) : (
