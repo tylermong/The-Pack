@@ -83,6 +83,7 @@ const Scheduler = () => {
     //Used for coach schedules
     const [coachDate, setCoachDate] = React.useState<Date | undefined>()
     const [timeslots, setTimeslots] = useState<string>("");
+    const [appDate, setAppDate] = useState<string>("");
 
     //User Input Calendar Format
     const { register, handleSubmit, formState: { errors }, reset, setValue } = useForm({
@@ -148,14 +149,15 @@ const Scheduler = () => {
         console.log('Form Submitted:', data);
         try {
             // Assuming you already have clientId and coachId available (perhaps from user context or form input)
-            const clientId = data.clientId;  // Replace with actual clientId from context or form
-            const coachId = data.coachId;    // Replace with actual coachId from context or form
+            // const clientId = data.clientId;  // Replace with actual clientId from context or form
+            // const coachId = data.coachId;    // Replace with actual coachId from context or form
     
             // Create the appointment data matching the Prisma schema
             const appointmentData = {
+                clientId: "a215a03b-0fff-4f0f-94e9-43dba6f8046b",  // The ID of the client
+                coachId: "1e42b84a-077d-4411-9249-cc0d6334f6ee",    // The ID of the coach
                 timeSlot: appointmentDate?.toISOString(),  // Adjust this to match your time format
-                clientId: clientId,  // The ID of the client
-                coachId: coachId,    // The ID of the coach
+                date: appDate
             };
     
             // Send POST request to the database
@@ -176,7 +178,7 @@ const Scheduler = () => {
     // Handle form submission to save coach schedule
     const onCoachSubmit = async (data) => {
         const scheduleData = {
-            coachId: "coach-id", // You need to get the coach ID (probably from logged-in user)
+            coachId: "1e42b84a-077d-4411-9249-cc0d6334f6ee", // You need to get the coach ID (probably from logged-in user)
             date: coachDate?.toISOString(),
             timeslots: timeslots,
         };
@@ -415,8 +417,14 @@ const Scheduler = () => {
                                                     </PopoverContent>
                                                 </Popover>
                                             </div>
+
+                                            <div className="flex flex-col space-y-1.5">
+                                                <Label htmlFor="coach" className='mb-1'>Time</Label>
+                                                <Input id="time" placeholder="Time" {...register('time')} />
+                                            </div>
+
                                         </div>
-                                        <Button type = "submit" variant="outline">Submit</Button>
+                                        <Button type = "submit" variant="outline" className='pt-4'>Submit</Button>
                                     </form>
                             </CardContent>
 
@@ -481,8 +489,6 @@ const Scheduler = () => {
                                                 </div>
                                             </div>
                                         </div>
-
-                                        
                                         <Button type="submit" variant="outline">Save Availability</Button>
                                     </form>
                             </CardContent>
