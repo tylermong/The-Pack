@@ -23,19 +23,8 @@ const ClientRegisterForm = () =>{
             body: JSON.stringify({ name, email, password}),
         });
 
-        
-        if(response.ok)
-        {
-            console.log("GOOD")
-            router.push("./login")
-        }
-    
-        if (!response.ok) {
-            // Handle error
-            const data = await response.json();
-            alert(`Error: ${data.message || 'Registration failed'}`);
-            return;
-        }
+        router.push("./clientlogin")
+
     
     };
     

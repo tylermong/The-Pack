@@ -24,7 +24,7 @@ const ClientLoginForm = () =>{
                     </div>
 
                     <div className="flex items-center md:w-1/2 justify-center p-6 h-full w-full">
-                        <form className="max-w-lg w-full mx-auto" onSubmit={() => router.push("./clienthome")}>
+                        <form className="max-w-lg w-full mx-auto" onSubmit={(event) => { event.preventDefault(); router.push("/clienthome")}}>
                             <div className="mb-12">
                                 <h3 className="text-white md:text-3xl text-2xl font-extrabold max-md:text-center">Client Log In</h3>
                             </div>

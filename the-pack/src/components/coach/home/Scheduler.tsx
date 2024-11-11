@@ -154,10 +154,10 @@ const Scheduler = () => {
     
             // Create the appointment data matching the Prisma schema
             const appointmentData = {
-                clientId: "a215a03b-0fff-4f0f-94e9-43dba6f8046b",  // The ID of the client
-                coachId: "1e42b84a-077d-4411-9249-cc0d6334f6ee",    // The ID of the coach
-                timeSlot: appointmentDate?.toISOString(),  // Adjust this to match your time format
-                date: appDate
+                clientId: "d646464c-1a84-4273-be02-b6983b1ebc31",  // The ID of the client
+                coachId: "7dc28ab3-4983-47be-968f-d582e554a1d5",    // The ID of the coach
+                timeSlot: appDate,  // Adjust this to match your time format
+                date: appointmentDate?.toISOString(),
             };
     
             // Send POST request to the database
@@ -177,8 +177,9 @@ const Scheduler = () => {
 
     // Handle form submission to save coach schedule
     const onCoachSubmit = async (data) => {
+        console.log('HELOOOOOOO')
         const scheduleData = {
-            coachId: "1e42b84a-077d-4411-9249-cc0d6334f6ee", // You need to get the coach ID (probably from logged-in user)
+            coachId: "7dc28ab3-4983-47be-968f-d582e554a1d5", // You need to get the coach ID (probably from logged-in user)
             date: coachDate?.toISOString(),
             timeslots: timeslots,
         };
