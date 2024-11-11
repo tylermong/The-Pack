@@ -176,12 +176,12 @@ const Scheduler = () => {
     };
 
     // Handle form submission to save coach schedule
-    const onCoachSubmit = async (data) => {
-        console.log('HELOOOOOOO')
+    const onCoachSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
         const scheduleData = {
             coachId: "7dc28ab3-4983-47be-968f-d582e554a1d5", // You need to get the coach ID (probably from logged-in user)
+            timeSlot: timeslots,
             date: coachDate?.toISOString(),
-            timeslots: timeslots,
         };
 
         try {
@@ -448,7 +448,7 @@ const Scheduler = () => {
                             </CardHeader>
 
                             <CardContent>
-                                <form onSubmit={handleSubmit(onCoachSubmit)}>
+                                <form onSubmit={onCoachSubmit}>
                                         <div className="grid w-full items-center gap-4">
                                             <div className='flex flex-col space-y-1.5'>
                                                 <Label htmlFor="appointmentDate">Date</Label>
@@ -470,10 +470,7 @@ const Scheduler = () => {
                                                         <Calendar
                                                         mode="single"
                                                         selected={coachDate}
-                                                        onSelect={(date) => {
-                                                            setCoachDate(date);
-                                                            setValue('coachDate', date);
-                                                        }}
+                                                        onSelect={setCoachDate}
                                                         initialFocus
                                                         />
                                                         </div>
