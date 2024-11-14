@@ -23,9 +23,9 @@ const ClientRegisterForm = () =>{
             body: JSON.stringify({ name, email, password}),
         });
 
-        router.push("./clientlogin")
-
-    
+        if(response){
+            router.push("./clientlogin")
+        }
     };
     
     return(

@@ -1,4 +1,4 @@
-import { Body, Controller, Param, Post, Request, UseGuards } from '@nestjs/common';
+import { Body, Controller, Param, Post, Request, UseGuards, Get, Req, Res } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { UserService } from 'src/user/user.service';
 import { LoginDto } from './dto/auth.dto';
@@ -32,6 +32,18 @@ export class AuthController {
 
         return await this.authService.userRefreshToken(req)
 
+    }
+
+    @Get('session')
+    getSession(@Req() req, @Res() res) {
+        // Check if the user is authenticated via session
+        if (req.session.user) {
+        return res.json({
+            user: req.session.user,  // Return session user data
+        });
+        } else {
+        return res.status(401).json({ message: 'Not authenticated' });
+        }
     }
 
     //this is where coach starts
