@@ -23,7 +23,7 @@ import {
     DialogTrigger,
     DialogDescription,
 } from "@/components/ui/dialog"
-import { Card, CardContent, CardFooter } from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { useReactTable, getCoreRowModel, getPaginationRowModel, flexRender, ColumnDef  } from "@tanstack/react-table"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -36,6 +36,8 @@ import {
     TableRow,
 } from "@/components/ui/table"
 import { Input } from "@/components/ui/input"
+import { useRouter } from 'next/navigation'
+import { UserIcon, DumbbellIcon, CalendarIcon, CalendarCheckIcon } from "lucide-react"
 
 
 
@@ -105,6 +107,9 @@ export type Appointment = {
 
 
 const Dashboard = () => {
+
+    //Router
+    const router = useRouter()
 
     //Data display values
     //const [users, setUsers] = useState([]); UNCOMMENT AFTER DONE WITH DB AND BACKEND IMPLEMENTATION
@@ -403,6 +408,83 @@ const Dashboard = () => {
 
             {/* ALL DASHBOARD UTILITIES IN A GRID LAYOUT (CARD LIKE) */}
             <div className='grid grid-cols-2 gap-4 items-center justify-center pl-20 pt-6 pr-3'>
+
+                {/* Coach Schedule Table Card */}
+                <Card className='flex flex-col bg-primary border border-solid worder-white items-center'>
+                    <CardHeader className='flex items-center'>
+                        <CardTitle className='text-white font-bold'>
+                            Coach Schedule
+                        </CardTitle>
+                        <CalendarIcon className='bg-primary text-white' size={64}/>
+                        <CardDescription>
+
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <Button variant='outline' onClick={() => router.push('/coachschedule')}> 
+                            View Schedule
+                        </Button>
+                    </CardContent>
+                </Card>
+
+                {/* Class Table Card */}
+                <Card className='flex flex-col bg-primary border border-solid worder-white items-center'>
+                    <CardHeader className='flex items-center'>
+                        <CardTitle className='text-white font-bold'>
+                            Class List
+                        </CardTitle>
+                        <DumbbellIcon className='bg-primary text-white' size={64}/>
+                        <CardDescription>
+
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <Button variant='outline' onClick={() => router.push('/coachclasses')}> 
+                            View Classes
+                        </Button>
+                    </CardContent>
+                </Card>
+
+                {/* Client Table Card */}
+                <Card className='flex flex-col bg-primary border border-solid worder-white items-center'>
+                    <CardHeader className='flex items-center'>
+                        <CardTitle className='text-white font-bold'>
+                            Client List
+                        </CardTitle>
+                        <UserIcon className='bg-primary text-white' size={64}/>
+                        <CardDescription>
+
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <Button variant='outline' onClick={() => router.push('/coachclients')}> 
+                            View Clients
+                        </Button>
+                    </CardContent>
+                </Card>
+
+                {/* Appointment Table Card */}
+                <Card className='flex flex-col bg-primary border border-solid worder-white items-center'>
+                    <CardHeader className='flex items-center'>
+                        <CardTitle className='text-white font-bold'>
+                            Appointments
+                        </CardTitle>
+                        <CalendarCheckIcon className='bg-primary text-white' size={64}/>
+                        <CardDescription>
+
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <Button variant='outline' onClick={() => router.push('/coachappointments')}> 
+                            View Appointments
+                        </Button>
+                    </CardContent>
+                </Card>
+
+
+
+
+
 
                 {/* DISPLAY, EDIT, AND DELETE APPOINTMENTS */}
                 <div className='w-auto h-auto'>
@@ -850,6 +932,9 @@ const Dashboard = () => {
                         </Card>
                     </div>
                 </div>
+
+
+
             </div>
         </div>
     );
