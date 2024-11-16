@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, IsUUID, IsOptional } from 'class-validator';
+import { IsString, IsNotEmpty, IsOptional } from 'class-validator';
 
 export class UpdateExerciseDto {
   @IsNotEmpty()
