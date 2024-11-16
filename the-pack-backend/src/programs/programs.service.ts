@@ -181,4 +181,5 @@ async createExercise(createExerciseDto: CreateExerciseDto){
       throw new Error('Program not found');
     }
 
+  }
 }
