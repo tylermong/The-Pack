@@ -14,12 +14,22 @@ export class ClassService {
             data: {
                 ...data,
                 creator: {
-                    connect: { id: creatorId }, // Connect the coach using the ID provided
+                    connect: { id: creatorId }, // Connect the coach (creator) using the ID
+                },
+                assignedCoach: {
+                    connect: { id: data.assignedCoachId }, // Connect the assigned coach
+                },
+                classDates: {
+                    create: data.classDates?.map(date => ({
+                        date: date.date,
+                        startTime: date.startTime,
+                        endTime: date.endTime,
+                    })),
                 },
             },
         });
     }
-
+    
     async getAllClass() {
         return this.prisma.class.findMany();
     }
