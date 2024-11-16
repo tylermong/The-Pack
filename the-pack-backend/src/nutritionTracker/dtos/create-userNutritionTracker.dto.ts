@@ -1,47 +1,39 @@
-import {IsString, IsOptional, IsInt, IsEnum, IsUUID, IsDateString, IsNumber, Min} from 'class-validator'
-import { MealType } from '@prisma/client'
+import { IsString, IsOptional, IsInt, IsEnum, IsUUID, IsDateString, IsNumber, Min } from 'class-validator';
+import { MealType } from '@prisma/client';
 
-export class CreateNutritionTracker{
+export class CreateNutritionTracker {
 
-    @IsUUID() // Ensures the userId is a valid UUID
-    userId: string; // The ID of the user for whom the nutrition data is being created
+    @IsUUID()  // Ensures userId is a valid UUID
+    userId: string;  // The ID of the user for whom the nutrition data is being created
 
-    @IsString() // Ensures title is a non-empty string
-    title: string; // Title of the nutrition entry
+    @IsDateString()  // Ensures the date is in the correct ISO format (YYYY-MM-DD)
+    date: string;  // Date of the nutrition entry
 
-    @IsOptional()
-    @IsString() // Optional: description can be a string
-    description?: string; // Description of the nutrition entry
+    @IsOptional()  // Calories is optional
+    @IsInt()  // Ensures calories is an integer
+    @Min(0)  // Calories should be a positive integer or zero
+    calories?: number;  // Total calorie count
 
-    @IsOptional()
-    @IsDateString() // Optional: timeSlot is a valid date string
-    timeSlot?: string; // Date/time for the nutrition record
+    @IsOptional()  // Protein is optional
+    @IsNumber()  // Ensures protein is a number
+    @Min(0)  // Protein should be a positive number or zero
+    protein?: number;  // Amount of protein (grams)
 
-    @IsOptional()
-    @IsInt()
-    @Min(0) // Calories should be a positive integer
-    calories?: number; // Total calorie count
+    @IsOptional()  // Carbohydrates is optional
+    @IsNumber()  // Ensures carbohydrates is a number
+    @Min(0)  // Carbohydrates should be a positive number or zero
+    carbohydrates?: number;  // Amount of carbohydrates (grams)
 
-    @IsOptional()
-    @IsNumber()
-    @Min(0) // Protein should be a positive number
-    protein?: number; // Amount of protein (grams)
+    @IsOptional()  // Fats is optional
+    @IsNumber()  // Ensures fats is a number
+    @Min(0)  // Fats should be a positive number or zero
+    fats?: number;  // Amount of fats (grams)
 
-    @IsOptional()
-    @IsNumber()
-    @Min(0) // Carbohydrates should be a positive number
-    carbohydrates?: number; // Amount of carbohydrates (grams)
+    @IsOptional()  // Optional: notes can be a string
+    @IsString() 
+    notes?: string;  // Additional notes
 
-    @IsOptional()
-    @IsNumber()
-    @Min(0) // Fats should be a positive number
-    fats?: number; // Amount of fats (grams)
-
-    @IsOptional()
-    @IsString() // Optional: notes can be a string
-    notes?: string; // Additional notes
-
-    @IsEnum(MealType) // Ensures mealType is a valid MealType enum
-    @IsOptional()
-    mealType?: MealType; // Type of meal (e.g., breakfast, lunch, dinner, or snack)
+    @IsEnum(MealType)  // Ensures mealType is a valid MealType enum
+    @IsOptional()  // Optional mealType field
+    mealType?: MealType;  // Type of meal (e.g., breakfast, lunch, dinner, or snack)
 }

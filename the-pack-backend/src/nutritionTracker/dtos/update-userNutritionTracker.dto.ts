@@ -1,52 +1,45 @@
-import { IsString, IsOptional, IsInt, IsEnum, IsUUID, IsDateString, IsNumber, Min} from 'class-validator';
+import { IsOptional, IsInt, IsEnum, IsUUID, IsDateString, IsNumber, Min, IsString } from 'class-validator';
 import { MealType } from '@prisma/client';
 
 export class UpdateNutritionTrackerDto {
-  @IsUUID() // Ensure userId is valid if updating it
-  @IsOptional()
+  
+  @IsUUID()  // Ensure userId is valid if updating it
+  @IsOptional()  // userId is optional for updating
   userId?: string;
 
-  @IsUUID() // Ensure coachId is valid if updating it
-  @IsOptional()
+  @IsOptional()  // coachId is optional
+  @IsUUID()  // Ensure coachId is valid if updating it
   coachId?: string;
 
-  @IsString() // Ensure title is valid if updating it
-  @IsOptional()
-  title?: string;
+  @IsDateString()  // Ensure date is a valid ISO format if updating it
+  @IsOptional()  // date is optional for updating
+  date?: string;
 
-  @IsOptional()
-  @IsString()
-  description?: string;
-
-  @IsOptional()
-  @IsDateString()
-  timeSlot?: string;
-
-  @IsOptional()
-  @IsInt()
-  @Min(0)
+  @IsOptional()  // Optional: calories field
+  @IsInt()  // Ensure calories is an integer
+  @Min(0)  // Calories should be a positive integer or zero
   calories?: number;
 
-  @IsOptional()
-  @IsNumber()
-  @Min(0)
+  @IsOptional()  // Optional: protein field
+  @IsNumber()  // Ensure protein is a number
+  @Min(0)  // Protein should be a positive number or zero
   protein?: number;
 
-  @IsOptional()
-  @IsNumber()
-  @Min(0)
+  @IsOptional()  // Optional: carbohydrates field
+  @IsNumber()  // Ensure carbohydrates is a number
+  @Min(0)  // Carbohydrates should be a positive number or zero
   carbohydrates?: number;
 
-  @IsOptional()
-  @IsNumber()
-  @Min(0)
+  @IsOptional()  // Optional: fats field
+  @IsNumber()  // Ensure fats is a number
+  @Min(0)  // Fats should be a positive number or zero
   fats?: number;
 
-  @IsOptional()
+  @IsOptional()  // Optional: notes field
   @IsString()
   notes?: string;
 
-  @IsOptional()
-  @IsEnum(MealType)
+  @IsOptional()  // Optional: mealType field
+  @IsEnum(MealType)  // Ensures mealType is a valid MealType enum
   mealType?: MealType;
 }
