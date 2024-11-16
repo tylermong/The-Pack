@@ -8,7 +8,6 @@ export class CreateClassDto {
   @IsString()
   description?: string;
 
-  @IsUUID()
   assignedCoachId: string;  // ID of the assigned coach
 
   @IsArray()
