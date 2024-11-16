@@ -59,15 +59,15 @@ async createExercise(createExerciseDto: CreateExerciseDto){
     })
 }
 
- // Update Program
+ 
  async updateProgram(updateProgramDto: UpdateProgramDto) {
     const { programId, programName } = updateProgramDto;
   
-    // Update program
+    
     return this.prisma.programs.update({
-      where: { id: programId },  // Use the programId to find the record
+      where: { id: programId },  
       data: {
-        programName,  // Update programName if it's provided
+        programName,  
       },
     });
 }
@@ -77,7 +77,7 @@ async createExercise(createExerciseDto: CreateExerciseDto){
     return this.prisma.programWeeks.update({
       where: { id: programId },
       data: {
-        numOfWeeks,  // Update number of weeks if provided
+        numOfWeeks,  
       },
     });
   }
@@ -88,7 +88,7 @@ async createExercise(createExerciseDto: CreateExerciseDto){
     return this.prisma.programDays.update({
       where: { id: dayId },
       data: {
-        name,  // Update program day name if provided
+        name,  
       },
     });
   }
@@ -107,22 +107,19 @@ async createExercise(createExerciseDto: CreateExerciseDto){
   }
 
   async getAllPrograms() {
-    return this.prisma.programs.findMany();  // Get all programs
+    return this.prisma.programs.findMany();  
   }
 
-  // Method to get all weeks
   async getAllWeeks() {
-    return this.prisma.programWeeks.findMany();  // Get all weeks
+    return this.prisma.programWeeks.findMany();  
   }
 
-  // Method to get all days
   async getAllDays() {
-    return this.prisma.programDays.findMany();  // Get all days
+    return this.prisma.programDays.findMany();  
   }
 
-  // Method to get all exercises
   async getAllExercises() {
-    return this.prisma.dailyExercise.findMany();  // Get all exercises
+    return this.prisma.dailyExercise.findMany();  
   }
 
 
@@ -136,4 +133,52 @@ async createExercise(createExerciseDto: CreateExerciseDto){
       where: { id },
     });
   }
+
+  async deleteExercise(exerciseId: string) {
+    return this.prisma.dailyExercise.delete({
+      where: { id: exerciseId },
+    });
+  }
+
+  async deleteDay(dayId: string) {
+    await this.prisma.dailyExercise.deleteMany({
+      where: { dayNum: dayId },
+    });
+
+    return this.prisma.programDays.delete({
+      where: { id: dayId },
+    });
+  }
+
+  async deleteWeek(weekId: string) {
+    await this.prisma.programDays.deleteMany({
+      where: { weekNum: weekId },
+    });
+
+    return this.prisma.programWeeks.delete({
+      where: { id: weekId },
+    });
+  }
+
+  async deleteProgram(programId: string) {
+    await this.prisma.programWeeks.deleteMany({
+      where: { programId },
+    });
+
+    return this.prisma.programs.delete({
+      where: { id: programId },
+    });
+  }
+
+  async delete(id: string) {
+    // Delete program and all related data
+    const program = await this.findOne(id); // Retrieve program details
+
+    if (program) {
+      await this.deleteProgram(id);
+      return { message: 'Program and all related data deleted successfully' };
+    } else {
+      throw new Error('Program not found');
+    }
+
 }

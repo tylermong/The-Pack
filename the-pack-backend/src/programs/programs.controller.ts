@@ -1,5 +1,5 @@
 // src/programs/programs.controller.ts
-import { Controller, Get, Post, Body, Param, Patch } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Patch, Delete } from '@nestjs/common';
 import { ProgramsService } from './programs.service';
 import { CreateProgramDto } from './dtos/createProgram.dto';
 import { CreateDayDto } from './dtos/createDay.dto';
@@ -90,6 +90,50 @@ async updateProgram(
   @Get('exercises')
   async getAllExercises() {
     return this.programsService.getAllExercises();
+  }
+
+  @Delete(':id')
+  async deleteProgram(@Param('id') id: string) {
+    const result = await this.programsService.delete(id);
+    
+    if (result) {
+      return { message: 'Program and all related data deleted successfully' };
+    } else {
+      return { message: 'Program not found or deletion failed' };
+    }
+  }
+
+  @Delete('exercise/:exerciseId')
+  async deleteExercise(@Param('exerciseId') exerciseId: string) {
+    const result = await this.programsService.deleteExercise(exerciseId);
+    
+    if (result) {
+      return { message: 'Exercise deleted successfully' };
+    } else {
+      return { message: 'Exercise not found or deletion failed' };
+    }
+  }
+
+  @Delete('day/:dayId')
+  async deleteDay(@Param('dayId') dayId: string) {
+    const result = await this.programsService.deleteDay(dayId);
+    
+    if (result) {
+      return { message: 'Day deleted successfully' };
+    } else {
+      return { message: 'Day not found or deletion failed' };
+    }
+  }
+
+  @Delete('week/:weekId')
+  async deleteWeek(@Param('weekId') weekId: string) {
+    const result = await this.programsService.deleteWeek(weekId);
+    
+    if (result) {
+      return { message: 'Week deleted successfully' };
+    } else {
+      return { message: 'Week not found or deletion failed' };
+    }
   }
 
 }
