@@ -1,0 +1,1 @@
+//Lists all appointments (allow filtering for certain days) (Allow for creation, modification, and deletion)
