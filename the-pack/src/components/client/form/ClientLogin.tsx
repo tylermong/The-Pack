@@ -1,10 +1,51 @@
-import React from 'react';
+'use client'
+
+import React, { useEffect, useState } from 'react';
 import Image from "next/image";
 import Link from 'next/link'
-import {useRouter} from "next/navigation";
+import { useRouter } from "next/navigation";
+import { useSession } from 'next-auth/react';
+import axios from 'axios';
 
 const ClientLoginForm = () =>{
     const router = useRouter()
+    const { data: session, status } = useSession();
+    const [username, setUsername] = useState('');
+    const [password, setPassword] = useState('');
+
+    //Redirects to home if user is already authenticated
+    useEffect(() => {
+        if(session && session.user || status == "authenticated"){
+            router.push("/clienthome")
+        }
+    }, [session, router, status])
+
+    //loading state
+    if (status === "loading") {
+        return <p>Loading...</p>;
+    }
+
+    //Handles login and stores JWT token into local storage for authentication
+    const handleLogin = async (event) => {
+        event.preventDefault();
+
+        try {
+            const response = await axios.post("http://localhost:3001/auth/userLogin", {
+                username,
+                password,
+            });
+
+            const { accessToken, refreshToken } = response.data.backendTokens;
+            localStorage.setItem("accessToken", accessToken);
+            localStorage.setItem("refreshToken", refreshToken);
+            router.push("/clienthome");  
+        } catch (error) {
+            console.error('Login error:', error.response?.data || error.message);
+            alert("LOGIN FAILED. PLEASE CHECK YOUR CREDENTIALS.");
+        }
+    }
+
+
     return(
         <div>
             <div className="font-[sans-serif] bg-black md:h-screen">
@@ -24,7 +65,7 @@ const ClientLoginForm = () =>{
                     </div>
 
                     <div className="flex items-center md:w-1/2 justify-center p-6 h-full w-full">
-                        <form className="max-w-lg w-full mx-auto" onSubmit={(event) => { event.preventDefault(); router.push("/clienthome")}}>
+                        <form className="max-w-lg w-full mx-auto" onSubmit={handleLogin}>
                             <div className="mb-12">
                                 <h3 className="text-white md:text-3xl text-2xl font-extrabold max-md:text-center">Client Log In</h3>
                             </div>
@@ -35,7 +76,10 @@ const ClientLoginForm = () =>{
                                         <input 
                                         name="email" 
                                         type="email" 
-                                        required className="w-full bg-transparent text-sm border-b border-gray-300 focus:border-gray-100 px-2 py-3 outline-none" 
+                                        value={username}
+                                        onChange={(e) => setUsername(e.target.value)}
+                                        required 
+                                        className="w-full bg-transparent text-sm border-b border-gray-300 focus:border-gray-100 px-2 py-3 outline-none" 
                                         placeholder="Enter email" />
                                         <svg 
                                         xmlns="http://www.w3.org/2000/svg" 
@@ -49,12 +93,12 @@ const ClientLoginForm = () =>{
                                                 </clipPath>
                                             </defs>
                                             <g 
-                                            clip-path="url(#a)" 
+                                            clipPath="url(#a)" 
                                             transform="matrix(1.33 0 0 -1.33 0 682.667)">
                                                 <path 
                                                 fill="none" 
-                                                stroke-miterlimit="10" 
-                                                stroke-width="40" 
+                                                strokeMiterlimit="10" 
+                                                strokeWidth="40" 
                                                 d="M452 444H60c-22.091 0-40-17.909-40-40v-39.446l212.127-157.782c14.17-10.54 33.576-10.54 47.746 0L492 364.554V404c0 22.091-17.909 40-40 40Z" 
                                                 data-original="#000000"></path>
 
@@ -72,7 +116,10 @@ const ClientLoginForm = () =>{
                                         <input 
                                         name="password" 
                                         type="password" 
-                                        required className="w-full bg-transparent text-sm border-b border-gray-300 focus:border-gray-100 px-2 py-3 outline-none" 
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                        required 
+                                        className="w-full bg-transparent text-sm border-b border-gray-300 focus:border-gray-100 px-2 py-3 outline-none" 
                                         placeholder="Enter password" />
 
                                         <svg 
