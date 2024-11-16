@@ -3,10 +3,10 @@
 import React from 'react';
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/coach/sidebar/app-sidebar"
-import CoachScheduleListTable from '@/components/tables/coach/CoachScheduleList';
+import CoachClassesListTable from '@/components/tables/coach/ClassList';
 
 
-export default function CoachSchedule()
+export default function CoachClasses()
 {
     return(
         <SidebarProvider>
@@ -14,7 +14,7 @@ export default function CoachSchedule()
             <main className='w-screen'>
                 <SidebarTrigger />
                 <div className='flex flex-col'>
-                    <CoachScheduleListTable/>
+                    <CoachClassesListTable/>
                 </div>
             </main>
         </SidebarProvider>  
