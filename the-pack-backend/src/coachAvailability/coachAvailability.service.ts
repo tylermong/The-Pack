@@ -2,45 +2,62 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service'; // Assuming PrismaService is set up correctly
 import { coachAvailability } from '@prisma/client';
+import { CreateAvailabilityDto } from './dtos/createCoachAvailability.dto';
+import { UpdateAvailabilityDto } from './dtos/updateCoachAvailability.dto';
 
 @Injectable()
 export class CoachAvailabilityService {
   constructor(private readonly prisma: PrismaService) {}
 
   // Create a new coach availability
-  async createAvailability(coachId: string, timeSlot: string, date: Date): Promise<coachAvailability> {
+  async createAvailability(createAvailabilityDto: CreateAvailabilityDto) {
+    const { coachId, date, timeSlots } = createAvailabilityDto;
+
+    // Create the availability record and associated time slots
     return this.prisma.coachAvailability.create({
       data: {
         coachId,
-        timeSlot,
         date,
+        timeSlots: {
+          create: timeSlots.map(({ startTime, endTime }) => ({
+            startTime,
+            endTime,
+            isBooked: false, // default value
+          })),
+        },
       },
+      include: { timeSlots: true },
     });
   }
 
-  async getAllAvailabilities(): Promise<coachAvailability[]> {
+  async getAllAvailabilities(){
     return this.prisma.coachAvailability.findMany();
   }
 
   // Get all availability slots for a particular coach
-  async getAvailabilityByCoach(coachId: string): Promise<coachAvailability[]> {
+  async getAvailabilityByCoach(coachId: string) {
     return this.prisma.coachAvailability.findMany({
       where: { coachId },
     });
   }
 
   // Delete a coach's availability by ID
-  async deleteAvailability(availabilityId: string): Promise<coachAvailability> {
+  async deleteAvailability(availabilityId: string) {
     return this.prisma.coachAvailability.delete({
       where: { id: availabilityId },
     });
   }
 
-  // Update a coach's availability (timeSlot)
-  async updateAvailability(availabilityId: string, newTimeSlot: string): Promise<coachAvailability> {
+  async updateAvailability(
+    availabilityId: string,
+    updateAvailabilityDto: UpdateAvailabilityDto,
+  ) {
+    // Directly update the coachAvailability record with provided fields
     return this.prisma.coachAvailability.update({
       where: { id: availabilityId },
-      data: { timeSlot: newTimeSlot },
+      data: updateAvailabilityDto,
+      include: { timeSlots: true }, // Optionally return updated timeSlots
     });
   }
+
 }
