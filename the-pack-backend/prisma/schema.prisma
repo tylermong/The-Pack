@@ -73,9 +73,6 @@ model Class{
   coach String
   currentlyEnrolled Int?
   classDates  ClassOnDate[]
-  
-  startTime DateTime
-  endTime DateTime
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
