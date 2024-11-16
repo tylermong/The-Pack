@@ -1,37 +1,55 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
 import { schedulingService } from './scheduling.service';
-import { Prisma } from '@prisma/client';
+import { CreateAppointmentDto } from './dtos/createAppointment.dto';
 
-
-@Controller('scheduling')
+@Controller('appointments') // Base route for scheduling endpoints
 export class SchedulingController {
-    constructor(private schedulingService: schedulingService) {}
+  constructor(private readonly schedulingService: schedulingService) {}
 
-    @Post()
-    async scheduleAppointment(@Body() body: { clientId: string; coachId: string; timeSlot: string, date: Date}) {
-        return this.schedulingService.scheduleAppointment(body.clientId, body.coachId, body.timeSlot, body.date);
-    }
+  // Schedule an appointment
+  @Post('schedule')
+  async scheduleAppointment(
+    @Body() createAppointmentDto: CreateAppointmentDto
+  ) {
+    await this.schedulingService.scheduleAppointment(createAppointmentDto);
+  }
 
-    @Delete(':id')
-    async cancelAppointment(@Param('id') appointmentId: string) {
-        return this.schedulingService.cancelAppointment(appointmentId);
-    }
+  // Cancel an appointment
+  @Delete(':appointmentId')
+  async cancelAppointment(
+    @Param('appointmentId') appointmentId: string
+  ) {
+    await this.schedulingService.cancelAppointment(appointmentId);
+  }
 
-    @Patch(':id')
-    async modifyAppointment(@Param('id') appointmentId: string, @Body() data: { clientId?: string; coachId?: string; timeSlot?: string }) {
-        return this.schedulingService.modifyAppointment(appointmentId, data);
-    }
+  // Get appointments for a user (client)
+  @Get('user/:userId')
+  async getUserAppointments(
+    @Param('userId') userId: string
+  ) {
+    return await this.schedulingService.getUserAppointments(userId);
+  }
 
-    @Get('user/:userId')
-    async getUserAppointments(@Param('userId') userId: string) {
-        return this.schedulingService.getUserAppointments(userId);
-    }
-    @Get('coach/:coachId')
-    async getCoachAppointments(@Param('coachId') coachId: string) {
-        return this.schedulingService.getCoachAppointments(coachId);
-    }
-    @Get()
-    async getAllAppointments() {
-        return this.schedulingService.getAllAppointments();
-    }
+  // Get appointments for a coach
+  @Get('coach/:coachId')
+  async getCoachAppointments(
+    @Param('coachId') coachId: string
+  ) {
+    return await this.schedulingService.getCoachAppointments(coachId);
+  }
+
+  // Get all appointments (admin, or for all users)
+  @Get()
+  async getAllAppointments() {
+    return await this.schedulingService.getAllAppointments();
+  }
+
+  // Modify an appointment
+  @Put(':appointmentId')
+  async modifyAppointment(
+    @Param('appointmentId') appointmentId: string,
+    @Body() updateAppointmentDto: CreateAppointmentDto
+  ) {
+    return await this.schedulingService.modifyAppointment(appointmentId, updateAppointmentDto);
+  }
 }
