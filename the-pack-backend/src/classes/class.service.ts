@@ -58,22 +58,18 @@ export class ClassService {
             assignedCoach: data.assignedCoachId
               ? { connect: { id: data.assignedCoachId } }
               : undefined, // Leave coach empty if not provided
-      
             classDates: {
-              // Step 1: Remove existing classDates
+              // Delete existing class dates
               deleteMany: {
                 classId: classId,
               },
-              // Step 2: Add new class dates
+              // Create new class dates
               create: data.classDates?.map(({ date, startTime, endTime }) => ({
-                date: { create: { date } }, // Create new classDates entries if not already in DB
+                // If `date` is supposed to refer to another model, use `connect`
+                date: { connect: { id: date } }, // Assuming `date` refers to a classDates model or similar
                 startTime,
                 endTime,
               })),
-              // If you want to link existing `classDates`, use `connect`:
-              // connect: data.classDates?.map(({ id }) => ({
-              //   id,
-              // })),
             },
           },
           include: {
@@ -83,8 +79,6 @@ export class ClassService {
       
         return updatedClass;
       }
-    
-      
       
       async getClassById(id: string) {
         const classData = await this.prisma.class.findUnique({

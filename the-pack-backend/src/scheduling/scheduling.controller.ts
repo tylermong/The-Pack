@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Put } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
 import { schedulingService } from './scheduling.service';
 import { CreateAppointmentDto } from './dtos/createAppointment.dto';
 
@@ -45,7 +45,7 @@ export class SchedulingController {
   }
 
   // Modify an appointment
-  @Patch(':appointmentId')
+  @Put(':appointmentId')
   async modifyAppointment(
     @Param('appointmentId') appointmentId: string,
     @Body() updateAppointmentDto: CreateAppointmentDto

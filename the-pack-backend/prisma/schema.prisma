@@ -214,10 +214,8 @@ model Messages{
 }
 
 model CoachKey{
-  
   id              String           @id @default(uuid())
   key             String?           @unique
-
 }
 
 enum MealType {
