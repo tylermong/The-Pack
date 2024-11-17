@@ -239,12 +239,12 @@ const CoachRegisterForm = () =>{
                         
 
 
-                        <p className="text-sm mt-6 text-gray-200">Already have a coach account? 
-                            <Link className="text-white font-semibold hover:underline ml-1" href = "/coachlogin">Login</Link>
+                        <p className="text-sm mt-6 text-gray-200">Already have an account? 
+                            <Link className="text-white font-semibold hover:underline ml-1" href = "/login">Login</Link>
                         </p>
 
                         <p className="text-sm mt-6 text-gray-200">Not a coach? 
-                            <Link className="text-white font-semibold hover:underline ml-1" href = "/clientregister">Register</Link>
+                            <Link className="text-white font-semibold hover:underline ml-1" href = "/register/client">Client Registration</Link>
                         </p>
                     
                     </div>

@@ -14,13 +14,13 @@ import {
 // Menu items.
 const items = [
   {
-    title: "Dashboard",
-    url: "/admindashboard",
+    title: "Home",
+    url: "/admin/home",
     icon: ClipboardPen,
   },
   {
     title: "Profile",
-    url: "/adminprofile",
+    url: "/admin/profile",
     icon: User,
   },
 ]

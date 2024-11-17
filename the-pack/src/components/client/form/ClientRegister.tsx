@@ -52,7 +52,7 @@ const ClientRegisterForm = () =>{
                 <form className="max-w-lg w-full mx-auto" onSubmit={sendRegister}>
 
                     <div className="mb-12">
-                        <h3 className="text-white md:text-3xl text-2xl font-extrabold max-md:text-center">Client Register</h3>
+                        <h3 className="text-white md:text-3xl text-2xl font-extrabold max-md:text-center">Client Registration</h3>
                     </div>
 
                     <div>
@@ -195,12 +195,12 @@ const ClientRegisterForm = () =>{
                         
 
 
-                        <p className="text-sm mt-6 text-gray-200">Already have a client account? 
-                            <Link className="text-white font-semibold hover:underline ml-1" href = "/clientlogin">Login</Link>
+                        <p className="text-sm mt-6 text-gray-200">Already have an account? 
+                            <Link className="text-white font-semibold hover:underline ml-1" href = "/login">Login</Link>
                         </p>
 
-                        <p className="text-sm mt-6 text-gray-200">Not a client? 
-                            <Link className="text-white font-semibold hover:underline ml-1" href = "/coachregister">Register</Link>
+                        <p className="text-sm mt-6 text-gray-200">Not a client?
+                            <Link className="text-white font-semibold hover:underline ml-1" href = "./coach">Coach Registration</Link>
                         </p>
                     
                     </div>
