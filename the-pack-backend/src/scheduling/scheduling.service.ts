@@ -88,12 +88,57 @@ export class schedulingService {
     }
 
     async modifyAppointment(appointmentId: string, updateAppointmentDto: CreateAppointmentDto) {
-        const updatedAppointment = await this.prisma.scheduling.update({
+      // Step 1: Retrieve the current appointment to get the old timeSlotId
+      const currentAppointment = await this.prisma.scheduling.findUnique({
           where: { id: appointmentId },
-          data: updateAppointmentDto,
-        });
-    
-        return updatedAppointment;
+          include: { timeSlot: true }, // Include the related timeSlot data to get the current timeSlotId
+      });
+  
+      if (!currentAppointment) {
+          throw new NotFoundException('Appointment not found');
       }
+  
+      const { clientId, coachId, timeSlotId } = updateAppointmentDto;
+  
+      // Step 2: If the timeSlotId is being updated, we need to mark the previous time slot as available
+      if (currentAppointment.timeSlotId !== timeSlotId) {
+          // Mark the previous time slot as available
+          await this.prisma.timeSlot.update({
+              where: { id: currentAppointment.timeSlotId },
+              data: { isBooked: false },
+          });
+  
+          // Mark the new time slot as booked
+          const newTimeSlot = await this.prisma.timeSlot.findUnique({
+              where: { id: timeSlotId },
+          });
+  
+          if (!newTimeSlot) {
+              throw new NotFoundException('New time slot not found');
+          }
+  
+          if (newTimeSlot.isBooked) {
+              throw new ConflictException('New time slot is already booked');
+          }
+  
+          // Mark the new time slot as booked
+          await this.prisma.timeSlot.update({
+              where: { id: timeSlotId },
+              data: { isBooked: true },
+          });
+      }
+  
+      // Step 3: Update the appointment with the new details
+      const updatedAppointment = await this.prisma.scheduling.update({
+          where: { id: appointmentId },
+          data: {
+              clientId: clientId ?? currentAppointment.clientId,
+              coachId: coachId ?? currentAppointment.coachId,
+              timeSlotId: timeSlotId ?? currentAppointment.timeSlotId, // Ensure that if no timeSlotId is provided, it remains the same
+          },
+      });
+  
+      return updatedAppointment;
+  }  
     
 }

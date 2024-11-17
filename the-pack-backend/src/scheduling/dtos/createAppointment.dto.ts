@@ -13,6 +13,4 @@ export class CreateAppointmentDto {
   @IsNotEmpty()
   timeSlotId: string;
 
-  @IsDateString()
-  appointmentdate: string; // Or use Date depending on how you want to handle the date format
 }
