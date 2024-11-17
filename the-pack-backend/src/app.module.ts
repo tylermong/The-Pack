@@ -10,7 +10,6 @@ import { PrismaService } from './prisma/prisma.service';
 import { ClassModule } from './classes/class.module';
 import { userClassesModule } from './userClasses/userClasses.module';
 import { schedulingModule } from './scheduling/scheduling.module';
-import { NutritionTrackerModule } from './nutritionTracker/nutritionTracker.module';
 import { ConfigModule } from '@nestjs/config';
 import { ChatroomModule } from './chatroom/chatroom.module';
 import { MessagesModule } from './messages/messages.module';
@@ -18,13 +17,14 @@ import { CoachKeyModule } from './coach-key/coach-key.module';
 import { CoachAvailabilityModule } from './coachAvailability/coachAvailability.module';
 import { ProgramsModule } from './programs/programs.module';
 import { TimeSlotModule } from './timeslot/timeslot.module';
+import { NutritionTrackerModule } from './nutritionTracker/nutritionTracker.module';
 
 @Module({
   imports: [ConfigModule.forRoot({isGlobal: true}) ,PrismaModule, UserModule, 
     CoachModule, AnnouncementsModule, ClassModule, userClassesModule, 
     schedulingModule, AuthModule, ChatroomModule, MessagesModule, 
     CoachKeyModule, CoachAvailabilityModule, ProgramsModule, 
-    TimeSlotModule],
+    TimeSlotModule, NutritionTrackerModule],
   controllers: [AppController],
   providers: [AppService, PrismaService],
 })

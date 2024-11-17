@@ -25,7 +25,7 @@ async createNutritionEntry(@Body() createNutritionTrackerDto: CreateNutritionTra
     return await this.nutritionTrackerService.createNutritionEntry(createNutritionTrackerDto);
 }
   // Update an existing nutrition tracker entry
-  @Put(':id')
+  @Patch(':id')
   async updateNutritionEntry(
     @Param('id') id: string,
     @Body() updateNutritionTrackerDto: UpdateNutritionTrackerDto,
