@@ -20,7 +20,8 @@ import { AdminModule } from './admin/admin.module';
 
 @Module({
   imports: [ConfigModule.forRoot({isGlobal: true}) ,PrismaModule, UserModule, CoachModule, 
-    AnnouncementsModule, ClassModule, userClassesModule, schedulingModule, AuthModule, ChatroomModule, MessagesModule, CoachKeyModule, CoachAvailabilityModule, AdminModule],
+    AnnouncementsModule, ClassModule, userClassesModule, schedulingModule, AuthModule, ChatroomModule, MessagesModule, CoachKeyModule, CoachAvailabilityModule, AdminModule, ProgramsModule],
+
   controllers: [AppController],
   providers: [AppService, PrismaService],
 })

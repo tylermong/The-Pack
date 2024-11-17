@@ -27,7 +27,7 @@ model User {
   
   //Assign a personal coach to clients
   coach       User?      @relation("ClientCoach", fields: [coachId], references: [id])
-  coachId     String?
+  coachId     String? @unique
 
   //Clients associated with Coach
   clients User[]  @relation("ClientCoach")
@@ -36,7 +36,8 @@ model User {
   announcements   announcements[]
   appointmentForClient scheduling[] @relation("clientAppointments")
   appointmentForCoach scheduling[]  @relation("coachAppointments")
-  createdClass Class[]
+  createdClass Class[] @relation("creatorOfClass")
+  coachAssigned Class[] @relation("assignedCoach")
   classJoined userClasses[]
 
   //The nutrition and exercise trackers for user
@@ -66,16 +67,36 @@ model Class{
   id String @id @default(uuid())
   name String
   description String?
-  creator User @relation(fields: [creatorId], references: [id])
+  creator User @relation(fields: [creatorId], references: [id], name: "creatorOfClass")
   creatorId String
+  assignedCoach User  @relation(fields: [coach], references: [coachId], name: "assignedCoach")
+  coach String
   currentlyEnrolled Int?
-  
-  timeSlot String?
+  classDates  ClassOnDate[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   userInClasses userClasses[]
+
+}
+
+model classDates{
+  id String @id @default(uuid())
+  date DateTime
+  classDates  ClassOnDate[]
+}
+
+model ClassOnDate {
+  id          Int               @id @default(autoincrement())
+  classId     String
+  dateId      String
+  startTime   DateTime          // Start time of the class on this date
+  endTime     DateTime          // End time of the class on this date
+  class       Class             @relation(fields: [classId], references: [id])
+  date        classDates        @relation(fields: [dateId], references: [id])
+
+  @@unique([classId, dateId])   // Ensure no duplicate relationships
 }
 
 model userClasses{
@@ -88,35 +109,45 @@ model userClasses{
 }
 
 model scheduling{
-  id String @id @default(uuid())
-  timeSlot String
-  date     DateTime   @db.Date
+  id      String            @id @default(uuid())
   client User @relation(fields: [clientId], references: [id], name: "clientAppointments")
   clientId String
   appointmentHolder User @relation(fields: [coachId], references: [id], name: "coachAppointments")
   coachId String
+  timeSlot            TimeSlot        @relation(fields: [timeSlotId], references: [id])
+  timeSlotId          String
+  createdAt  DateTime @default(now())
 }
 
 model coachAvailability{
   id String @id @default(uuid())
   date     DateTime   @db.Date
-  timeSlot String
+  timeSlots           TimeSlot[] // Link to multiple time slots for the day
   timeSlotCreator User @relation(fields: [coachId], references: [id], name: "timeAvailability")
   coachId String
 }
 
+model TimeSlot {
+  id                  String     @id @default(uuid())
+  startTime           DateTime
+  endTime             DateTime
+  availability        coachAvailability @relation(fields: [availabilityId], references: [id])
+  availabilityId      String
+  isBooked            Boolean    @default(false) // Mark if the time slot has been booked
+  createdAt           DateTime   @default(now())
+  scheduling          scheduling[] // Add the back-reference to Scheduling
+}
+
 model NutritionTracker {
   id              String     @id @default(uuid())
-  title           String
-  description     String?
   user            User       @relation(fields: [userId], references: [id])
   userId          String
-  timeSlot        String?
+  date            DateTime
+  goals           Int?
   calories        Int?       // Total calorie count
   protein         Float?     // Amount of protein (grams)
   carbohydrates   Float?     // Amount of carbohydrates (grams)
   fats            Float?     // Amount of fats (grams)
-  notes           String?    // User's personal notes
   mealType        MealType?  // Type of meal (breakfast, lunch, dinner, snack)
   createdAt       DateTime   @default(now())
   updatedAt       DateTime   @updatedAt
@@ -156,7 +187,6 @@ model dailyExercise{
   numOfSets String
   numOfReps String
   weightLifted String
-  
 }
 
 model Chatroom{
@@ -184,15 +214,7 @@ model Messages{
 }
 
 model CoachKey{
-  
   id              String           @id @default(uuid())
-
-}
-
-enum ExerciseIntensity {
-  LOW
-  MEDIUM
-  HIGH
 }
 
 enum MealType {
