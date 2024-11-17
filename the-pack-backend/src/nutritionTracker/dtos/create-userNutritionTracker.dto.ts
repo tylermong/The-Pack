@@ -1,7 +1,7 @@
 import { IsString, IsOptional, IsInt, IsEnum, IsUUID, IsDateString, IsNumber, Min } from 'class-validator';
 import { MealType } from '@prisma/client';
 
-export class CreateNutritionTracker {
+export class CreateNutritionTrackerDto {
 
     @IsUUID()  // Ensures userId is a valid UUID
     userId: string;  // The ID of the user for whom the nutrition data is being created
