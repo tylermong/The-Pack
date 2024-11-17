@@ -1,11 +1,11 @@
 'use client'
 
-import ClientLoginForm from "@/components/client/form/ClientLogin";
+import LoginForm from "@/components/shared/Login";
 
 export default function Login(){
     return(
         <div>
-            <ClientLoginForm/>
+            <LoginForm/>
         </div>
     )
 }
