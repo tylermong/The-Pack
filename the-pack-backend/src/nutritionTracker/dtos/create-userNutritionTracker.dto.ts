@@ -13,7 +13,7 @@ export class CreateNutritionTracker {
     @IsInt()
     @Min(1)
     goals?: number;
-    
+    //asd
     @IsOptional()  // Calories is optional
     @IsInt()  // Ensures calories is an integer
     @Min(0)  // Calories should be a positive integer or zero
