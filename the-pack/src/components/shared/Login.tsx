@@ -39,7 +39,15 @@ const ClientLoginForm = () =>{
             const { accessToken, refreshToken } = response.data.backendTokens;
             localStorage.setItem("accessToken", accessToken);
             localStorage.setItem("refreshToken", refreshToken);
-            router.push("/clienthome");  
+            if (response.data.user.role == "CLIENT")
+                router.push("/client/home");
+            else if (response.data.user.role == "COACH")
+                router.push("/coach/home");
+            else if (response.data.user.role == "ADMIN")
+                router.push("/admin/home");
+            else
+                router.push("/");
+
         } catch (error) {
             console.error('Login error:', error.response?.data || error.message);
             alert("LOGIN FAILED. PLEASE CHECK YOUR CREDENTIALS.");
