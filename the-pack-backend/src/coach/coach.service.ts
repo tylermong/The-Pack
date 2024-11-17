@@ -9,15 +9,15 @@ import { CoachKeyService } from 'src/coach-key/coach-key.service';
 export class CoachService {
   constructor (private prismaSerivce: PrismaService, private coachKeyService: CoachKeyService) {}
 
-  async createCoachWKey(id: string, createCoachDto: Prisma.UserCreateInput ) {
+  async createCoachWKey(key: string, createCoachDto: Prisma.UserCreateInput ) {
 
-    const coachKey = await this.coachKeyService.findOne(id)
+    const coachKey = await this.coachKeyService.findKey(key)
 
     if(!coachKey){
       throw new NotFoundException('Key does not exist');
     }
 
-    await this.coachKeyService.remove(id)
+    await this.coachKeyService.remove(key)
     const { id: _, ...userData } = createCoachDto;
 
     return this.prismaSerivce.user.create({

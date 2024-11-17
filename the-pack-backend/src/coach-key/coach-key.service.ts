@@ -16,21 +16,21 @@ export class CoachKeyService {
   }
 
   
-  async findOne(id: string) {
+  async findKey(key: string) {
     return this.prismaService.coachKey.findUnique({
       where:{
         
-        id: id,
+        key: key,
 
       }
     });
   }
   
 
-  remove(id: string) {
+  remove(key: string) {
     return this.prismaService.coachKey.delete({
       where:{
-        id,
+        key,
       }
     });  }
 }
