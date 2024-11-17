@@ -114,8 +114,8 @@ model scheduling{
   clientId String
   appointmentHolder User @relation(fields: [coachId], references: [id], name: "coachAppointments")
   coachId String
-  timeSlot            TimeSlot        @relation(fields: [timeSlotId], references: [id])
-  timeSlotId          String
+  timeSlot            TimeSlot?        @relation(fields: [timeSlotId], references: [id])
+  timeSlotId          String?
   createdAt  DateTime @default(now())
 }
 
@@ -214,7 +214,10 @@ model Messages{
 }
 
 model CoachKey{
+  
   id              String           @id @default(uuid())
+  key             String           @unique
+
 }
 
 enum MealType {
