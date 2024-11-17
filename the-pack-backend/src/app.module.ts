@@ -18,13 +18,15 @@ import { CoachAvailabilityModule } from './coachAvailability/coachAvailability.m
 import { ProgramsModule } from './programs/programs.module';
 import { TimeSlotModule } from './timeslot/timeslot.module';
 import { NutritionTrackerModule } from './nutritionTracker/nutritionTracker.module';
+import { AdminModule } from './admin/admin.module';
 
 @Module({
   imports: [ConfigModule.forRoot({isGlobal: true}) ,PrismaModule, UserModule, 
     CoachModule, AnnouncementsModule, ClassModule, userClassesModule, 
     schedulingModule, AuthModule, ChatroomModule, MessagesModule, 
     CoachKeyModule, CoachAvailabilityModule, ProgramsModule, 
-    TimeSlotModule, NutritionTrackerModule],
+    TimeSlotModule, NutritionTrackerModule, AdminModule],
+  
   controllers: [AppController],
   providers: [AppService, PrismaService],
 })

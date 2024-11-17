@@ -7,30 +7,30 @@ import { PrismaService } from 'src/prisma/prisma.service';
 export class CoachKeyService {
   constructor (private prismaService: PrismaService) {}
 
-  createKey(data: Prisma.CoachKeyCreateInput) {
+  async createKey(data: Prisma.CoachKeyCreateInput) {
     return this.prismaService.coachKey.create({data});
   }
 
-  findAll() {
-    return `This action returns all coachKey`;
+  async findAll() {
+    return this.prismaService.coachKey.findMany();
   }
 
   
-  async findOne(id: string) {
+  async findKey(key: string) {
     return this.prismaService.coachKey.findUnique({
       where:{
         
-        id: id,
+        key: key,
 
       }
     });
   }
   
 
-  remove(id: string) {
+  remove(key: string) {
     return this.prismaService.coachKey.delete({
       where:{
-        id,
+        key,
       }
     });  }
 }

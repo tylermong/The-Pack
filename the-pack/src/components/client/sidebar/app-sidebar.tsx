@@ -15,7 +15,7 @@ import {
 const items = [
   {
     title: "Home",
-    url: "/clienthome",
+    url: "/client/home",
     icon: Home,
   },
   {
@@ -25,17 +25,17 @@ const items = [
   },
   {
     title: "Nutrition Tracker",
-    url: "/clientnutritiontracker",
+    url: "/client/nutrition-tracker",
     icon: Apple,
   },
   {
     title: "Chat Rooms",
-    url: "/clientchatroom",
+    url: "/client/chat-rooms",
     icon: MessageSquareMore,
   },
   {
     title: "Profile",
-    url: "/clientprofile",
+    url: "/client/profile",
     icon: User,
   },
 ]

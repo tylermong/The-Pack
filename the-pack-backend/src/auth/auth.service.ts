@@ -5,6 +5,7 @@ import { compare } from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { Role } from '@prisma/client';
 import { InternalServerErrorException } from '@nestjs/common';
+import { access } from 'fs';
 
 @Injectable()
 export class AuthService {
@@ -44,6 +45,13 @@ export class AuthService {
 
     }
 
+    async userLogout(user: any){
+        return{
+            accessToken: null,
+            refreshToken: null
+        }
+    }
+
     async validateUser(data: LoginDto){
 
         const user = await this.userService.findByEmail(data.username)
@@ -81,6 +89,8 @@ export class AuthService {
         }
 
     }
+
+
 
     /*
     //this is where coach starts
