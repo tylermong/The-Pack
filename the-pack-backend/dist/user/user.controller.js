@@ -16,6 +16,7 @@ exports.UserController = void 0;
 const common_1 = require("@nestjs/common");
 const user_service_1 = require("./user.service");
 const client_1 = require("@prisma/client");
+const bcrypt = require("bcrypt");
 let UserController = class UserController {
     constructor(userService) {
         this.userService = userService;
@@ -29,8 +30,9 @@ let UserController = class UserController {
     findOne(id) {
         return this.userService.findOne(id);
     }
-    update(id, updateUserDto) {
-        return this.userService.update(id, updateUserDto);
+    async updatePassword(id, updateData) {
+        const hashedPassword = await bcrypt.hash(updateData.password, 10);
+        return this.userService.updatePassword(id, hashedPassword);
     }
     remove(id) {
         return this.userService.remove(id);
@@ -64,8 +66,8 @@ __decorate([
     __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String, Object]),
-    __metadata("design:returntype", void 0)
-], UserController.prototype, "update", null);
+    __metadata("design:returntype", Promise)
+], UserController.prototype, "updatePassword", null);
 __decorate([
     (0, common_1.Delete)(':id'),
     __param(0, (0, common_1.Param)('id')),

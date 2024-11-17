@@ -80,4 +80,15 @@ export declare class UserService {
         updatedAt: Date;
         coachId: string | null;
     }>;
+    updatePassword(userId: string, newPassword: string): Promise<{
+        id: string;
+        name: string;
+        email: string;
+        password: string;
+        phoneNum: number | null;
+        role: import(".prisma/client").$Enums.Role;
+        createdAt: Date;
+        updatedAt: Date;
+        coachId: string | null;
+    }>;
 }

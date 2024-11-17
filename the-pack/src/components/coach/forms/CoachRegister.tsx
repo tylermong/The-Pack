@@ -16,13 +16,24 @@ const CoachRegisterForm = () =>{
 
     const sendRegister = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        const keyResponse = await fetch(`http://localhost:3001/coach-key/${key}`);
+        if (!keyResponse.ok) {
+            alert('Invalid coach key');
+            return;
+        }
+        const keyData = await keyResponse.json();
+        if (!keyData.valid) {
+            alert('Invalid coach key');
+            return;
+        }
     
         const response = await fetch('http://localhost:3001/coach', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ name, email, password}), //key - ADD THIS BACK WHEN COACH DB HAS IT
+            body: JSON.stringify({ name, email, password, id: key }),
         });
 
         
