@@ -7,12 +7,12 @@ import { PrismaService } from 'src/prisma/prisma.service';
 export class CoachKeyService {
   constructor (private prismaService: PrismaService) {}
 
-  createKey(data: Prisma.CoachKeyCreateInput) {
+  async createKey(data: Prisma.CoachKeyCreateInput) {
     return this.prismaService.coachKey.create({data});
   }
 
-  findAll() {
-    return `This action returns all coachKey`;
+  async findAll() {
+    return this.prismaService.coachKey.findMany();
   }
 
   

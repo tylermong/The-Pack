@@ -9,7 +9,7 @@ import { CoachKeyService } from 'src/coach-key/coach-key.service';
 export class CoachService {
   constructor (private prismaSerivce: PrismaService, private coachKeyService: CoachKeyService) {}
 
-  async create(id: string, createCoachDto: Prisma.UserCreateInput ) {
+  async createCoachWKey(id: string, createCoachDto: Prisma.UserCreateInput ) {
 
     const coachKey = await this.coachKeyService.findOne(id)
 
@@ -18,6 +18,19 @@ export class CoachService {
     }
 
     await this.coachKeyService.remove(id)
+    const { id: _, ...userData } = createCoachDto;
+
+    return this.prismaSerivce.user.create({
+      data:{ 
+        ...userData,
+        password: await hash(createCoachDto.password, 10),
+        role: 'COACH'
+      }
+    });
+
+  }
+
+  async createCoach(createCoachDto: Prisma.UserCreateInput) {
     const { id: _, ...userData } = createCoachDto;
 
     return this.prismaSerivce.user.create({
