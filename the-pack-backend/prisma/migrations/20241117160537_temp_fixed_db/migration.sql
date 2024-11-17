@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "CoachKey" ALTER COLUMN "key" DROP NOT NULL;

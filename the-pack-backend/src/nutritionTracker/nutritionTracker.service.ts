@@ -1,55 +1,61 @@
 import { Injectable } from "@nestjs/common";
 import { Prisma } from "@prisma/client";
 import { PrismaService } from "src/prisma/prisma.service";
-import { CreateNutritionTracker } from "./dtos/create-userNutritionTracker.dto";
+import { CreateNutritionTrackerDto } from "./dtos/create-userNutritionTracker.dto";
 import { UpdateNutritionTrackerDto } from "./dtos/update-userNutritionTracker.dto";
+import { MealType } from "@prisma/client";
 
 @Injectable()
 export class NutritionTrackerService{
     constructor(private prisma: PrismaService){}
 
-    async createNutritionTracker(data: CreateNutritionTracker){
-        const{userId, ...rest} = data;
+    async getNutritionEntries(userId: string, mealType?: MealType) {
+        return await this.prisma.nutritionTracker.findMany({
+          where: {
+            userId,
+            ...(mealType && { mealType }), // If mealType is provided, filter by it
+          },
+          orderBy: {
+            date: 'desc', // Sort by date in descending order
+          },
+        });
+      }
+    
+      // Create a new nutrition tracker entry
+      async createNutritionEntry(createNutritionTrackerDto: CreateNutritionTrackerDto) {
         return await this.prisma.nutritionTracker.create({
-            data:{
-                ...rest,
-                user:{
-                    connect: {id: data.userId},
-                },
-            }
-        })
-    }
-
-    async getAllNutritionDataForCoach(coachId: string){
-        return await this.prisma.nutritionTracker.findMany({
-            include: {
-                user: true
-            }
-        })
-    }
-//User can view their own nutrition they have created. 
-    async getUserNutritionData(userId: string){
-        return await this.prisma.nutritionTracker.findMany({
-            where:{
-                userId: userId,
-            },
-            include: {
-                user: true,
-            }
-        })
-    }
-    async modifyNutritionTracker(nutritionId: string, data: UpdateNutritionTrackerDto){
+          data: {
+            userId: createNutritionTrackerDto.userId,
+            date: createNutritionTrackerDto.date,
+            goals: createNutritionTrackerDto.goals,
+            calories: createNutritionTrackerDto.calories,
+            protein: createNutritionTrackerDto.protein,
+            carbohydrates: createNutritionTrackerDto.carbohydrates,
+            fats: createNutritionTrackerDto.fats,
+            mealType: createNutritionTrackerDto.mealType,
+          },
+        });
+      }
+    
+      // Update an existing nutrition tracker entry
+      async updateNutritionEntry(id: string, updateNutritionTrackerDto: UpdateNutritionTrackerDto) {
         return await this.prisma.nutritionTracker.update({
-            where: {id: nutritionId},
-            data: {
-                ...data,
-            }
-        })
-    }
-
-    async deleteNutritionTracker(nutritionId: string){
+          where: { id },
+          data: {
+            goals: updateNutritionTrackerDto.goals,
+            calories: updateNutritionTrackerDto.calories,
+            protein: updateNutritionTrackerDto.protein,
+            carbohydrates: updateNutritionTrackerDto.carbohydrates,
+            fats: updateNutritionTrackerDto.fats,
+            mealType: updateNutritionTrackerDto.mealType,
+          },
+        });
+      }
+    
+      // Delete a nutrition tracker entry
+      async deleteNutritionEntry(id: string) {
         return await this.prisma.nutritionTracker.delete({
-            where: {id: nutritionId}
-        })
+          where: { id },
+        });
+      }
     }
-}

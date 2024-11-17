@@ -92,8 +92,8 @@ async createExercise(createExerciseDto: CreateExerciseDto){
       },
     });
   }
-  async updateExercise(updateExerciseDto: UpdateExerciseDto) {
-    const { exerciseId, exerciseName, numOfSets, numOfReps, weightLifted } = updateExerciseDto;
+  async updateExercise(exerciseId:string, updateExerciseDto: UpdateExerciseDto) {
+    const { exerciseName, numOfSets, numOfReps, weightLifted } = updateExerciseDto;
 
     return this.prisma.dailyExercise.update({
       where: { id: exerciseId },  

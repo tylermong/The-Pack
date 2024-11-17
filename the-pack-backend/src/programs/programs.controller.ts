@@ -60,12 +60,12 @@ async updateProgram(
     return this.programsService.updateProgramDay({ ...updateDayDto, dayId });
   }
 
-  @Patch('update/exercise/:exerciseId')
+  @Patch('update/exercise/:exerciseId') // exerciseId in URL
   async updateExercise(
-    @Param('exerciseId') exerciseId: string,  
+    @Param('exerciseId') exerciseId: string, // Get exerciseId from URL
     @Body() updateExerciseDto: UpdateExerciseDto
   ) {
-    return this.programsService.updateExercise({ ...updateExerciseDto, exerciseId });
+    return this.programsService.updateExercise(exerciseId, updateExerciseDto);
   }
 
   
