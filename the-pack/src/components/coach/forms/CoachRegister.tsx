@@ -240,20 +240,6 @@ const CoachRegisterForm = () =>{
 
                     </div>
 
-                    <div className="flex items-center mt-6">
-
-                            <input 
-                            id="remember-me" 
-                            name="remember-me" 
-                            type="checkbox" 
-                            className="h-4 w-4 shrink-0 rounded" />
-
-                            <label htmlFor="remember-me" className="ml-3 block text-sm text-gray-300">
-                                I accept the <a href="javascript:void(0);" className="text-white font-semibold hover:underline ml-1">Terms and Conditions</a>
-                            </label>
-
-                    </div>
-
                     <div className="mt-12">
 
                         <button type="submit" className="w-full py-3 px-6 text-sm tracking-wide font-semibold rounded-md bg-white hover:bg-gray-400 text-black focus:outline-none">
