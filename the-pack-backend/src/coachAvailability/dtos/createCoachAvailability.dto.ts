@@ -3,9 +3,11 @@ import { Type } from 'class-transformer';
 
 export class TimeSlotDto {
   @IsDate()
+  @Type(() => Date)
   startTime: Date;
 
   @IsDate()
+  @Type(() => Date)
   endTime: Date;
 }
 
@@ -14,6 +16,7 @@ export class CreateAvailabilityDto {
   coachId: string;
 
   @IsDate()
+  @Type(() => Date)
   date: Date;
 
   @IsArray()
