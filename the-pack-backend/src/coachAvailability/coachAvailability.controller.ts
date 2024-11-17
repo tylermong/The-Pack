@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Delete, Put, Body, Param } from '@nestjs/common';
+import { Controller, Post, Get, Delete, Put, Body, Param, Patch } from '@nestjs/common';
 import { CoachAvailabilityService } from './coachAvailability.service';
 import { CreateAvailabilityDto } from './dtos/createCoachAvailability.dto';
 import { UpdateAvailabilityDto } from './dtos/updateCoachAvailability.dto';
@@ -39,7 +39,7 @@ export class CoachAvailabilityController {
   }
 
   // Update an existing availability slot
-  @Put(':id')
+  @Patch(':id')
   async updateAvailability(
     @Param('id') availabilityId: string,  // Extract the availabilityId from the URL parameter
     @Body() updateAvailabilityDto: UpdateAvailabilityDto,  // Extract data to update from the body

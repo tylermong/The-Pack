@@ -216,7 +216,7 @@ model Messages{
 model CoachKey{
   
   id              String           @id @default(uuid())
-  key             String           @unique
+  key             String?           @unique
 
 }
 
