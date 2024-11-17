@@ -4,6 +4,7 @@ import { Prisma, Role } from '@prisma/client';
 import { JwtGuard } from 'src/auth/guards/jwt.guard';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { RolesGaurd } from 'src/auth/guards/roles.gaurd';
+import * as bcrypt from 'bcrypt';
 
 @Controller('user')
 export class UserController {
@@ -25,9 +26,15 @@ export class UserController {
     return this.userService.findOne(id);
   }
 
+  // @Patch(':id')
+  // update(@Param('id') id: string, @Body() updateUserDto: Prisma.UserUpdateInput) {
+  //   return this.userService.update(id, updateUserDto);
+  // }
+
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: Prisma.UserUpdateInput) {
-    return this.userService.update(id, updateUserDto);
+  async updatePassword(@Param('id') id: string, @Body() updateData: { password: string }) {
+      const hashedPassword = await bcrypt.hash(updateData.password, 10);
+      return this.userService.updatePassword(id, hashedPassword);
   }
 
   //@Roles(Role.ADMIN)

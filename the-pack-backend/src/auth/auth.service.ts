@@ -27,7 +27,7 @@ export class AuthService {
                 user,
                 backendTokens: {
                     accessToken: await this.jwtService.signAsync(payload, {
-                        expiresIn: '1h',
+                        expiresIn: '1d',
                         secret: process.env.jwtSecretKey,
                     }),
     
@@ -81,6 +81,22 @@ export class AuthService {
         }
 
     }
+
+
+    async verifyPassword(password: string, storedHash: string): Promise<boolean> {
+        try {
+            console.log('Password:', password);
+            console.log('StoredHash:', storedHash);
+            if (!password || !storedHash) {
+                throw new Error('Password and storedHash are required');
+            }
+            return await compare(password, storedHash);
+        } catch (error) {
+            console.error('Error in verifyPassword:', error.message);
+            throw new Error('Password verification failed');
+        }
+    }
+
 
     /*
     //this is where coach starts
