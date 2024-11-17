@@ -5,6 +5,7 @@ import { compare } from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { Role } from '@prisma/client';
 import { InternalServerErrorException } from '@nestjs/common';
+import { access } from 'fs';
 
 @Injectable()
 export class AuthService {
@@ -42,6 +43,13 @@ export class AuthService {
             throw new InternalServerErrorException('Login failed due to server error');
         }
 
+    }
+
+    async userLogout(user: any){
+        return{
+            accessToken: null,
+            refreshToken: null
+        }
     }
 
     async validateUser(data: LoginDto){

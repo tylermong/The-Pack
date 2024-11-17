@@ -1,43 +1,41 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, BadRequestException, Put } from '@nestjs/common';
 import { NutritionTrackerService } from './nutritionTracker.service';
 import { Prisma } from '@prisma/client';
-import { CreateNutritionTracker } from './dtos/create-userNutritionTracker.dto';
+import { CreateNutritionTrackerDto } from './dtos/create-userNutritionTracker.dto';
 import { UpdateNutritionTrackerDto } from './dtos/update-userNutritionTracker.dto';
+import { MealType } from '@prisma/client';
 
 @Controller('nutritionTracker')
 export class NutritionTrackerController{
     constructor(private readonly nutritionTrackerService: NutritionTrackerService){}
-    
-    @Post()
-    async createNutritionTracker(@Body() data:CreateNutritionTracker){
-        return await this.nutritionTrackerService.createNutritionTracker(data)
-    }
 
-    @Get('user/:userId')
-    async getUserNutritionData(@Param('userId') userId: string) {
-        return await this.nutritionTrackerService.getUserNutritionData(userId);
+@Get(':userId')
+async getNutritionEntries(
+    @Param('userId') userId: string,
+    @Query('mealType') mealType?: MealType,
+) {
+    if (mealType && !Object.values(MealType).includes(mealType)) {
+    throw new BadRequestException(`Invalid meal type. Valid options are: ${Object.values(MealType).join(', ')}`);
     }
+    return await this.nutritionTrackerService.getNutritionEntries(userId, mealType);
+}
 
-    @Get('coach/:coachId/all')
-    async getAllNutritionDataForCoach(@Param('coachId') coachId: string){
-        return this.nutritionTrackerService.getAllNutritionDataForCoach(coachId)
-    }
+@Post()
+async createNutritionEntry(@Body() createNutritionTrackerDto: CreateNutritionTrackerDto) {
+    return await this.nutritionTrackerService.createNutritionEntry(createNutritionTrackerDto);
+}
+  // Update an existing nutrition tracker entry
+  @Patch(':id')
+  async updateNutritionEntry(
+    @Param('id') id: string,
+    @Body() updateNutritionTrackerDto: UpdateNutritionTrackerDto,
+  ) {
+    return await this.nutritionTrackerService.updateNutritionEntry(id, updateNutritionTrackerDto);
+  }
 
-    @Get("coach/:userId")
-    async getUserNutritionDataForCoach(@Param('userId') userId:string){
-        return this.nutritionTrackerService.getUserNutritionData(userId)
-    }
-    @Patch(':nutritionId')
-    async modifyNutrition(
-        @Param('nutritionId') nutritionId: string,
-        @Body() updateNutritionDto: UpdateNutritionTrackerDto, // Use DTO for validation
-      ){
-        return await this.nutritionTrackerService.modifyNutritionTracker(nutritionId, updateNutritionDto);
-      }
-      
-    @Delete(':nutritionId')
-    async deleteUserNutrition(@Param('nutritionId') nutritionId: string){
-        return await this.nutritionTrackerService.deleteNutritionTracker(nutritionId)
-    }
-
+  // Delete a nutrition tracker entry
+  @Delete(':id')
+  async deleteNutritionEntry(@Param('id') id: string) {
+    return await this.nutritionTrackerService.deleteNutritionEntry(id);
+  }
 }

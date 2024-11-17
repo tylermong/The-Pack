@@ -18,9 +18,9 @@ export class CoachKeyController {
   }
 
   
-  @Get(':id')
-  findOne(@Param('id') key: string) {
-    return this.coachKeyService.findOne(key);
+  @Get(':key')
+  findKey(@Param('key') key: string) {
+    return this.coachKeyService.findKey(key);
   }
   
 

@@ -9,8 +9,8 @@ export class CoachController {
   constructor(private readonly coachService: CoachService) {}
 
   @Post()
-  create(@Body('id') id: string, @Body() createCoachDto: Prisma.UserCreateInput) {
-    return this.coachService.create(id, createCoachDto);
+  create(@Body('key') key: string, @Body() createCoachDto: Prisma.UserCreateInput) {
+    return this.coachService.createCoachWKey(key, createCoachDto);
   }
 
 }

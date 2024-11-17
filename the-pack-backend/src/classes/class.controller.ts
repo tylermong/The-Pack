@@ -2,6 +2,8 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
 import { ClassService } from './class.service';
 import { Prisma } from '@prisma/client';
+import { UpdateClassDto } from './dtos/updateClass.dto';
+import { CreateClassDto } from './dtos/createClass.dto';
 
 
 @Controller('class')
@@ -11,7 +13,8 @@ export class ClassController {
     
 
     @Post()
-    async create(@Body() { creatorId, ...classData }: { creatorId: string } & Prisma.ClassCreateInput) {
+    async create(@Body() { creatorId, ...classData }: { creatorId: string } & CreateClassDto) {
+        // Ensure that `assignedCoachId` and other required data are passed correctly
         return this.classService.createClass(creatorId, classData);
     }
     @Get()
@@ -28,7 +31,8 @@ export class ClassController {
         return this.classService.deleteClass(classId);
     }
     @Patch(':id')
-    async update(@Param('id') classId: string, @Body() classData: Prisma.ClassUpdateInput) {
+    async update(@Param('id') classId: string, @Body() classData: UpdateClassDto) {
+        // Pass the classData to the service for update
         return this.classService.updateClass(classId, classData);
     }
 }

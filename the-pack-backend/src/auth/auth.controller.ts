@@ -6,6 +6,7 @@ import { AuthService } from './auth.service';
 import { CoachService } from 'src/coach/coach.service';
 import { RefreshJwtGaurd } from './guards/refresh.gaurd';
 import { request } from 'http';
+import { JwtGuard } from './guards/jwt.guard';
     
 @Controller('auth')
 export class AuthController {
@@ -24,6 +25,12 @@ export class AuthController {
     @Post('userLogin')
     async userLogin(@Body() data: LoginDto){
         return await this.authService.userLogin(data);
+    }
+
+    @UseGuards(JwtGuard)
+    @Post('Logout')
+    userLogout(@Request() req) {
+        this.authService.userLogout(req.user);
     }
 
     @UseGuards(RefreshJwtGaurd)
