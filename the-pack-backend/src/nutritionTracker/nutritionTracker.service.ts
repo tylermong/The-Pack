@@ -27,6 +27,7 @@ export class NutritionTrackerService{
           data: {
             userId: createNutritionTrackerDto.userId,
             date: createNutritionTrackerDto.date,
+            goals: createNutritionTrackerDto.goals,
             calories: createNutritionTrackerDto.calories,
             protein: createNutritionTrackerDto.protein,
             carbohydrates: createNutritionTrackerDto.carbohydrates,
@@ -41,6 +42,7 @@ export class NutritionTrackerService{
         return await this.prisma.nutritionTracker.update({
           where: { id },
           data: {
+            goals: updateNutritionTrackerDto.goals,
             calories: updateNutritionTrackerDto.calories,
             protein: updateNutritionTrackerDto.protein,
             carbohydrates: updateNutritionTrackerDto.carbohydrates,
