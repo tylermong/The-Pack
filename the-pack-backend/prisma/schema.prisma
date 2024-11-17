@@ -143,6 +143,7 @@ model NutritionTracker {
   user            User       @relation(fields: [userId], references: [id])
   userId          String
   date            DateTime
+  goals           Int?
   calories        Int?       // Total calorie count
   protein         Float?     // Amount of protein (grams)
   carbohydrates   Float?     // Amount of carbohydrates (grams)
