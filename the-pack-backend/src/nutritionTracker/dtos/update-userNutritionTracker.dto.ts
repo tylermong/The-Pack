@@ -15,6 +15,11 @@ export class UpdateNutritionTrackerDto {
   @IsOptional()  // date is optional for updating
   date?: string;
 
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  goals?: number;
+  
   @IsOptional()  // Optional: calories field
   @IsInt()  // Ensure calories is an integer
   @Min(0)  // Calories should be a positive integer or zero
@@ -34,10 +39,6 @@ export class UpdateNutritionTrackerDto {
   @IsNumber()  // Ensure fats is a number
   @Min(0)  // Fats should be a positive number or zero
   fats?: number;
-
-  @IsOptional()  // Optional: notes field
-  @IsString()
-  notes?: string;
 
   @IsOptional()  // Optional: mealType field
   @IsEnum(MealType)  // Ensures mealType is a valid MealType enum
