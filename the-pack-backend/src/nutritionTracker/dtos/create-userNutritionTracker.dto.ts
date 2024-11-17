@@ -8,7 +8,7 @@ export class CreateNutritionTracker {
 
     @IsDateString()  // Ensures the date is in the correct ISO format (YYYY-MM-DD)
     date: string;  // Date of the nutrition entry
-    
+
     @IsOptional()
     @IsInt()
     @Min(1)
@@ -33,10 +33,6 @@ export class CreateNutritionTracker {
     @IsNumber()  // Ensures fats is a number
     @Min(0)  // Fats should be a positive number or zero
     fats?: number;  // Amount of fats (grams)
-
-    @IsOptional()  // Optional: notes can be a string
-    @IsString() 
-    notes?: string;  // Additional notes
 
     @IsEnum(MealType)  // Ensures mealType is a valid MealType enum
     @IsOptional()  // Optional mealType field

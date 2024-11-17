@@ -40,10 +40,6 @@ export class UpdateNutritionTrackerDto {
   @Min(0)  // Fats should be a positive number or zero
   fats?: number;
 
-  @IsOptional()  // Optional: notes field
-  @IsString()
-  notes?: string;
-
   @IsOptional()  // Optional: mealType field
   @IsEnum(MealType)  // Ensures mealType is a valid MealType enum
   mealType?: MealType;
