@@ -1,4 +1,4 @@
-import { Body, Controller, Param, Post, Request, UseGuards, Get, Req, Res } from '@nestjs/common';
+import { Body, Controller, Param, Post, Request, UseGuards, Get, Req, Res, HttpException, HttpStatus } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { UserService } from 'src/user/user.service';
 import { LoginDto } from './dto/auth.dto';
@@ -19,7 +19,7 @@ export class AuthController {
 
     @Post('coachRegister')
     async coachRegister(@Body('id') id: string, @Body() createUserDto: Prisma.UserCreateInput){
-          return this.coachService.create(id, createUserDto)
+          return this.coachService.createCoachWKey(id, createUserDto)
     }
 
     @Post('userLogin')
@@ -51,6 +51,18 @@ export class AuthController {
         } else {
         return res.status(401).json({ message: 'Not authenticated' });
         }
+    }
+
+
+    @Post('verifyPassword')
+    async verifyPassword(
+        @Body('password') password: string,
+        @Body('storedHash') storedHash: string,
+    ) {
+        if (!password || !storedHash) {
+            throw new HttpException('Password and hash are required', HttpStatus.BAD_REQUEST);
+        }
+        return await this.authService.verifyPassword(password, storedHash);
     }
 
     //this is where coach starts

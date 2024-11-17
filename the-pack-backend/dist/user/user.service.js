@@ -13,6 +13,7 @@ exports.UserService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../prisma/prisma.service");
 const bcrypt_1 = require("bcrypt");
+const bcrypt = require("bcrypt");
 let UserService = class UserService {
     constructor(prismaSerivce) {
         this.prismaSerivce = prismaSerivce;
@@ -67,6 +68,13 @@ let UserService = class UserService {
         return await this.prismaSerivce.user.update({
             where: { id: clientId },
             data: { coach: { connect: { id: coachId } } },
+        });
+    }
+    async updatePassword(userId, newPassword) {
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        return this.prismaSerivce.user.update({
+            where: { id: userId },
+            data: { password: hashedPassword },
         });
     }
 };

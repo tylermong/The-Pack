@@ -36,7 +36,9 @@ export declare class UserController {
         updatedAt: Date;
         coachId: string | null;
     }>;
-    update(id: string, updateUserDto: Prisma.UserUpdateInput): Promise<{
+    updatePassword(id: string, updateData: {
+        password: string;
+    }): Promise<{
         id: string;
         name: string;
         email: string;

@@ -1,6 +1,9 @@
 'use client'
 
-//Table that lists all schedules for a coach (monthly basis) (For coaches: allow for creation, modification, and deletion)
+// Lists all available classes (for coach specifically allow for creation, modification, and deletion)
+// FOR VIEWING ALSO ALLOW TO CLICK ON A CLASS THEN POP UP WITH CLASS INFORMATION IN CARDS
+// FOR THE CREATE CLASS BUTTON
+// Requirements: Name, description, dates(ex:Monday, Wdnesday, Friday), start time, and endtime
 
 import React from 'react';
 import { useState, useEffect } from 'react';
@@ -39,11 +42,7 @@ import {
 } from "@/components/ui/table"
 import { jwtDecode } from 'jwt-decode';
 import { JwtPayload } from "jsonwebtoken";
-import { CalendarIcon, ArrowLeftIcon, Pencil1Icon, Pencil2Icon, Cross1Icon } from "@radix-ui/react-icons";
-import { format } from "date-fns";
-import { cn } from "@/lib/utils";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { ArrowLeftIcon, Pencil1Icon, Pencil2Icon, Cross1Icon } from "@radix-ui/react-icons";
 import {
   Select,
   SelectContent,
@@ -55,13 +54,17 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast"
 import { Label } from "@/components/ui/label"
 import { useRouter } from 'next/navigation'
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
 
 
-
-//Defining coach scheudle type
-export type CoachSchedule = {
+//Defining class type
+export type Class = {
     id: string
-    coachID: string 
+    name: string
+    description: string
+    currentlyEnrolledIn: number
+    assignedCoach: string
     date: string
     startTime: string
     endTime: string
@@ -74,7 +77,7 @@ interface CustomJwtPayload extends JwtPayload {
 
 
 
-const CoachScheduleListTable = () => {
+const ClassListTable = () => {
 
     //Router
     const router = useRouter()
@@ -83,72 +86,78 @@ const CoachScheduleListTable = () => {
     const { toast } = useToast()
 
     //Constants for when mounting table data
-    const [coachSchedule, setCoachSchedule] = useState<CoachSchedule[]>([]);
+    const [classes, setClasses] = useState<Class[]>([]);
 
     //Constants for selection state
-    const [coachScheduleRowSelection, setCoachScheduleRowSelection] = useState({});
+    const [classRowSelection, setClassRowSelection] = useState({});
 
-    //Constants for when making a schedule
+    //Constants for making a class
+    const [name, setName] = useState<string>("");
+    const [description, setDescription] = useState<string>("");
     const [startTime, setStartTime] = useState<string>("00:00");
     const [endTime, setEndTime] = useState<string>("00:00");
-    const [date, setDate] = useState<Date>();
+    const [date, setDate] = useState<string>();
 
-    //For time pickers
-    const [time, setTime] = useState<string>("00:00");
-
-
-    //Constants for editing a schedule
-    const [editingSchedule, setEditingSchedule] = useState<CoachSchedule | null>(null);
-    const [editDate, setEditDate] = useState<Date | undefined>();
+    //For editing a class
+    const [editingClass, setEditingClass] = useState<Class | null>(null);
+    const [editName, setEditName] = useState<string>("");
+    const [editDescription, setEditDescription] = useState<string>("");
+    const [editDate, setEditDate] = useState<string>();
     const [editStartTime, setEditStartTime] = useState<string>("00:00");
     const [editEndTime, setEditEndTime] = useState<string>("00:00");
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
 
-    //JWT Token Call for Coach Specific information
-    const getCoachProfile = async () => {
+    //JWT Token Call for Coach specific classes
+    const getCoachClasses = async () => {
         const token = localStorage.getItem('accessToken');
-        if(token){
+        if (token) {
             try {
-                const response = await axios.get("http://localhost:3001/auth/user", {
+                // Decode the JWT token to get the coachId
+                const decodedToken = jwtDecode<CustomJwtPayload>(token);
+                const coachId = decodedToken.coachId;
+
+                if (!coachId) {
+                    console.error("Coach ID not found in token.");
+                    return;
+                }
+
+                // Fetch clients associated with the coach
+                const response = await axios.get(`http://localhost:3001/class?assignedCoach=${coachId}`, {
                     headers: {
-                        Authorization: 'Bearer ${token}',
+                        Authorization: `Bearer ${token}`,
                     },
                 });
 
-                const coachData = response.data;
-                const coachID = jwtDecode<CustomJwtPayload>(token);
-
-                console.log("Coach Data", coachData)
-                console.log("Coach ID", coachID)
-
-                return coachID;
+                const classes = response.data; 
+                setClasses(classes); 
+                console.log("Fetched classes:", classes);
             } catch (error) {
-                console.log("Error fetching profile", error)
+                console.error("Error fetching classes:", error);
+                toast({
+                    title: "Error",
+                    description: "Could not fetch classes.",
+                    variant: "destructive",
+                });
             }
+        } else {
+            toast({
+                title: "No Token",
+                description: "Access token is missing. Please log in.",
+                variant: "destructive",
+            });
         }
     };
-    
 
-    //Mounts table with newest data (specific to current coach)
+    // Fetch the clients when the component mounts
     useEffect(() => {
-        const fetchCoachSchedule = async () => {
-            const coachID = await getCoachProfile();
-            if(coachID){
-                try{
-                    const response = await axios.get('http://localhost:3001/coachAvailability');
-                    setCoachSchedule(response.data)
-                } catch(error) {
-                    console.error("Error fetching schedule", error)
-                }
-            }
-        };
-        fetchCoachSchedule();
+        getCoachClasses();
     }, []);
 
 
+
     //Table configuration for coach schedule
-    const coachScheduleColumns: ColumnDef<CoachSchedule>[] = [
+    const classColumns: ColumnDef<Class>[] = [
         {
             id: "select",
             header: ({ table }) => (
@@ -156,7 +165,7 @@ const CoachScheduleListTable = () => {
                     checked={table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && "indeterminate")}
                     onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
                     aria-label="Select all"
-                    className= {`bg-primary border border-solid border-white scale-50 mr-2 ${table.getIsSomePageRowsSelected() ? "indeterminate" : ""}`}
+                    className= {`bg-primary border border-solid border-white scale-50 mr-2 text-white ${table.getIsSomePageRowsSelected() ? "indeterminate" : ""}`}
                 />
             ),
             cell: ({ row }) => (
@@ -167,148 +176,137 @@ const CoachScheduleListTable = () => {
                 />
             ),
         },
+        { accessorKey: "name", header: "Name" },
+        { accessorKey: "description", header: "Description" },
+        { accessorKey: "currentlyEnrolledIn", header: "Member Count" },
         { accessorKey: "date", header: "Date" },
         { accessorKey: "startTime", header: "Start Time" },
         { accessorKey: "endTime", header: "End Time" },
     ];
 
     //Class Table Object
-    const coachScheduleTable = useReactTable({
-        data: coachSchedule,
-        columns: coachScheduleColumns,
+    const classTable = useReactTable({
+        data: classes,
+        columns: classColumns,
         getCoreRowModel: getCoreRowModel(),
         getPaginationRowModel: getPaginationRowModel(),
-        state: { rowSelection: coachScheduleRowSelection },
-        onRowSelectionChange: setCoachScheduleRowSelection,
+        state: { rowSelection: classRowSelection },
+        onRowSelectionChange: setClassRowSelection,
     });
 
 
+    const handleCreateClass = async () => {
+        if (!name || !description || !date || !startTime || !endTime) {
+            alert("Please fill out all fields.");
+            return;
+        }
 
-    //handles creation of new schedules
-    const handleCreateSchedule = async () => {
-        if (date && startTime && endTime) {
-          const token = localStorage.getItem('accessToken');
-      
-          // Data being sent
-          const scheduleData = {
-            date: date.toISOString().split("T")[0], // Format as yyyy-mm-dd
-            startTime,
-            endTime,
-          };
-      
-          try {
-            // Send the schedule data to the backend
-            await axios.post("http://localhost:3001/coachAvailability", scheduleData, {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
+        try {
+            const response = await axios.post("http://localhost:3001/classes", {
+                name: name,
+                description,
+                date,
+                startTime,
+                endTime,
             });
-      
-            toast({
-              description: "Schedule created successfully!",
-            });
-      
-            //Refetch the schedule data to update the table
-            const response = await axios.get("http://localhost:3001/coachAvailability", {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            });
-            setCoachSchedule(response.data);
 
-            setDate(undefined);      
-            setStartTime("00:00");   
-            setEndTime("00:00"); 
-          } catch (error) {
-            console.error("Error creating schedule:", error);
-            toast({
-              description: "Failed to create schedule.",
-              variant: "destructive",
-            });
-          }
-        } else {
-          toast({
-            description: "Please fill in all fields before creating a schedule.",
-            variant: "destructive",
-          });
+            if (response.status === 201) {
+                alert("Class created successfully!");
+                // Clear form
+                setName("");
+                setDescription("");
+                setDate("");
+                setStartTime("");
+                setEndTime("");
+            }
+        } catch (error) {
+            console.error("Error creating class:", error);
+            alert("Failed to create class. Please try again.");
         }
     };
 
+
     //Handles deletion of selected schedule
-    const handleDeleteSchedules = async () => {
-        const selectedSchedules = coachScheduleTable.getSelectedRowModel().rows;
-        const scheduleIds = selectedSchedules.map((row) => row.original.id);
+    const handleDeleteClass = async () => {
+        const selectedClass = classTable.getSelectedRowModel().rows;
+        const classIds = selectedClass.map((row) => row.original.id);
 
         try {
             // Make the delete request to the backend
-            await axios.delete('http://localhost:3001/coachAvailability', {
-                data: { ids: scheduleIds },
+            await axios.delete('http://localhost:3001/class', {
+                data: { ids: classIds },
                 headers: { Authorization: `Bearer ${localStorage.getItem("accessToken")}` }
             });
 
             // Update local state to remove deleted schedules
-            setCoachSchedule((prev) => prev.filter((schedule) => !scheduleIds.includes(schedule.id)));
+            setClasses((prev) => prev.filter((schedule) => !classIds.includes(schedule.id)));
 
             // Optionally, show a success toast
-            toast({ description: "Schedules deleted successfully" });
+            toast({ description: "Class deleted successfully" });
         } catch (error) {
-            console.error("Error deleting schedules", error);
-            toast({ description: "Failed to delete schedules", variant: "destructive" });
+            console.error("Error deleting class", error);
+            toast({ description: "Failed to delete class", variant: "destructive" });
         }
     };
 
 
+
     //Editing mode handler
     const handleEditClick = () => {
-        const selectedSchedule = coachScheduleTable.getSelectedRowModel().rows[0]?.original;
+        const selectedClass = classTable.getSelectedRowModel().rows[0]?.original;
 
-        if (selectedSchedule) {
-            setEditingSchedule(selectedSchedule);
-            setEditDate(new Date(selectedSchedule.date));
-            setEditStartTime(selectedSchedule.startTime);
-            setEditEndTime(selectedSchedule.endTime);
+        if (selectedClass) {
+            setEditingClass(selectedClass);
+            setEditName(selectedClass.name);
+            setEditDescription(selectedClass.description);
+            setEditDate(selectedClass.date);
+            setEditStartTime(selectedClass.startTime);
+            setEditEndTime(selectedClass.endTime);
             setIsEditDialogOpen(true);
         }
     };
 
     //handles completed editing
     const handleSaveChanges = async () => {
-        if (editingSchedule && editDate && editStartTime && editEndTime) {
-            const updatedSchedule = {
-                ...editingSchedule,
-                date: editDate.toISOString(),
+        if (editingClass && editDate && editStartTime && editEndTime && editName && editDescription) {
+            const updatedClass = {
+                ...editingClass,
+                name: editName,
+                description: editDescription,
+                date: editDate,
                 startTime: editStartTime,
                 endTime: editEndTime,
             };
     
             try {
-                await axios.put(`http://localhost:3001/coachAvailability/${editingSchedule.id}`, updatedSchedule, {
+                await axios.put(`http://localhost:3001/class/${editingClass.id}`, updatedClass, {
                     headers: { Authorization: `Bearer ${localStorage.getItem("accessToken")}` }
                 });
     
                 // Update the local state with the new values
-                setCoachSchedule((prevSchedules) =>
-                    prevSchedules.map((schedule) =>
-                        schedule.id === editingSchedule.id ? updatedSchedule : schedule
+                setClasses((prevClass) =>
+                    prevClass.map((classes) =>
+                        classes.id === editingClass.id ? updatedClass : classes
                     )
                 );
     
-                toast({ description: "Schedule updated successfully" });
+                toast({ description: "Class updated successfully" });
                 setIsEditDialogOpen(false); // Close the dialog
             } catch (error) {
-                console.error("Error updating schedule", error);
-                toast({ description: "Failed to update schedule", variant: "destructive" });
+                console.error("Error updating class", error);
+                toast({ description: "Failed to update class", variant: "destructive" });
             }
         }
     };
 
+    
+
 
     return(
         <div className='flex flex-col pb-24 w-full h-auto px-5'>
-
             {/* Reroute button to go back to dashboard */}
             <div className='flex pt-5'>
-                <Button variant='outline' onClick={() => router.push('/coachfitnesstracker')}>
+                <Button variant='outline' onClick={() => router.push('/coach/fitness-tracker/dashboard')}>
                     <ArrowLeftIcon/>
                     Return to Dashboard
                 </Button>
@@ -316,7 +314,7 @@ const CoachScheduleListTable = () => {
 
 
             <div className='flex flex-col text-white font-bold items-center'>
-                Coach Schedule Table
+                Class Table
             </div>
 
             <Card className='bg-primary text-white w-full h-auto rounded-md border pt-3'>
@@ -325,7 +323,7 @@ const CoachScheduleListTable = () => {
                     {/* TABLE LISTING OF ALL COACH SCHEDULES - DISPLAYS DATE AND TIME-SLOT FOR THAT DAY */}
                     <Table>
                         <TableHeader>
-                            {coachScheduleTable.getHeaderGroups().map(headerGroup => (
+                            {classTable.getHeaderGroups().map(headerGroup => (
                                 <TableRow key={headerGroup.id}>
                                 {headerGroup.headers.map(header => (
                                     <TableHead key={header.id}>
@@ -336,14 +334,14 @@ const CoachScheduleListTable = () => {
                             ))}
                         </TableHeader>
                         <TableBody>
-                            {coachScheduleTable.getRowModel().rows.length === 0 ? (
+                            {classTable.getRowModel().rows.length === 0 ? (
                                 <TableRow>
-                                    <TableCell colSpan={coachScheduleColumns.length} className="text-center">
+                                    <TableCell colSpan={classColumns.length} className="text-center">
                                         No data available
                                     </TableCell>
                                 </TableRow>
                             ) : (
-                                coachScheduleTable.getRowModel().rows.map(row => (
+                                classTable.getRowModel().rows.map(row => (
                                     <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
                                         {row.getVisibleCells().map(cell => (
                                             <TableCell key={cell.id}>
@@ -360,63 +358,75 @@ const CoachScheduleListTable = () => {
                     {/* -----------------------------Functionality Buttons - Create, Edit, Delete ---------------------------------------- */}
                     <CardFooter className="flex justify-between mt-4">
 
-                        {/* ADD BUTTON */}
+                        {/* CREATE BUTTON */}
                         <Dialog>
                             <DialogTrigger asChild>
                                 <Button variant ="outline">
                                     <Pencil1Icon/>
-                                    Create Schedule
+                                    Create Class
                                 </Button>
                             </DialogTrigger>
 
                             <DialogContent className='bg-primary w-full h-auto'>
                                 <DialogHeader>
                                     <DialogTitle className='text-2xl'>
-                                        Create Your Monthly Schedule
+                                        Create A Class
                                     </DialogTitle>
                                     <DialogDescription>
-                                        Pick a date from the calendar. Choose a start and end time.
-                                        Once done, press create schedule!
+                                        Give your class a name. Write a brief description.
+                                        Indicate the dates (ex: Mon, Wed, Fri). 
+                                        Choose the start and end times.
                                     </DialogDescription>
                                 </DialogHeader>
 
-                                {/* Date Picker */}
+                                {/* Class Name Input */}
+                                <div className='flex flex-row items-center'>
+                                    <Label className='font-bold text-lg pr-6'>
+                                        Name:
+                                    </Label>
+                                    <Input 
+                                    type="text"
+                                    placeholder="Class Name"
+                                    value={name}
+                                    onChange={(e) => setName(e.target.value)}
+                                    />
+                                </div>
+
+                                {/* Class Description Input */}
+                                <div className='flex flex-row items-center'>
+                                    <Label className='font-bold text-lg pr-6'>
+                                        Description:
+                                    </Label>
+                                    <Textarea 
+                                    placeholder="Write class description..."
+                                    value={description}
+                                    onChange={(e) => setDescription(e.target.value)}
+                                    />
+                                </div>
+
+                                {/* Date Input */}
                                 <div className='flex flex-row items-center'>
                                     <Label className='font-bold text-lg pr-6'>
                                         Date:
                                     </Label>
-                                    <Popover>
-                                        <PopoverTrigger asChild>
-                                            <Button
-                                            variant={"outline"}
-                                            className={cn(
-                                                "w-[280px] justify-start text-left font-normal",
-                                                !date && "text-muted-foreground bg-primary border border-solid border-white"
-                                            )}
-                                            >
-                                            <CalendarIcon />
-                                            {date ? format(date, "PPP") : <span>Pick a date</span>}
-                                            </Button>
-                                        </PopoverTrigger>
-                                        <PopoverContent className="w-auto p-0 flex flex-col bg-primary text-white">
-                                            <Calendar
-                                            mode="single"
-                                            selected={date}
-                                            onSelect={setDate}
-                                            initialFocus
-                                            />
-                                        </PopoverContent>
-                                    </Popover>
+                                    <Input 
+                                    type="text"
+                                    placeholder="Enter date(s) (e.g., Mon, Wed, Fri)"
+                                    value={date}
+                                    onChange={(e) => setDate(e.target.value)}
+                                    />
                                 </div>
                                 
 
                                 {/* Time Pickers */}
                                 {["Start Time", "End Time"].map((label, index) => (
-                                    <div className="flex flex-row items-center" key={label}>
+                                    <div className="flex flex-row items-center my-2" key={label}>
                                         <Label className="font-bold text-lg pr-6">{label}:</Label>
                                         <Select
-                                            defaultValue={time}
-                                            onValueChange={(e) => index === 0 ? setStartTime(e) : setEndTime(e)}
+                                            value={index === 0 ? startTime : endTime}
+                                            onValueChange={(value) =>
+                                                index === 0 ? setStartTime(value) : setEndTime(value)
+                                            }
                                         >
                                             <SelectTrigger className="font-normal w-[120px] border border-white border-solid">
                                                 <SelectValue />
@@ -438,7 +448,7 @@ const CoachScheduleListTable = () => {
                                     </div>
                                 ))}
 
-                                <Button variant='outline' onClick={handleCreateSchedule}>Create Schedule</Button>
+                                <Button variant='outline' onClick={handleCreateClass}>Create Schedule</Button>
                             </DialogContent>
                         </Dialog>
 
@@ -449,7 +459,7 @@ const CoachScheduleListTable = () => {
                             <AlertDialogTrigger asChild>
                                 <Button 
                                 variant="destructive" 
-                                disabled={!(coachScheduleTable.getIsSomeRowsSelected() || coachScheduleTable.getIsAllPageRowsSelected())}>
+                                disabled={!(classTable.getIsSomeRowsSelected() || classTable.getIsAllPageRowsSelected())}>
                                     <Cross1Icon/>
                                     Delete
                                 </Button>
@@ -458,14 +468,14 @@ const CoachScheduleListTable = () => {
                                 <AlertDialogHeader>
                                     <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                                     <AlertDialogDescription className='text-white font-bold'>
-                                        This action cannot be undone. This will permanently delete the schedule(es).
+                                        This action cannot be undone. This will permanently delete the class(es).
                                     </AlertDialogDescription>
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
                                     <AlertDialogCancel>Cancel</AlertDialogCancel>
                                     <AlertDialogAction 
                                     className='border border-solid' 
-                                    onClick={handleDeleteSchedules}
+                                    onClick={handleDeleteClass}
                                     >
                                         Continue
                                     </AlertDialogAction>
@@ -475,49 +485,44 @@ const CoachScheduleListTable = () => {
 
 
 
-
-
-
                         {/* EDIT BUTTON */}
                         <Button
                         variant="outline"
                         onClick={handleEditClick}
-                        disabled={!(coachScheduleTable.getIsSomeRowsSelected() || coachScheduleTable.getIsAllPageRowsSelected())}
+                        disabled={!(classTable.getIsSomeRowsSelected() || classTable.getIsAllPageRowsSelected())}
                         >
                             <Pencil2Icon/>
-                            Edit Schedule
+                            Edit Class
                         </Button>
 
                         <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
                             <DialogContent>
                                 <DialogHeader>
-                                <DialogTitle>Edit Schedule Details</DialogTitle>
+                                <DialogTitle>Edit Class Details</DialogTitle>
                                 </DialogHeader>
 
-                                <div className="flex flex-row items-center">
-                                <Label className="font-bold text-lg pr-6">Date:</Label>
-                                <Popover>
-                                    <PopoverTrigger asChild>
-                                    <Button
-                                        variant={"outline"}
-                                        className={cn(
-                                        "w-[280px] justify-start text-left font-normal",
-                                        !date && "text-muted-foreground bg-primary border border-solid border-white"
-                                        )}
-                                    >
-                                        <CalendarIcon />
-                                        {date ? format(date, "PPP") : <span>Pick a date</span>}
-                                    </Button>
-                                    </PopoverTrigger>
-                                    <PopoverContent className="w-auto p-0 flex flex-col bg-primary text-white">
-                                    <Calendar
-                                        mode="single"
-                                        selected={date}
-                                        onSelect={setDate}
-                                        initialFocus
-                                    />
-                                    </PopoverContent>
-                                </Popover>
+                                {/* Class Name Input */}
+                                <div className='flex flex-row items-center'>
+                                    <Label className='font-bold text-lg pr-6'>
+                                        Name:
+                                    </Label>
+                                    <Input type="name" value={name} onChange={(e) => setEditName(e.target.value)}/>
+                                </div>
+
+                                {/* Class Description Input */}
+                                <div className='flex flex-row items-center'>
+                                    <Label className='font-bold text-lg pr-6'>
+                                        Description:
+                                    </Label>
+                                    <Textarea placeholder="Write class description..." value={description} onChange={(e) => setEditDescription(e.target.value)}/>
+                                </div>
+
+                                {/* Date Input */}
+                                <div className='flex flex-row items-center'>
+                                    <Label className='font-bold text-lg pr-6'>
+                                        Date:
+                                    </Label>
+                                    <Input placeholder="Date"  value={date} onChange={(e) => setEditDate(e.target.value)}/>
                                 </div>
 
                                 {/* Time Pickers */}
@@ -558,7 +563,6 @@ const CoachScheduleListTable = () => {
                 </CardContent>
             </Card>
         </div>
-    )
+    );
 };
-
-export default CoachScheduleListTable;
+export default ClassListTable;

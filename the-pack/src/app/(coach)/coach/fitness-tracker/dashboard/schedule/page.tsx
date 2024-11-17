@@ -3,7 +3,7 @@
 import React from 'react';
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/coach/sidebar/app-sidebar"
-import CoachScheduleListTable from '@/components/tables/CoachScheduleList';
+import CoachScheduleListTable from '@/components/tables/coach/CoachScheduleList';
 
 
 export default function CoachSchedule()
