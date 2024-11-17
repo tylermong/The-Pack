@@ -2,14 +2,47 @@ import React from 'react';
 import Image from "next/image";
 import Link from 'next/link'
 import {useRouter} from "next/navigation";
+import { useSession } from 'next-auth/react';
+import axios from 'axios';
+import { useEffect, useState } from 'react';
 
 const CoachLoginForm = () =>{
     const router = useRouter()
+    const { data: session, status } = useSession();
+    const [username, setUsername] = useState('');
+    const [password, setPassword] = useState('');
 
-    {/*ADD A WAY TO VERiFY IF CREDENTIALS IN THE CURRENT DATABASE */}
+    //Redirects to home if user is already authenticated
+    useEffect(() => {
+        if(session && session.user || status == "authenticated"){
+            router.push("/coachhome")
+        }
+    }, [session, router, status])
 
+    //loading state
+    if (status === "loading") {
+        return <p>Loading...</p>;
+    }
 
+    //Handles login and stores JWT token into local storage for authentication
+    const handleLogin = async (event) => {
+        event.preventDefault();
 
+        try {
+            const response = await axios.post("http://localhost:3001/auth/userLogin", {
+                username,
+                password,
+            });
+
+            const { accessToken, refreshToken } = response.data.backendTokens;
+            localStorage.setItem("accessToken", accessToken);
+            localStorage.setItem("refreshToken", refreshToken);
+            router.push("/coachhome");  
+        } catch (error) {
+            console.error('Login error:', error.response?.data || error.message);
+            alert("LOGIN FAILED. PLEASE CHECK YOUR CREDENTIALS.");
+        }
+    }
 
 
     return(
@@ -31,7 +64,7 @@ const CoachLoginForm = () =>{
                     </div>
 
                     <div className="flex items-center md:w-1/2 justify-center p-6 h-full w-full">
-                        <form className="max-w-lg w-full mx-auto" onSubmit={(e) => {e.preventDefault(); router.push("/coachhome")}}>
+                        <form className="max-w-lg w-full mx-auto" onSubmit={handleLogin}>
                             <div className="mb-12">
                                 <h3 className="text-white md:text-3xl text-2xl font-extrabold max-md:text-center">Coach Log In</h3>
                             </div>
@@ -42,7 +75,10 @@ const CoachLoginForm = () =>{
                                         <input 
                                         name="email" 
                                         type="email" 
-                                        required className="w-full bg-transparent text-sm border-b border-gray-300 focus:border-gray-100 px-2 py-3 outline-none" 
+                                        value={username}
+                                        onChange={(e) => setUsername(e.target.value)}
+                                        required 
+                                        className="w-full bg-transparent text-sm border-b border-gray-300 focus:border-gray-100 px-2 py-3 outline-none" 
                                         placeholder="Enter email" />
                                         <svg 
                                         xmlns="http://www.w3.org/2000/svg" 
@@ -79,7 +115,10 @@ const CoachLoginForm = () =>{
                                         <input 
                                         name="password" 
                                         type="password" 
-                                        required className="w-full bg-transparent text-sm border-b border-gray-300 focus:border-gray-100 px-2 py-3 outline-none" 
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                        required
+                                        className="w-full bg-transparent text-sm border-b border-gray-300 focus:border-gray-100 px-2 py-3 outline-none" 
                                         placeholder="Enter password" />
 
                                         <svg 

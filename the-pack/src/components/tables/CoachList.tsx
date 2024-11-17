@@ -1,0 +1,1 @@
+//Table that lists all registered coaches (for admin specifically: allow for deletion)

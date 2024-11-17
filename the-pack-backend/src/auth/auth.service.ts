@@ -4,6 +4,7 @@ import { UserService } from 'src/user/user.service';
 import { compare } from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { Role } from '@prisma/client';
+import { InternalServerErrorException } from '@nestjs/common';
 
 @Injectable()
 export class AuthService {
@@ -11,30 +12,34 @@ export class AuthService {
 
     async userLogin(data: LoginDto){
 
-        const user = await this.validateUser(data)
-
-        const payload = {
-
-            username: user.email,
-            sub:{
-                id:user.id,
-                role:user.role
-            }
-        }
-
-        return {
-            user,
-            backendTokens:{
-                accessToken: await this.jwtService.signAsync(payload,{
-                    expiresIn: '1h',
-                    secret: process.env.jwtSecretKey,
-                }),
-
-                refreshToken: await this.jwtService.signAsync(payload,{
-                    expiresIn: '7d',
-                    secret: process.env.jwtRefreshTokenKey,
-                })
-            }
+        try {
+            const user = await this.validateUser(data);
+    
+            const payload = {
+                username: user.email,
+                sub: {
+                    id: user.id,
+                    role: user.role
+                }
+            };
+    
+            return {
+                user,
+                backendTokens: {
+                    accessToken: await this.jwtService.signAsync(payload, {
+                        expiresIn: '1h',
+                        secret: process.env.jwtSecretKey,
+                    }),
+    
+                    refreshToken: await this.jwtService.signAsync(payload, {
+                        expiresIn: '7d',
+                        secret: process.env.jwtRefreshTokenKey,
+                    })
+                }
+            };
+        } catch (error) {
+            console.error('Error during login:', error);
+            throw new InternalServerErrorException('Login failed due to server error');
         }
 
     }
