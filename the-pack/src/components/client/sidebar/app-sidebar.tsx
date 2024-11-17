@@ -35,7 +35,7 @@ const items = [
   },
   {
     title: "Profile",
-    url: "/profile",
+    url: "/client/profile",
     icon: User,
   },
 ]
