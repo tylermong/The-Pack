@@ -20,17 +20,12 @@ DROP INDEX "User_coachId_key";
 ALTER TABLE "Class" DROP COLUMN "coach",
 ADD COLUMN     "coachId" TEXT NOT NULL;
 
--- AlterTable
-ALTER TABLE "CoachKey" ADD COLUMN     "key" TEXT NOT NULL;
 
--- AlterTable
-ALTER TABLE "NutritionTracker" ADD COLUMN     "goals" INTEGER;
 
 -- AlterTable
 ALTER TABLE "scheduling" ALTER COLUMN "timeSlotId" DROP NOT NULL;
 
--- CreateIndex
-CREATE UNIQUE INDEX "CoachKey_key_key" ON "CoachKey"("key");
+
 
 -- AddForeignKey
 ALTER TABLE "Class" ADD CONSTRAINT "Class_coachId_fkey" FOREIGN KEY ("coachId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
