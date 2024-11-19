@@ -26,6 +26,29 @@ export declare class UserService {
         coachId: string | null;
     }[]>;
     findOne(id: string): Promise<{
+        coach: {
+            id: string;
+            name: string;
+            email: string;
+            password: string;
+            phoneNum: number | null;
+            role: import(".prisma/client").$Enums.Role;
+            createdAt: Date;
+            updatedAt: Date;
+            coachId: string | null;
+        };
+        clients: {
+            id: string;
+            name: string;
+            email: string;
+            password: string;
+            phoneNum: number | null;
+            role: import(".prisma/client").$Enums.Role;
+            createdAt: Date;
+            updatedAt: Date;
+            coachId: string | null;
+        }[];
+    } & {
         id: string;
         name: string;
         email: string;

@@ -55,6 +55,12 @@ interface CustomJwtPayload {
     iat?: number;
 }
 
+interface JwtPayload {
+    sub: string;  // user id
+    email: string;
+    role: string;
+}
+
 
 
 const Profile = () => {
@@ -79,27 +85,36 @@ const Profile = () => {
                     throw new Error("Token is null");
                 }
 
-                const decodedToken = jwtDecode<CustomJwtPayload>(token);
-                const email = decodedToken.username;
+                const decodedToken = jwtDecode<JwtPayload>(token);
+                const id = decodedToken.sub;
 
-                console.log("Access token:", decodedToken);
+                console.log("Access token:", id['id']);
 
-                if (!email) {
+                if (!id) {
                     console.error("ID not found in token.");
                     return;
                 }
 
                 // Fetch profile associated with token role
-                const response = await axios.get(`http://localhost:3001/user?email=${email}`, {
+                const response = await axios.get(`http://localhost:3001/user?id=${id}`, {
                     headers: {
                         Authorization: `Bearer ${token}`,
                     },
-                });
+                }); 
+                
+                const profileData = response.data; 
 
-                const [profileData] = response.data; // Extract the first object from the array
+                console.log("Profile data:", profileData);
+
+
                 if (profileData) {
-                    setProfile(profileData); // Set the state with the extracted profile
-                    console.log("Fetched profile:", profileData);
+                    for (let i = 0; i < profileData.length; i++) {
+                        if(profileData[i].id == id['id']){
+                            setProfile(profileData[i]);
+                            setNewProfile(profileData[i]);
+                            console.log("Fetched profile:", profileData[i]);
+                        }
+                    }
                 } else {
                     console.error("No profile data found in response");
                 }
@@ -108,14 +123,15 @@ const Profile = () => {
             }
         } else {
             console.error("No Token: Access token is missing. Please log in.");
-            // router.replace("/login"); CHANGE THIS BACK WHEN RUNNING DB
+            router.replace("/login"); 
         }
     };
 
     // Fetch the clients when the component mounts
     useEffect(() => {
         getProfile();
-    }, []);
+    }, [router]);
+
 
 
     //Handlees the change password dialog
@@ -205,10 +221,10 @@ const Profile = () => {
       };
 
     return(
-        <div className='flex pl-48'>
+        <div className='flex pl-32'>
             <div className='flex flex-col items-center h-auto space-x-4'>
-                <Card className="w-64 h-64 border-r bg-black text-white">
-                    <CardContent className='flex flex-col items-center justify-center h-full'>
+                <Card className="w-auto h-64 border-r bg-black text-white">
+                    <CardContent className='flex flex-col items-center justify-center h-full w-auto'>
                         <UserIcon size={64} className='flex'/>
                         <p>@{profile.name}</p>
                     </CardContent>

@@ -20,7 +20,7 @@ export class CoachKeyService {
     return this.prismaService.coachKey.findUnique({
       where:{
         
-        key: key,
+        key,
 
       }
     });

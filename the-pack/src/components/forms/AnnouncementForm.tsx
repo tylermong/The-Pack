@@ -40,6 +40,7 @@ const AnnouncementForm = () => {
 
   const onSubmit = (data: z.infer<typeof FormSchema>) => {
     // Handle form submission
+    
     console.log(data);
     setIsOpen(false); // Close the dialog after submission
   };

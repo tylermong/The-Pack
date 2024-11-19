@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { hash } from 'bcrypt';
@@ -27,12 +27,23 @@ export class UserService {
   }
 
   async findOne(id: string) {
-    return this.prismaSerivce.user.findUnique({
-      where:{
-        id: id,
-      }
+    const user = await this.prismaSerivce.user.findUnique({
+        where: {
+            id: id
+        },
+        // Optionally include relationships if needed
+        include: {
+            coach: true,
+            clients: true
+        }
     });
-  }
+
+    if (!user) {
+        throw new NotFoundException(`User with ID ${id} not found`);
+    }
+
+    return user;
+}
 
   async update(id: string, updateUserDto: Prisma.UserUpdateInput) {
     return this.prismaSerivce.user.update({

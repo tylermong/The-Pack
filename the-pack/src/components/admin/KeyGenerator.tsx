@@ -42,9 +42,9 @@ const KeyGenerator = () => {
         setCoachKey(key);
         setIsKeyGenerated(true);
 
-        // Send the key to the backend to store in the database
+        console.log('Generated Key:', key);
         try {
-            await axios.post('http://localhost:3001/coach-key', { data : key });
+            await axios.post('http://localhost:3001/coach-key', { key });
             console.log('Key saved to database');
         } catch (error) {
             console.error('Error saving key:', error);

@@ -36,11 +36,19 @@ let UserService = class UserService {
         return this.prismaSerivce.user.findMany();
     }
     async findOne(id) {
-        return this.prismaSerivce.user.findUnique({
+        const user = await this.prismaSerivce.user.findUnique({
             where: {
-                id: id,
+                id: id
+            },
+            include: {
+                coach: true,
+                clients: true
             }
         });
+        if (!user) {
+            throw new common_1.NotFoundException(`User with ID ${id} not found`);
+        }
+        return user;
     }
     async update(id, updateUserDto) {
         return this.prismaSerivce.user.update({

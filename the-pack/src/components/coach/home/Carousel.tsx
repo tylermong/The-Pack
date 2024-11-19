@@ -17,57 +17,103 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
+import { jwtDecode } from 'jwt-decode';
+import { JwtPayload } from "jsonwebtoken";
+
+
+export type Announcement = {
+    title: string;
+    content: string;
+    authorId: string;
+}
+
+interface CustomJwtPayload extends JwtPayload {
+    sub: string;
+}
+
+
+
 
 const AnnouncementCarousel = () => {
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
     const [announcements, setAnnouncements] = useState([
         {
-            title: "Gym Open Hours",
-            content: "Monday - Friday: 8AM - 7PM\nSaturday: 9AM - 11PM\nSunday: 8AM - 7PM",
-            id: 1 //Exmaple ID
+            title: '',
+            content: '',
+            authorId: '',
+            id: ''
         }
     ]);
+    const [newAnnouncement, setNewAnnouncement] = useState<Announcement>({
+        title: '',
+        content: '',
+        authorId: '',
+    });
+    const [announcementId, setAnnouncementId] = useState<string[]>([]);
+
+    const mountAnnouncements = async () => {
+        console.log('Fetching Announcements...');
+        try {
+            const response = await axios.get('http://localhost:3001/announcements');
+            console.log('Announcements:', response.data);
+            setAnnouncements(response.data);
+        } catch (error) {
+            console.error("Error on Fetching Announcements:", error)
+        }
+    };
 
     useEffect(() => {
-        const currentAnnouncements = async () => {
-            try{
-                const response = await axios.get('http://localhost:3001/announcements');
-                setAnnouncements(response.data);
-            }catch(error){
-                console.error("Error on Fetching Announcements:", error)
-            }
-        };
-        currentAnnouncements();
+        mountAnnouncements();
     }, []);
+
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        const newAnnouncement = { 
-            title, 
-            content,
-            authorId: '7dc28ab3-4983-47be-968f-d582e554a1d5' // hardcoded for now
-        };
 
-        try {
-            // Send POST request to the database
-            const response = await axios.post('http://localhost:3001/announcements', newAnnouncement);
+        const token = localStorage.getItem('accessToken');
+        if (token) {
+            try {
+                // Decode the JWT token to get the coachId
+                const decodedToken = jwtDecode<CustomJwtPayload>(token);
+                const coachId = decodedToken.sub;
 
-            // Update local state with the response data
-            setAnnouncements([...announcements, response.data]);
-            console.log('Submitted:', response.data);
+                console.log('Coach ID:', coachId);
 
-            // Clear the form fields
-            setTitle('');
-            setContent('');
-        } catch (error) {
-            console.error('Error submitting announcement:', error);
+                if (!coachId) {
+                    console.error("Coach ID not found in token.");
+                    return;
+                }
+
+                setNewAnnouncement({ title: title, content: content, authorId: coachId['id'] });
+
+                console.log('New Announcement:', newAnnouncement);
+
+                // Send announcements to the database
+                const response = await axios.post(`http://localhost:3001/announcements`, newAnnouncement);
+                console.log('Submitted:', response.data);
+
+                //update the announcements id to the new id
+                setAnnouncements([...announcements, { title: title, content: content, authorId: coachId['id'], id: response.data['id'] }]);
+
+
+                console.log('Announcement ID:', announcementId);
+
+            } catch (error) {
+                console.error("Error submitting announcement:", error);
+            }
+        } else {
+            console.error("No access token found.");
         }
+
+        setTitle('');
+        setContent('');
     }
 
     //For deleting announcements
     const handleDelete = async (id: number) => {
         try {
+            //delete the announcement from the database by id and update the state
             await axios.delete(`http://localhost:3001/announcements/${id}`);
             setAnnouncements(announcements.filter((announcement) => announcement.id !== id));
         } catch (error) {
@@ -97,7 +143,7 @@ const AnnouncementCarousel = () => {
                                             <div className="flex justify-center mt-4">
                                                 <AlertDialog>
                                                     <AlertDialogTrigger asChild>
-                                                        <Button variant="destructive" onClick={() => handleDelete(announcement.id)}>
+                                                        <Button variant="destructive">
                                                             Delete
                                                         </Button>
                                                     </AlertDialogTrigger>
@@ -110,7 +156,7 @@ const AnnouncementCarousel = () => {
                                                         </AlertDialogHeader>
                                                         <AlertDialogFooter>
                                                             <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                                            <AlertDialogAction className='border border-solid'>Continue</AlertDialogAction>
+                                                            <AlertDialogAction className='border border-solid' onClick={() => handleDelete(announcement.id)}>Continue</AlertDialogAction>
                                                         </AlertDialogFooter>
                                                     </AlertDialogContent>
                                                 </AlertDialog>
