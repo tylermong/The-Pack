@@ -50,6 +50,8 @@ model User {
   // the messages user or coaches can send to a chatroom
   Messages Messages[]
   availability coachAvailability[] @relation("timeAvailability")
+
+  Participants ChatroomParticipants[]
 }
 
 model announcements{
@@ -67,11 +69,15 @@ model Class{
   id String @id @default(uuid())
   name String
   description String?
+  
   creator User @relation(fields: [creatorId], references: [id], name: "creatorOfClass")
   creatorId String
+  
   assignedCoach User  @relation(fields: [coachId], references: [id], name: "assignedCoach")
   coachId String
+  
   currentlyEnrolled Int?
+  
   classDates  ClassOnDate[]
 
   createdAt DateTime @default(now())
@@ -101,8 +107,10 @@ model ClassOnDate {
 
 model userClasses{
   id String @id @default(uuid())
+  
   class Class @relation(fields: [classId], references: [id])
   classId String
+  
   clientsInClass User @relation(fields: [clientId], references: [id])
   clientId String
   @@unique([clientId, classId]) //Composite unique constraint 
@@ -153,36 +161,51 @@ model NutritionTracker {
   updatedAt       DateTime   @updatedAt
 }
 
+
 model Programs {
   id              String           @id @default(uuid())
   programName     String
+  //wanna add a description
+  
   user            User             @relation(fields: [userId], references: [id])
   userId          String
+  
+  //not really necessary
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
+  
+  //
   weekEntries   programWeeks[]
+
 }
 
 model programWeeks{
   id String @id @default(uuid())
+  numOfWeeks String
+  
   programName Programs @relation(fields: [programId], references: [id])
   programId String
-  numOfWeeks String
+  
+
   daysEntries   programDays[]
 }
 
 model programDays{
   id String @id @default(uuid())
   name String
+  
   week programWeeks @relation(fields: [weekNum], references: [id])
   weekNum String
+  
   exerciseEntries   dailyExercise[]
 }
 
 model dailyExercise{
   id String @id @default(uuid())
+  
   day programDays @relation(fields: [dayNum], references: [id])
   dayNum String
+  
   exerciseName String
   numOfSets String
   numOfReps String
@@ -196,13 +219,30 @@ model Chatroom{
     coach           User             @relation(fields: [coachId], references: [id])
     coachId         String 
 
+    //the messages sent to the chatroom
     Messages Messages[]
+
+    //the users in the chatroom
+    Participants ChatroomParticipants[]
+}
+
+model ChatroomParticipants{
+    id              String           @id @default(uuid())
+    
+    user            User             @relation(fields: [userID], references: [id])
+    userID          String
+
+    chatroom        Chatroom         @relation(fields: [chatroomID], references: [id])
+    chatroomID      String 
+
+    @@unique([userID, chatroomID]) //Composite unique constraint 
 }
 
 model Messages{
 
     id              String           @id @default(uuid())
     content         String
+    
     user            User             @relation(fields: [userID], references: [id])
     userID          String
 
