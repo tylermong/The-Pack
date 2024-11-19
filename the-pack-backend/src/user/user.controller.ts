@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UseGuards, Request, UnauthorizedException } from '@nestjs/common';
 import { UserService } from './user.service';
 import { Prisma, Role } from '@prisma/client';
 import { JwtGuard } from 'src/auth/guards/jwt.guard';
@@ -44,6 +44,16 @@ export class UserController {
   remove(@Param('id') id: string) {
     return this.userService.remove(id);
   }
+
+
+  // @Get(':id')
+  // async getUser(@Param('id') id: string, @Request() req) {
+  //     // Verify requesting user matches the profile ID
+  //     if (req.user.sub !== id) {
+  //         throw new UnauthorizedException();
+  //     }
+  //     return this.userService.findOne(id);
+  // }
 
   
 }

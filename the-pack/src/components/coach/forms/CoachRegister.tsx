@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import Image from "next/image";
 import Link from 'next/link'
 import {useRouter} from "next/navigation";
+import axios from 'axios';
+
 
 const CoachRegisterForm = () =>{
     const router = useRouter()
@@ -17,39 +19,20 @@ const CoachRegisterForm = () =>{
     const sendRegister = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        const keyResponse = await fetch(`http://localhost:3001/coach-key/${key}`);
-        if (!keyResponse.ok) {
-            alert('Invalid coach key');
-            return;
-        }
-        const keyData = await keyResponse.json();
-        if (!keyData.valid) {
-            alert('Invalid coach key');
-            return;
-        }
-    
-        const response = await fetch('http://localhost:3001/coach', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ name, email, password, id: key }),
-        });
+        // Check if key is valid
+        const keyResponse = await axios.get(`http://localhost:3001/coach-key/${key}`);
 
-        
-        if(response.ok)
-        {
-            console.log("GOOD")
-            router.push("/coachlogin")
-        }
-    
-        if (!response.ok) {
-            // Handle error
-            const data = await response.json();
-            alert(`Error: ${data.message || 'Registration failed'}`);
+        console.log(keyResponse)
+
+        if(keyResponse.statusText === 'Not Found') {
+            alert('Invalid coach key');
             return;
         }
-    
+        else if(keyResponse.statusText === 'OK') {
+            // Send registration request
+            const response = await axios.post('http://localhost:3001/user', { name, email, password, role: "COACH"});
+            router.push("/login")
+        }
     };
     
     return(

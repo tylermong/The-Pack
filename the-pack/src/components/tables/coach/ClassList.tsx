@@ -60,18 +60,17 @@ import { Textarea } from "@/components/ui/textarea"
 
 //Defining class type
 export type Class = {
-    id: string
     name: string
     description: string
-    currentlyEnrolledIn: number
-    assignedCoach: string
+    creatorId: string
+    currentlyEnrolled: number
     date: string
     startTime: string
     endTime: string
 }
 
 interface CustomJwtPayload extends JwtPayload {
-    coachId: string;
+    sub: string;
 }
 
 
@@ -108,6 +107,10 @@ const ClassListTable = () => {
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
 
+    //Adding a client
+    const [client, setClient] = useState("");
+
+
     //JWT Token Call for Coach specific classes
     const getCoachClasses = async () => {
         const token = localStorage.getItem('accessToken');
@@ -115,7 +118,7 @@ const ClassListTable = () => {
             try {
                 // Decode the JWT token to get the coachId
                 const decodedToken = jwtDecode<CustomJwtPayload>(token);
-                const coachId = decodedToken.coachId;
+                const coachId = decodedToken.sub;
 
                 if (!coachId) {
                     console.error("Coach ID not found in token.");
@@ -123,7 +126,7 @@ const ClassListTable = () => {
                 }
 
                 // Fetch clients associated with the coach
-                const response = await axios.get(`http://localhost:3001/class?assignedCoach=${coachId}`, {
+                const response = await axios.get(`http://localhost:3001/class?assignedCoach=${coachId['id']}`, {
                     headers: {
                         Authorization: `Bearer ${token}`,
                     },
@@ -178,7 +181,7 @@ const ClassListTable = () => {
         },
         { accessorKey: "name", header: "Name" },
         { accessorKey: "description", header: "Description" },
-        { accessorKey: "currentlyEnrolledIn", header: "Member Count" },
+        { accessorKey: "currentlyEnrolled", header: "Member Count" },
         { accessorKey: "date", header: "Date" },
         { accessorKey: "startTime", header: "Start Time" },
         { accessorKey: "endTime", header: "End Time" },
@@ -196,32 +199,53 @@ const ClassListTable = () => {
 
 
     const handleCreateClass = async () => {
+        const token = localStorage.getItem("accessToken");
+        if(token) {
+            try {
+                const decodedToken = jwtDecode<CustomJwtPayload>(token);
+                const coachId = decodedToken.sub;
+
+                console.log('Coach ID:', coachId);
+
+                if (!coachId) {
+                    console.error("Coach ID not found in token.");
+                    return;
+                }
+
+
+                const response = await axios.post("http://localhost:3001/class", {
+                    name: name,
+                    description: description,
+                    date: date,
+                    creatorId: coachId['id'],
+                    startTime: startTime,
+                    endTime: endTime,
+                });
+    
+                if (response.status === 201) {
+                    alert("Class created successfully!");
+                    // Clear form
+                    setName("");
+                    setDescription("");
+                    setDate("");
+                    setStartTime("");
+                    setEndTime("");
+                }
+            } catch (error) {
+                console.error("Error creating class:", error);
+                alert("Failed to create class. Please try again.");
+            }
+        } else {
+            toast({
+                title: "No Token",
+                description: "Access token is missing. Please log in.",
+                variant: "destructive",
+            });
+        }
+
         if (!name || !description || !date || !startTime || !endTime) {
             alert("Please fill out all fields.");
             return;
-        }
-
-        try {
-            const response = await axios.post("http://localhost:3001/classes", {
-                name: name,
-                description,
-                date,
-                startTime,
-                endTime,
-            });
-
-            if (response.status === 201) {
-                alert("Class created successfully!");
-                // Clear form
-                setName("");
-                setDescription("");
-                setDate("");
-                setStartTime("");
-                setEndTime("");
-            }
-        } catch (error) {
-            console.error("Error creating class:", error);
-            alert("Failed to create class. Please try again.");
         }
     };
 
@@ -298,6 +322,53 @@ const ClassListTable = () => {
             }
         }
     };
+
+
+    //handles adding a client to a class
+    const handleAddClient = async () => {
+        // Get the selected class
+        const selectedClass = classTable.getSelectedRowModel().rows[0]?.original;
+
+        // Get the selected client
+        const selectedClient = client;
+
+        if (selectedClass && selectedClient) {
+            try {
+                // Make the request to the backend
+                await axios.post(`http://localhost:3001/class/${selectedClass.id}/client/${selectedClient.id}`, {
+                    headers: { Authorization: `Bearer ${localStorage.getItem("accessToken")}` }
+                });
+
+                toast({ description: "Client added successfully" });
+            } catch (error) {
+                console.error("Error adding client to class", error);
+                toast({ description: "Failed to add client to class", variant: "destructive" });
+            }
+        }
+    }
+
+    //handles removing a client from a class
+    const handleRemoveClient = async () => {
+        // Get the selected class
+        const selectedClass = classTable.getSelectedRowModel().rows[0]?.original;
+
+        // Get the selected client
+        const selectedClient = client;
+
+        if (selectedClass && selectedClient) {
+            try {
+                // Make the request to the backend
+                await axios.delete(`http://localhost:3001/class/${selectedClass.id}/client/${selectedClient.id}`, {
+                    headers: { Authorization: `Bearer ${localStorage.getItem("accessToken")}` }
+                });
+
+                toast({ description: "Client removed successfully" });
+            } catch (error) {
+                console.error("Error removing client from class", error);
+                toast({ description: "Failed to remove client from class", variant: "destructive" });
+            }
+        }
+    }
 
     
 
@@ -558,8 +629,79 @@ const ClassListTable = () => {
                                 </DialogFooter>
                             </DialogContent>
                         </Dialog>
-                    </CardFooter>
 
+                                
+                        {/* ADD CLIENT BUTTON */}
+                        <Dialog>
+                            <DialogTrigger asChild>
+                                <Button variant ="outline" disabled={!(classTable.getIsSomeRowsSelected() || classTable.getIsAllPageRowsSelected())}>
+                                    <Pencil1Icon/>
+                                    Add Client
+                                </Button>
+                            </DialogTrigger>
+
+                            <DialogContent className='bg-primary w-full h-auto'>
+                                <DialogHeader>
+                                    <DialogTitle className='text-2xl'>
+                                        Add a Client
+                                    </DialogTitle>
+                                    <DialogDescription>
+                                        Write the client name. Then submit.
+                                    </DialogDescription>
+                                </DialogHeader>
+
+                                {/* Client Name Input */}
+                                <div className='flex flex-row items-center'>
+                                    <Label className='font-bold text-lg pr-6'>
+                                        Name:
+                                    </Label>
+                                    <Input 
+                                    type="text"
+                                    placeholder="Client Name"
+                                    value={name}
+                                    onChange={(e) => setClient(e.target.value)}
+                                    />
+                                </div>
+                                <Button variant='outline' onClick={handleAddClient}>Add</Button>
+                            </DialogContent>
+                        </Dialog>
+
+
+                        {/* REMOVE CLIENT BUTTON */}
+                        <Dialog>
+                            <DialogTrigger asChild>
+                                <Button variant ="outline" disabled={!(classTable.getIsSomeRowsSelected() || classTable.getIsAllPageRowsSelected())}>
+                                    <Pencil1Icon/>
+                                    Remove Client
+                                </Button>
+                            </DialogTrigger>
+
+                            <DialogContent className='bg-primary w-full h-auto'>
+                                <DialogHeader>
+                                    <DialogTitle className='text-2xl'>
+                                        Remove a Client
+                                    </DialogTitle>
+                                    <DialogDescription>
+                                        Write the client name. Then submit.
+                                    </DialogDescription>
+                                </DialogHeader>
+
+                                {/* Client Name Input */}
+                                <div className='flex flex-row items-center'>
+                                    <Label className='font-bold text-lg pr-6'>
+                                        Name:
+                                    </Label>
+                                    <Input 
+                                    type="text"
+                                    placeholder="Client Name"
+                                    value={name}
+                                    onChange={(e) => setClient(e.target.value)}
+                                    />
+                                </div>
+                                <Button variant='outline' onClick={handleRemoveClient}>Add</Button>
+                            </DialogContent>
+                        </Dialog>
+                    </CardFooter>
                 </CardContent>
             </Card>
         </div>

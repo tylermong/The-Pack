@@ -12,6 +12,7 @@ export class CoachKeyController {
     return this.coachKeyService.createKey(data);
   }
 
+
   @Get()
   findAll() {
     return this.coachKeyService.findAll();

@@ -6,8 +6,23 @@ import Link from 'next/link'
 import { useRouter } from "next/navigation";
 import { useSession } from 'next-auth/react';
 import axios from 'axios';
+import { Session } from 'inspector/promises';
 
-const ClientLoginForm = () =>{
+export enum role{
+    CLIENT = "CLIENT",
+    COACH = "COACH",
+    ADMIN = "ADMIN"
+}
+
+
+interface SessionUser {
+    id: number;
+    email: string;
+    name: string;
+    role: role;
+}
+
+const LoginForm = () =>{
     const router = useRouter()
     const { data: session, status } = useSession();
     const [username, setUsername] = useState('');
@@ -16,8 +31,18 @@ const ClientLoginForm = () =>{
 
     //Redirects to home if user is already authenticated
     useEffect(() => {
-        if(session && session.user || status == "authenticated"){
-            router.push("/clienthome")
+        //change this so that it reroutes to the correct page based on role
+        if (session && session.user) {
+            const role = (session.user as SessionUser).role;
+            if (role === "CLIENT") {
+            router.push("/client/home");
+            } else if (role === "COACH") {
+            router.push("/coach/home");
+            } else if (role === "ADMIN") {
+            router.push("/admin/home");
+            } else {
+            router.push("/");
+            }
         }
     }, [session, router, status])
 
@@ -175,4 +200,4 @@ const ClientLoginForm = () =>{
         </div>
     );
 };
-export default ClientLoginForm;
+export default LoginForm;

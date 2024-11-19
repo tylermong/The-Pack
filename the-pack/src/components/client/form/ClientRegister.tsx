@@ -24,7 +24,7 @@ const ClientRegisterForm = () =>{
         });
 
         if(response){
-            router.push("./clientlogin")
+            router.push("/login")
         }
     };
     
