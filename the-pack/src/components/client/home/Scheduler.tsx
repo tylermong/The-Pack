@@ -21,6 +21,7 @@ import {
     DialogContent,
     DialogTrigger,
     DialogTitle,
+    DialogDescription,
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -44,6 +45,8 @@ import {
     TableHeader,
     TableRow,
   } from "@/components/ui/table"
+import { jwtDecode } from 'jwt-decode';
+import { JwtPayload } from "jsonwebtoken";
 
 
 
@@ -54,6 +57,17 @@ const FormSchema = z.object({
     appointmentType: z.string().nonempty('Appointment Type is required'),
     appointmentDate: z.date().refine(date => date !== undefined, 'Date is required'),
 });
+
+export type Class = {
+    id: string
+    name: string
+    description: string
+    currentlyEnrolledIn: number
+    assignedCoach: string
+    date: string
+    startTime: string
+    endTime: string
+}
 
 
 const Scheduler = () => {
@@ -262,53 +276,25 @@ const Scheduler = () => {
                         <DialogTitle>
                             DAY SCHEDULE
                         </DialogTitle>
+                        <DialogDescription className='font-semibold'>
+                            Here you can find the available classes for the day. You can also find your appointments for the day.
+                        </DialogDescription>
 
                         <Tabs defaultValue="events" className="w-auto h-auto pt-5">
 
                             <TabsList className="flex flex-row bg-primary text-white border border-white">
-                                <TabsTrigger value="events" className='bg-primary w-full text-white hover:bg-gray-300'>Events</TabsTrigger>
                                 <TabsTrigger value="classes" className='bg-primary w-full text-white hover:bg-gray-300'>Classes</TabsTrigger>
                                 <TabsTrigger value="appointments" className='bg-primary w-full text-white hover:bg-gray-300'>Appointments</TabsTrigger>
                             </TabsList>
 
-                            <TabsContent value = "events">
-                                <Card className='bg-primary text-white'>
-                                    <Table>
-                                        <TableHeader className='flex flex-row w-full'>
-                                            <TableRow className='w-full'>
-                                                <TableHead className='text-lg w-full'>Event Name</TableHead>
-                                                <TableHead className='text-lg w-full'>Content</TableHead>
-                                            </TableRow>
-                                        </TableHeader>
-
-                                        <ScrollArea className="h-auto w-full p-4">
-                                            <TableBody className='flex flex-col w-full h-auto'>
-                                            {events?.length > 0 ? (
-                                                events.map((event) => (
-                                                    <TableRow key={event.title} className="w-full">
-                                                        <TableCell className="text-base w-full">{event.title}</TableCell>
-                                                        <TableCell className="text-base w-full">{event.content}</TableCell>
-                                                    </TableRow>
-                                                ))
-                                            ) : (
-                                                <TableRow>
-                                                    <TableCell colSpan={2}>No events available</TableCell>
-                                                </TableRow>
-                                            )}
-                                            </TableBody>
-                                        </ScrollArea>
-                                    </Table>
-                                </Card>
-                            </TabsContent>
-
                             <TabsContent value = "classes">
                                 <Card className='bg-primary text-white'>
                                     <Table>
-                                        <TableHeader className='flex flex-row w-full'>
+                                        <TableHeader className='flex-row flex w-full'>
                                             <TableRow className='w-full'>
-                                                <TableHead className='text-lg w-full'>Class Name</TableHead>
-                                                <TableHead className='text-lg w-full'>Coach</TableHead>
-                                                <TableHead className='text-lg w-full'>Start Time</TableHead>
+                                                <TableHead >Class Name</TableHead>
+                                                <TableHead >Coach</TableHead>
+                                                <TableHead >Start Time</TableHead>
                                             </TableRow>
                                         </TableHeader>
 
@@ -390,7 +376,18 @@ const Scheduler = () => {
 
                                             <div className="flex flex-col space-y-1.5">
                                                 <Label htmlFor="coach" className='mb-1'>Coach Name</Label>
-                                                <Input id="coach" placeholder="Coach name" {...register('coach')} />
+                                                {/* MAKE THIs A DROP DOWN THAT AUTOMATICALLY LIsT CURRENT COACH NAMEs */}
+                                                {/* ADD FUNCTIONALITIEs TO WORK WITH HANDLER */}
+                                                <Select onValueChange={(value) => setValue('coach', value)}>
+                                                    <SelectTrigger id="coach" className='border-solid border-white'>
+                                                        <SelectValue placeholder="Select coach" />
+                                                    </SelectTrigger>
+                                                    <SelectContent position="popper">
+                                                        {Object.entries(coach).map(([id, name]) => (
+                                                            <SelectItem key={id} value={name}>{name}</SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
                                             </div>
 
                                             <div className="flex flex-col space-y-1.5 ">
@@ -445,10 +442,25 @@ const Scheduler = () => {
 
                                             <div className="flex flex-col space-y-1.5">
                                                 <Label htmlFor="time" className='mb-1'>Time</Label>
-                                                <Input id="time" placeholder="Time" {...register("time")}/>
+
+                                                {/* FIX THis so THAT THE AVAILABLE TIME ARE AUTOMATICALLY COACH AVAILABILITY */}
+                                                {/* ADD FUNCTIONALITIEs TO WORK WITH HANDLER */}
+
+                                                <Select onValueChange={(value) => setValue('time', value)}>
+                                                    <SelectTrigger id="time" className='border-solid border-white'>
+                                                        <SelectValue placeholder="Select time" />
+                                                    </SelectTrigger>
+                                                    <SelectContent position="popper">
+                                                        {availability.map((slot, index) => (
+                                                            <SelectItem key={index} value={slot.timeSlot}>{slot.timeSlot}</SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
                                             </div>
 
-                                            <div className="flex flex-col space-y-1.5">
+
+                                            {/* I THINK REMOVE THIs IF AUTOMATIC TIME DROPDOWN */}
+                                            {/* <div className="flex flex-col space-y-1.5">
                                                 <Label htmlFor="coachAvailability" className='mb-1'>Coach Availability</Label>
                                                 <Card className='flex bg-primary text-white'>
                                                 {availability.length > 0 ? (
@@ -459,7 +471,7 @@ const Scheduler = () => {
                                                     <div className="px-2">No availability</div>
                                                 )}
                                                 </Card>
-                                            </div>
+                                            </div> */}
 
                                         </div>
                                         <Button type = "submit" variant="outline" className='pt-4'>Submit</Button>

@@ -131,17 +131,17 @@ const UsersListTable = () => {
 
     //handler for deleting a coach
     const deleteSelectedUser = async () => {
-        const selectedIds = Object.keys(userRowSelection).filter((id) => userRowSelection[id]);
-        if (selectedIds.length === 0) {
-            toast({ title: "No Selection", description: "No user selected for deletion.", variant: "destructive"});
-            return;
-        }
+        //get the user data from user that corresponds to the selected row
+        const selectedId = userTable.getSelectedRowModel();
+        console.log("Selected users:", selectedId['rows'][0]['original']['id']);
+
+        const id = selectedId['rows'][0]['original']['id'];
 
         try {
             const token = localStorage.getItem('accessToken');
-            await axios.delete(`http://localhost:3001/user`, {
+            await axios.delete(`http://localhost:3001/user/${id}`, {
                 headers: { Authorization: `Bearer ${token}` },
-                data: { ids: selectedIds },
+                data: { ids: selectedId },
             });
             toast({ title: "Success", description: "Selected user deleted successfully.", variant: "default" });
             getUsers(); // Refresh the list
