@@ -27,6 +27,7 @@ export default function ProgramList() {
   const [newProgram, setNewProgram] = useState<Program>({ id: '', name: '', description: '', tags: [] })
   const [newTag, setNewTag] = useState('');
   const [editingTag, setEditingTag] = useState('');
+  const [newProgramErrors, setNewProgramErrors] = useState({ name: '', description: '' });
 
   const handleEditClick = (program: Program) => {
     setEditingProgram({ ...program })
@@ -71,11 +72,27 @@ export default function ProgramList() {
   }
 
   const handleNewProgramSave = () => {
-    const newId = uuidv4()
-    const programToAdd = { ...newProgram, id: newId }
-    setPrograms(prev => [...prev, programToAdd])
-    setIsNewProgramDialogOpen(false)
-    setNewProgram({ id: '', name: '', description: '', tags: [] })
+    const errors = { name: '', description: '' };
+  
+    if (!newProgram.name.trim()) {
+      errors.name = 'Name is required.';
+    }
+  
+    if (!newProgram.description.trim()) {
+      errors.description = 'Description is required.';
+    }
+  
+    if (errors.name || errors.description) {
+      setNewProgramErrors(errors);
+      return;
+    }
+  
+    const newId = uuidv4();
+    const programToAdd = { ...newProgram, id: newId };
+    setPrograms(prev => [...prev, programToAdd]);
+    setIsNewProgramDialogOpen(false);
+    setNewProgram({ id: '', name: '', description: '', tags: [] });
+    setNewProgramErrors({ name: '', description: '' });
   }
 
   const handleAddTag = () => {
@@ -240,25 +257,35 @@ export default function ProgramList() {
               <Label htmlFor="new-name" className="text-right">
                 Name
               </Label>
-              <Input
-                id="new-name"
-                name="name"
-                value={newProgram.name}
-                onChange={handleNewProgramChange}
-                className="col-span-3"
-              />
+              <div className="col-span-3">
+                <Input
+                  id="new-name"
+                  name="name"
+                  value={newProgram.name}
+                  onChange={handleNewProgramChange}
+                  // Optionally, add 'required' attribute or styling
+                />
+                {newProgramErrors.name && (
+                  <p className="text-red-500 text-sm mt-1">{newProgramErrors.name}</p>
+                )}
+              </div>
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="new-description" className="text-right">
                 Description
               </Label>
-              <Textarea
-                id="new-description"
-                name="description"
-                value={newProgram.description}
-                onChange={handleNewProgramChange}
-                className="col-span-3"
-              />
+              <div className="col-span-3">
+                <Textarea
+                  id="new-description"
+                  name="description"
+                  value={newProgram.description}
+                  onChange={handleNewProgramChange}
+                  // Optionally, add 'required' attribute or styling
+                />
+                {newProgramErrors.description && (
+                  <p className="text-red-500 text-sm mt-1">{newProgramErrors.description}</p>
+                )}
+              </div>
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="new-tag-input" className="text-right">
