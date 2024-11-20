@@ -11,12 +11,19 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { PlusCircle, MoreVertical, Edit, Trash, Copy, X } from "lucide-react"
+import { jwtDecode } from 'jwt-decode';
+import { JwtPayload } from "jsonwebtoken";
+import axios from 'axios'
 
 interface Program {
   id: string;
   name: string;
   description: string;
   tags: string[];
+}
+
+interface CustomJwtPayload extends JwtPayload {
+  sub: string;
 }
 
 export default function ProgramList() {
@@ -70,11 +77,35 @@ export default function ProgramList() {
     setNewProgram(prev => ({ ...prev, tags }))
   }
 
-  const handleNewProgramSave = () => {
+  const handleNewProgramSave = async () => {
     const newId = uuidv4()
     const programToAdd = { ...newProgram, id: newId }
     setPrograms(prev => [...prev, programToAdd])
     setIsNewProgramDialogOpen(false)
+
+    const token = localStorage.getItem('accessToken');
+
+    if (token) {
+      try {
+        const decodedToken = jwtDecode<CustomJwtPayload>(token);
+        const clientId = decodedToken.sub;
+        const id = clientId['id'];
+
+        console.log('ClientId:', id);
+
+        const response = await axios.post('http://localhost:3001/programs/${id}', 
+          programs, 
+          { headers: { Authorization: `Bearer ${token}` } }
+        )
+
+      } catch (error) {
+        console.error(error);
+      }
+    } else {
+      console.error('Token is null');
+    }
+
+    //Reset the new program form
     setNewProgram({ id: '', name: '', description: '', tags: [] })
   }
 
@@ -107,6 +138,8 @@ export default function ProgramList() {
       } : null);
     }
   };
+
+
 
   return (
     <div className="flex flex-col mx-12">
