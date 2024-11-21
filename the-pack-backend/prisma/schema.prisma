@@ -26,7 +26,7 @@ model User {
   updatedAt DateTime  @updatedAt
   
   //Assign a personal coach to clients
-  coach       User?      @relation("ClientCoach", fields: [coachId], references: [id])
+  coach       User?      @relation("ClientCoach", fields: [coachId], references: [id], onDelete: Cascade)
   coachId     String? 
 
   //Clients associated with Coach
@@ -58,7 +58,7 @@ model announcements{
   id String @id @default(uuid())
   title     String   @db.VarChar(255)
   content   String?
-  author    User     @relation(fields: [authorId], references: [id])
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
   authorId  String
   
   createdAt DateTime @default(now())
@@ -70,10 +70,10 @@ model Class{
   name String
   description String?
   
-  creator User @relation(fields: [creatorId], references: [id], name: "creatorOfClass")
+  creator User @relation(fields: [creatorId], references: [id], name: "creatorOfClass", onDelete: Cascade)
   creatorId String
   
-  assignedCoach User  @relation(fields: [coachId], references: [id], name: "assignedCoach")
+  assignedCoach User  @relation(fields: [coachId], references: [id], name: "assignedCoach", onDelete: Cascade)
   coachId String
   
   currentlyEnrolled Int?
@@ -99,8 +99,8 @@ model ClassOnDate {
   dateId      String
   startTime   DateTime          // Start time of the class on this date
   endTime     DateTime          // End time of the class on this date
-  class       Class             @relation(fields: [classId], references: [id])
-  date        classDates        @relation(fields: [dateId], references: [id])
+  class       Class             @relation(fields: [classId], references: [id], onDelete: Cascade)
+  date        classDates        @relation(fields: [dateId], references: [id], onDelete: Cascade)
 
   @@unique([classId, dateId])   // Ensure no duplicate relationships
 }
@@ -108,21 +108,21 @@ model ClassOnDate {
 model userClasses{
   id String @id @default(uuid())
   
-  class Class @relation(fields: [classId], references: [id])
+  class Class @relation(fields: [classId], references: [id], onDelete: Cascade)
   classId String
   
-  clientsInClass User @relation(fields: [clientId], references: [id])
+  clientsInClass User @relation(fields: [clientId], references: [id], onDelete: Cascade)
   clientId String
   @@unique([clientId, classId]) //Composite unique constraint 
 }
 
 model scheduling{
   id      String            @id @default(uuid())
-  client User @relation(fields: [clientId], references: [id], name: "clientAppointments")
+  client User @relation(fields: [clientId], references: [id], name: "clientAppointments", onDelete: Cascade)
   clientId String
-  appointmentHolder User @relation(fields: [coachId], references: [id], name: "coachAppointments")
+  appointmentHolder User @relation(fields: [coachId], references: [id], name: "coachAppointments", onDelete: Cascade)
   coachId String
-  timeSlot            TimeSlot?        @relation(fields: [timeSlotId], references: [id])
+  timeSlot            TimeSlot?        @relation(fields: [timeSlotId], references: [id], onDelete: SetNull)
   timeSlotId          String?
   createdAt  DateTime @default(now())
 }
@@ -131,7 +131,7 @@ model coachAvailability{
   id String @id @default(uuid())
   date     DateTime   @db.Date
   timeSlots           TimeSlot[] // Link to multiple time slots for the day
-  timeSlotCreator User @relation(fields: [coachId], references: [id], name: "timeAvailability")
+  timeSlotCreator User @relation(fields: [coachId], references: [id], name: "timeAvailability", onDelete: Cascade)
   coachId String
 }
 
@@ -139,7 +139,7 @@ model TimeSlot {
   id                  String     @id @default(uuid())
   startTime           DateTime
   endTime             DateTime
-  availability        coachAvailability @relation(fields: [availabilityId], references: [id])
+  availability        coachAvailability @relation(fields: [availabilityId], references: [id], onDelete: Cascade)
   availabilityId      String
   isBooked            Boolean    @default(false) // Mark if the time slot has been booked
   createdAt           DateTime   @default(now())
@@ -148,7 +148,7 @@ model TimeSlot {
 
 model NutritionTracker {
   id              String     @id @default(uuid())
-  user            User       @relation(fields: [userId], references: [id])
+  user            User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId          String
   date            DateTime
   goals           Int?
@@ -167,7 +167,7 @@ model Programs {
   programName     String
   //wanna add a description
   
-  user            User             @relation(fields: [userId], references: [id])
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId          String
   
   //not really necessary
@@ -183,7 +183,7 @@ model programWeeks{
   id String @id @default(uuid())
   numOfWeeks String
   
-  programName Programs @relation(fields: [programId], references: [id])
+  programName Programs @relation(fields: [programId], references: [id], onDelete: Cascade)
   programId String
   
 
@@ -194,7 +194,7 @@ model programDays{
   id String @id @default(uuid())
   name String
   
-  week programWeeks @relation(fields: [weekNum], references: [id])
+  week programWeeks @relation(fields: [weekNum], references: [id], onDelete: Cascade)
   weekNum String
   
   exerciseEntries   dailyExercise[]
@@ -203,7 +203,7 @@ model programDays{
 model dailyExercise{
   id String @id @default(uuid())
   
-  day programDays @relation(fields: [dayNum], references: [id])
+  day programDays @relation(fields: [dayNum], references: [id], onDelete: Cascade)
   dayNum String
   
   exerciseName String
@@ -216,7 +216,7 @@ model Chatroom{
 
     id              String           @id @default(uuid())
     name            String 
-    coach           User             @relation(fields: [coachId], references: [id])
+    coach           User             @relation(fields: [coachId], references: [id], onDelete: Cascade)
     coachId         String 
 
     //the messages sent to the chatroom
@@ -229,10 +229,10 @@ model Chatroom{
 model ChatroomParticipants{
     id              String           @id @default(uuid())
     
-    user            User             @relation(fields: [userID], references: [id])
+    user            User             @relation(fields: [userID], references: [id], onDelete: Cascade)
     userID          String
 
-    chatroom        Chatroom         @relation(fields: [chatroomID], references: [id])
+    chatroom        Chatroom         @relation(fields: [chatroomID], references: [id], onDelete: Cascade)
     chatroomID      String 
 
     @@unique([userID, chatroomID]) //Composite unique constraint 
@@ -243,10 +243,10 @@ model Messages{
     id              String           @id @default(uuid())
     content         String
     
-    user            User             @relation(fields: [userID], references: [id])
+    user            User             @relation(fields: [userID], references: [id], onDelete: Cascade)
     userID          String
 
-    chatroomId      Chatroom         @relation(fields: [chatroomID], references: [id])
+    chatroomId      Chatroom         @relation(fields: [chatroomID], references: [id], onDelete: Cascade)
     chatroomID      String 
 
     createdAt       DateTime         @default(now())
