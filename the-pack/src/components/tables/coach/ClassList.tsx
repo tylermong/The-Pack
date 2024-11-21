@@ -56,10 +56,24 @@ import { Label } from "@/components/ui/label"
 import { useRouter } from 'next/navigation'
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
+import { ClockIcon } from "lucide-react";
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from "@/components/ui/popover"
+import { cn } from "@/lib/utils"
+import { Calendar } from "@/components/ui/calendar";
+import { Calendar as CalendarIcon } from "lucide-react"
+import { useForm } from "react-hook-form"
+import { z } from "zod"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { format } from "date-fns"
 
 
 //Defining class type
 export type Class = {
+    id: string
     name: string
     description: string
     creatorId: string
@@ -72,6 +86,13 @@ export type Class = {
 interface CustomJwtPayload extends JwtPayload {
     sub: string;
 }
+
+const FormSchema = z.object({
+    name: z.string().nonempty('Name is required'),
+    coach: z.string().nonempty('Coach name is required'),
+    appointmentType: z.string().nonempty('Appointment Type is required'),
+    appointmentDate: z.date().refine(date => date !== undefined, 'Date is required'),
+});
 
 
 
@@ -93,22 +114,29 @@ const ClassListTable = () => {
     //Constants for making a class
     const [name, setName] = useState<string>("");
     const [description, setDescription] = useState<string>("");
-    const [startTime, setStartTime] = useState<string>("00:00");
-    const [endTime, setEndTime] = useState<string>("00:00");
-    const [date, setDate] = useState<string>();
+    const [startTime, setStartTime] = useState<Date | undefined>(new Date());
+    const [endTime, setEndTime] = useState<Date | undefined>(new Date());
+    const [date, setDate] = useState<Date | undefined>(new Date());
 
     //For editing a class
     const [editingClass, setEditingClass] = useState<Class | null>(null);
     const [editName, setEditName] = useState<string>("");
     const [editDescription, setEditDescription] = useState<string>("");
-    const [editDate, setEditDate] = useState<string>();
-    const [editStartTime, setEditStartTime] = useState<string>("00:00");
-    const [editEndTime, setEditEndTime] = useState<string>("00:00");
+    const [editDate, setEditDate] = useState<Date | undefined>(new Date());
+    const [editStartTime, setEditStartTime] = useState<Date | undefined>(new Date());
+    const [editEndTime, setEditEndTime] = useState<Date | undefined>(new Date());
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+    const [newDate, setNewDate] = useState<Date | undefined>(new Date());
 
 
     //Adding a client
     const [client, setClient] = useState("");
+
+
+    //User Input Calendar Format
+    const { handleSubmit, formState: { errors }, reset, setValue } = useForm({
+        resolver: zodResolver(FormSchema),
+    });
 
 
     //JWT Token Call for Coach specific classes
@@ -125,15 +153,27 @@ const ClassListTable = () => {
                     return;
                 }
 
+                console.log("Fetching classes for coach:", coachId['id']);
+
                 // Fetch clients associated with the coach
-                const response = await axios.get(`http://localhost:3001/class?assignedCoach=${coachId['id']}`, {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                });
+                const response = await axios.get(`http://localhost:3001/class/coach/${coachId['id']}`);
 
                 const classes = response.data; 
-                setClasses(classes); 
+
+                //Map the values to the classes constant for only name, description, date, start time, end time
+                setClasses(classes.map((classItem: any) => ({
+                    id: classItem.id,
+                    name: classItem.name,
+                    description: classItem.description,
+                    currentlyEnrolled: classItem.currentlyEnrolled,
+                    date: classItem.classDates[0].date['date'].split('T')[0],
+                    startTime: classItem.classDates[0].startTime.split('T')[1].split(':')[0] + ':' + classItem.classDates[0].startTime.split('T')[1].split(':')[1],
+                    endTime: classItem.classDates[0].endTime.split('T')[1].split(':')[0] + ':' + classItem.classDates[0].endTime.split('T')[1].split(':')[1],
+                })));
+
+
+
+                
                 console.log("Fetched classes:", classes);
             } catch (error) {
                 console.error("Error fetching classes:", error);
@@ -205,31 +245,45 @@ const ClassListTable = () => {
                 const decodedToken = jwtDecode<CustomJwtPayload>(token);
                 const coachId = decodedToken.sub;
 
-                console.log('Coach ID:', coachId);
+                console.log('Coach ID:', coachId['id']);
 
                 if (!coachId) {
                     console.error("Coach ID not found in token.");
                     return;
                 }
 
+                const formattedDate = date ? date.toISOString().split('T')[0] : '';
 
-                const response = await axios.post("http://localhost:3001/class", {
+                const classData = {
+                    creatorId: coachId['id'],
+                    assignedCoachId: coachId['id'],
                     name: name,
                     description: description,
-                    date: date,
-                    creatorId: coachId['id'],
-                    startTime: startTime,
-                    endTime: endTime,
+                    classDates: [{
+                        date: date,
+                        startTime: new Date(`${formattedDate}T${startTime}:00.000Z`).toISOString(),
+                        endTime: new Date(`${formattedDate}T${endTime}:00.000Z`).toISOString(),
+                    }]
+                };
+
+                console.log("Creating class with data:", classData);
+
+
+                const response = await axios.post("http://localhost:3001/class", {creatorId: coachId['id'], ...classData}, {
+                    headers: { Authorization: `Bearer ${token}` }
                 });
     
                 if (response.status === 201) {
                     alert("Class created successfully!");
-                    // Clear form
+                    // Reset form
                     setName("");
                     setDescription("");
-                    setDate("");
-                    setStartTime("");
-                    setEndTime("");
+                    setDate(undefined);
+                    setStartTime(undefined);
+                    setEndTime(undefined);
+                    
+                    // Refresh class list
+                    getCoachClasses();
                 }
             } catch (error) {
                 console.error("Error creating class:", error);
@@ -252,24 +306,27 @@ const ClassListTable = () => {
 
     //Handles deletion of selected schedule
     const handleDeleteClass = async () => {
-        const selectedClass = classTable.getSelectedRowModel().rows;
-        const classIds = selectedClass.map((row) => row.original.id);
+        const selectedClasses = classTable.getSelectedRowModel().rows.map((row) => row.original);
 
-        try {
-            // Make the delete request to the backend
-            await axios.delete('http://localhost:3001/class', {
-                data: { ids: classIds },
-                headers: { Authorization: `Bearer ${localStorage.getItem("accessToken")}` }
-            });
+        if (selectedClasses.length > 0) {
+            try {
+                await Promise.all(
+                    selectedClasses.map((classItem) =>
+                        axios.delete(`http://localhost:3001/class/${classItem.id}`, {
+                            headers: { Authorization: `Bearer ${localStorage.getItem("accessToken")}` }
+                        })
+                    )
+                );
 
-            // Update local state to remove deleted schedules
-            setClasses((prev) => prev.filter((schedule) => !classIds.includes(schedule.id)));
+                setClasses((prevClasses) =>
+                    prevClasses.filter((classItem) => !selectedClasses.some((selectedClass) => selectedClass.id === classItem.id))
+                );
 
-            // Optionally, show a success toast
-            toast({ description: "Class deleted successfully" });
-        } catch (error) {
-            console.error("Error deleting class", error);
-            toast({ description: "Failed to delete class", variant: "destructive" });
+                toast({ description: "Class deleted successfully" });
+            } catch (error) {
+                console.error("Error deleting class", error);
+                toast({ description: "Failed to delete class", variant: "destructive" });
+            };
         }
     };
 
@@ -283,45 +340,71 @@ const ClassListTable = () => {
             setEditingClass(selectedClass);
             setEditName(selectedClass.name);
             setEditDescription(selectedClass.description);
-            setEditDate(selectedClass.date);
-            setEditStartTime(selectedClass.startTime);
-            setEditEndTime(selectedClass.endTime);
+            setEditDate(new Date(selectedClass.date));
+            setEditStartTime(new Date(selectedClass.startTime));
+            setEditEndTime(new Date(selectedClass.endTime));
             setIsEditDialogOpen(true);
         }
     };
 
     //handles completed editing
     const handleSaveChanges = async () => {
-        if (editingClass && editDate && editStartTime && editEndTime && editName && editDescription) {
-            const updatedClass = {
-                ...editingClass,
-                name: editName,
-                description: editDescription,
-                date: editDate,
-                startTime: editStartTime,
-                endTime: editEndTime,
-            };
-    
+        const selectedClass = classTable.getSelectedRowModel().rows[0]?.original;
+
+        if (selectedClass) {
             try {
-                await axios.put(`http://localhost:3001/class/${editingClass.id}`, updatedClass, {
+                const formattedDate = editDate ? editDate.toISOString().split('T')[0] : '';
+
+                const classData = {
+                    name: editName,
+                    description: editDescription,
+                    classDates: [{
+                        date: editDate,
+                        startTime: new Date(`${formattedDate}T${editStartTime}:00.000Z`).toISOString(),
+                        endTime: new Date(`${formattedDate}T${editEndTime}:00.000Z`).toISOString(),
+                    }]
+                };
+
+                console.log("Updating class with data:", classData);
+
+                const response = await axios.patch(`http://localhost:3001/class/${selectedClass.id}`, classData, {
                     headers: { Authorization: `Bearer ${localStorage.getItem("accessToken")}` }
                 });
-    
-                // Update the local state with the new values
-                setClasses((prevClass) =>
-                    prevClass.map((classes) =>
-                        classes.id === editingClass.id ? updatedClass : classes
-                    )
-                );
-    
-                toast({ description: "Class updated successfully" });
-                setIsEditDialogOpen(false); // Close the dialog
+
+                if (response.status === 200) {
+                    alert("Class updated successfully!");
+                    // Reset form
+                    setEditName("");
+                    setEditDescription("");
+                    setEditDate(undefined);
+                    setEditStartTime(undefined);
+                    setEditEndTime(undefined);
+                    setIsEditDialogOpen(false);
+                    // Refresh class list
+                    getCoachClasses();
+                }
             } catch (error) {
-                console.error("Error updating class", error);
-                toast({ description: "Failed to update class", variant: "destructive" });
+                console.error("Error updating class:", error);
+                alert("Failed to update class. Please try again.");
             }
         }
+
+        if (!editName || !editDescription || !editDate || !editStartTime || !editEndTime) {
+            alert("Please fill out all fields.");
+            return;
+        }
     };
+
+
+
+
+
+
+
+    //UNTESTED FUNCTION---------------------------------------------------------------------
+
+
+
 
 
     //handles adding a client to a class
@@ -475,51 +558,75 @@ const ClassListTable = () => {
                                     />
                                 </div>
 
-                                {/* Date Input */}
-                                <div className='flex flex-row items-center'>
-                                    <Label className='font-bold text-lg pr-6'>
-                                        Date:
-                                    </Label>
-                                    <Input 
-                                    type="text"
-                                    placeholder="Enter date(s) (e.g., Mon, Wed, Fri)"
-                                    value={date}
-                                    onChange={(e) => setDate(e.target.value)}
-                                    />
+                                {/* Date Input */} 
+                                <div className='flex flex-row space-y-1.5 items-center justify-between'>
+                                    <Label htmlFor="font-bold text-lg pr-6">Date:</Label>
+                                    <Popover>
+                                        <PopoverTrigger asChild>
+                                            <Button
+                                            variant={"outline"}
+                                            className={cn(
+                                                "w-[280px] justify-start text-left font-normal bg-black text-white border-solid border-white",
+                                                !date && "text-muted-foreground"
+                                            )}
+                                            >
+                                            <CalendarIcon />
+                                            {date ? format(date, "PPP") : <span>Pick a date</span>}
+                                            </Button>
+                                        </PopoverTrigger>
+                                        <PopoverContent className="w-auto h-auto p-0">
+                                            <div className='bg-black text-white'>
+                                            <Calendar
+                                            mode="single"
+                                            selected={date}
+                                            onSelect={(date) => {
+                                                setDate(date);
+                                                setValue('appointmentDate', date);
+                                            }}
+                                            initialFocus
+                                            />
+                                            </div>
+                                            
+                                        </PopoverContent>
+                                    </Popover>
                                 </div>
                                 
 
                                 {/* Time Pickers */}
-                                {["Start Time", "End Time"].map((label, index) => (
-                                    <div className="flex flex-row items-center my-2" key={label}>
-                                        <Label className="font-bold text-lg pr-6">{label}:</Label>
-                                        <Select
-                                            value={index === 0 ? startTime : endTime}
-                                            onValueChange={(value) =>
-                                                index === 0 ? setStartTime(value) : setEndTime(value)
-                                            }
-                                        >
-                                            <SelectTrigger className="font-normal w-[120px] border border-white border-solid">
-                                                <SelectValue />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <ScrollArea className="h-[15rem]">
-                                                    {Array.from({ length: 96 }).map((_, i) => {
-                                                        const hour = String(Math.floor(i / 4)).padStart(2, "0");
-                                                        const minute = String((i % 4) * 15).padStart(2, "0");
-                                                        return (
-                                                            <SelectItem key={i} value={`${hour}:${minute}`}>
-                                                                {hour}:{minute}
-                                                            </SelectItem>
-                                                        );
-                                                    })}
-                                                </ScrollArea>
-                                            </SelectContent>
-                                        </Select>
+                                <div className='flex flex-row items-center justify-between'>
+                                    <Label className='font-bold text-lg pr-6'>Start Time:</Label>
+                                    <div className="flex items-center space-x-2">
+                                        <ClockIcon className="w-5 h-5" />
+                                        <Input
+                                        type="time"
+                                        id="startTime"
+                                        name="startTime"
+                                        value={startTime}
+                                        onChange={(e) => setStartTime(e.target.value)}
+                                        className='w-auto bg-black text-white border border-white'
+                                        />
                                     </div>
-                                ))}
+                                </div>
+
+                                <div className='flex flex-row items-center justify-between'>
+                                    <Label className='font-bold text-lg pr-6'>End Time:</Label>
+                                    <div className="flex items-center space-x-2">
+                                        <ClockIcon className="w-5 h-5" />
+                                        <Input
+                                        type="time"
+                                        id="startTime"
+                                        name="startTime"
+                                        value={endTime}
+                                        onChange={(e) => setEndTime(e.target.value)}
+                                        className='w-auto bg-black text-white border border-white'
+                                        />
+                                    </div>
+                                </div>
+
+                                
 
                                 <Button variant='outline' onClick={handleCreateClass}>Create Schedule</Button>
+
                             </DialogContent>
                         </Dialog>
 
@@ -566,10 +673,16 @@ const ClassListTable = () => {
                             Edit Class
                         </Button>
 
+                        {/* Edit the class details */}
                         <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-                            <DialogContent>
+                            <DialogContent className='bg-primary w-full h-auto'>
                                 <DialogHeader>
-                                <DialogTitle>Edit Class Details</DialogTitle>
+                                    <DialogTitle className='text-2xl'>
+                                        Edit Class
+                                    </DialogTitle>
+                                    <DialogDescription>
+                                        Edit the class name, description, date, start time, and end time.
+                                    </DialogDescription>
                                 </DialogHeader>
 
                                 {/* Class Name Input */}
@@ -577,7 +690,12 @@ const ClassListTable = () => {
                                     <Label className='font-bold text-lg pr-6'>
                                         Name:
                                     </Label>
-                                    <Input type="name" value={name} onChange={(e) => setEditName(e.target.value)}/>
+                                    <Input 
+                                    type="text"
+                                    placeholder="Class Name"
+                                    value={editName}
+                                    onChange={(e) => setEditName(e.target.value)}
+                                    />
                                 </div>
 
                                 {/* Class Description Input */}
@@ -585,52 +703,84 @@ const ClassListTable = () => {
                                     <Label className='font-bold text-lg pr-6'>
                                         Description:
                                     </Label>
-                                    <Textarea placeholder="Write class description..." value={description} onChange={(e) => setEditDescription(e.target.value)}/>
+                                    <Textarea 
+                                    placeholder="Write class description..."
+                                    value={editDescription}
+                                    onChange={(e) => setEditDescription(e.target.value)}
+                                    />
                                 </div>
+                                    
+                                    {/* Date Input */}
+                                    <div className='flex flex-row space-y-1.5 items-center justify-between'>
+                                        <Label htmlFor="font-bold text-lg pr-6">Date:</Label>
+                                        <Popover>
+                                            <PopoverTrigger asChild>
+                                                <Button
+                                                variant={"outline"}
+                                                className={cn(
+                                                    "w-[280px] justify-start text-left font-normal bg-black text-white border-solid border-white",
+                                                    !editDate && "text-muted-foreground"
+                                                )}
+                                                >
+                                                <CalendarIcon />
+                                                {editDate ? format(editDate, "PPP") : <span>Pick a date</span>}
+                                                </Button>
+                                            </PopoverTrigger>
+                                            <PopoverContent className="w-auto h-auto p-0">
+                                                <div className='bg-black text-white'>
+                                                <Calendar
+                                                mode="single"
+                                                selected={editDate}
+                                                onSelect={(date) => {
+                                                    setEditDate(date);
+                                                    setValue('appointmentDate', date);
+                                                }}
+                                                initialFocus
+                                                />
+                                                </div>
+                                                
+                                            </PopoverContent>
+                                        </Popover>
+                                    </div>
+                                        
+    
+                                        {/* Time Pickers */}
+                                        <div className='flex flex-row items-center justify-between'>
+                                            <Label className='font-bold text-lg pr-6'>Start Time:</Label>
+                                            <div className="flex items-center space-x-2">
+                                                <ClockIcon className="w-5 h-5" />
+                                                <Input
+                                                type="time"
+                                                id="startTime"
+                                                name="startTime"
+                                                value={editStartTime}
+                                                onChange={(e) => setEditStartTime(e.target.value)}
+                                                className='w-auto bg-black text-white border border-white'
+                                                />
+                                            </div>
+                                        </div>
 
-                                {/* Date Input */}
-                                <div className='flex flex-row items-center'>
-                                    <Label className='font-bold text-lg pr-6'>
-                                        Date:
-                                    </Label>
-                                    <Input placeholder="Date"  value={date} onChange={(e) => setEditDate(e.target.value)}/>
-                                </div>
+                                        <div className='flex flex-row items-center justify-between'>
+                                            <Label className='font-bold text-lg pr-6'>End Time:</Label>
+                                            <div className="flex items-center space-x-2">
+                                                <ClockIcon className="w-5 h-5" />
+                                                <Input
+                                                type="time"
+                                                id="startTime"
+                                                name="startTime"
+                                                value={editEndTime}
+                                                onChange={(e) => setEditEndTime(e.target.value)}
+                                                className='w-auto bg-black text-white border border-white'
+                                                />
+                                            </div>
+                                        </div>
 
-                                {/* Time Pickers */}
-                                {["Start Time", "End Time"].map((label, index) => (
-                                <div className="flex flex-row items-center" key={label}>
-                                    <Label className="font-bold text-lg pr-6">{label}:</Label>
-                                    <Select
-                                    value={index === 0 ? startTime : endTime}
-                                    onValueChange={(e) => index === 0 ? setStartTime(e) : setEndTime(e)}
-                                    >
-                                    <SelectTrigger className="font-normal w-[120px] border border-white border-solid">
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <ScrollArea className="h-[15rem]">
-                                        {Array.from({ length: 96 }).map((_, i) => {
-                                            const hour = String(Math.floor(i / 4)).padStart(2, "0");
-                                            const minute = String((i % 4) * 15).padStart(2, "0");
-                                            return (
-                                            <SelectItem key={i} value={`${hour}:${minute}`}>
-                                                {hour}:{minute}
-                                            </SelectItem>
-                                            );
-                                        })}
-                                        </ScrollArea>
-                                    </SelectContent>
-                                    </Select>
-                                </div>
-                                ))}
-
-                                <DialogFooter>
-                                    <Button variant='outline' onClick={handleSaveChanges}>Save Changes</Button>
-                                </DialogFooter>
+                                        <Button variant='outline' onClick={handleSaveChanges}>Save Changes</Button>
                             </DialogContent>
                         </Dialog>
 
-                                
+
+                        
                         {/* ADD CLIENT BUTTON */}
                         <Dialog>
                             <DialogTrigger asChild>

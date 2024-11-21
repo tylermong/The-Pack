@@ -17,6 +17,8 @@ export class ClassController {
         // Ensure that `assignedCoachId` and other required data are passed correctly
         return this.classService.createClass(creatorId, classData);
     }
+
+
     @Get()
     async getClass() {
         return this.classService.getAllClass();
@@ -34,5 +36,11 @@ export class ClassController {
     async update(@Param('id') classId: string, @Body() classData: UpdateClassDto) {
         // Pass the classData to the service for update
         return this.classService.updateClass(classId, classData);
+    }
+
+    //Get classes by coach ID
+    @Get('coach/:coachId')
+    async getClassesByCoach(@Param('coachId') coachId: string) {
+        return this.classService.getClassesByCoach(coachId);
     }
 }

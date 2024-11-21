@@ -18,7 +18,8 @@ export class ClassService {
           startTime,
           endTime,
         }));
-      
+
+
         // Create the class with the necessary relations
         return this.prisma.class.create({
           data: {
@@ -107,5 +108,24 @@ export class ClassService {
       
         return null;
       }
-      
+
+      async getClassesByCoach(coachId: string) {
+        return this.prisma.class.findMany({
+          where: { 
+            assignedCoach: { id: coachId } 
+          },
+          include: {
+            // Return all data of the creator
+            creator: true,
+            // Return all data of the assigned coach
+            assignedCoach: true,
+            // Return all data of the class dates
+            classDates: {
+              include: {
+                date: true, // Include related date information from classDates table
+              },
+            },
+          },
+        });
+      }
 }
