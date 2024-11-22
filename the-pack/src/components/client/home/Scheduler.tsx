@@ -225,7 +225,7 @@ const Scheduler = () => {
         
     };
 
-      
+    
 
 
 
@@ -341,7 +341,7 @@ const Scheduler = () => {
 
 
             {/* CREATE AN APPOINTMENT FUNCTION */}
-            <div className='mt-1'>
+            <div className='mb-20 mt-1'>
                 <Dialog>
                     <DialogTrigger asChild>
                         <Button variant="outline" className='bg-white text-black hover:bg-gray-300'>Create an Appointment</Button>

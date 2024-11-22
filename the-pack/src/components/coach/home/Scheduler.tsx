@@ -395,11 +395,9 @@ const Scheduler = () => {
                         <div className='pt-4'>
                             <Button variant="outline" onClick={handleNewSchedule}>Save Schedule</Button>
                         </div>
-
                     </DialogContent>
                 </Dialog>
             </div>
-            
         </div>
     );
 };
