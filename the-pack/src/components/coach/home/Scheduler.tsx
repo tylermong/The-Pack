@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Calendar } from "@/components/ui/calendar";
 import { Button } from '@/components/ui/button';
-import { format } from "date-fns"
+import { format, set } from "date-fns"
 import { Calendar as CalendarIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
 import {
@@ -23,6 +23,7 @@ import {
     DialogTrigger,
     DialogTitle,
     DialogFooter,
+    DialogDescription,
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -48,6 +49,43 @@ import {
   } from "@/components/ui/table"
 import { Textarea } from "@/components/ui/textarea"
 import Script from 'next/script';
+import { jwtDecode } from 'jwt-decode';
+import { JwtPayload } from "jsonwebtoken";
+import { ClockIcon } from 'lucide-react';
+
+
+
+export type Class = {
+    id: string
+    name: string
+    description: string
+    currentlyEnrolledIn: number
+    coachId: string
+    date: string
+    startTime: string
+    endTime: string
+}
+
+export type Appointment = {
+    clientId: string
+    coachId: string
+    date: string
+    timeSlotId: string
+}
+
+export type coachAvailability = {
+    id: string;
+    coachId: string;
+    date: Date;
+    timeSlots: {
+        startTime: string;
+        endTime: string;
+    }
+};
+
+interface CustomJwtPayload extends JwtPayload {
+    sub: string;
+}
 
 
 
@@ -64,155 +102,106 @@ const Scheduler = () => {
 
     //Used for current date of the monthly schedule
     const [date, setDate] = useState<Date | undefined>(new Date());
-    const [appointmentDate, setAppointmentDate] = React.useState<Date | undefined>()
-
-    //Used for appointment making
-    const [schedule, setSchedule] = useState([]);
 
     //State handler for schedule viewing on EACH DAY ONLY
     const [selectedDate, setSelectedDate] = useState(null);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-    //Schedule viewer data (UNCOMMENT AFTER DB AND BACKEND API CALLS ARE IMPLEMENTED)
-    const [events, setEvents] = useState([]);
-    const [classes, setClasses] = useState([]);
-    const [appointments, setAppointments] = useState([]);
+    //Schedule viewer data 
+    const [classes, setClasses] = useState<Class[]>([]);
     const [coach, setCoach] = useState<Record<string, string>>({});
-    const [appointment, setAppointment] = useState<any[]>([]);
+    const [appointment, setAppointments] = useState<Appointment[]>([]);
 
     //Used for coach schedules
-    const [coachDate, setCoachDate] = React.useState<Date | undefined>()
-    const [timeslots, setTimeslots] = useState<string>("");
-    const [appDate, setAppDate] = useState<string>("");
+    const [scheduleDate, setScheduleDate] = useState<Date | undefined>(new Date());
+    const [startTime, setStartTime] = useState<string>("");
+    const [endTime, setEndTime] = useState<string>("");
+
+
+
+
+
 
     //User Input Calendar Format
-    const { register, handleSubmit, formState: { errors }, reset, setValue } = useForm({
+    const { handleSubmit, formState: { errors }, reset, setValue } = useForm({
         resolver: zodResolver(FormSchema),
     });
 
-    // Fetch coach
-    useEffect(() => {
-        const fetchCoach = async () => {
-            try {
-                const response = await axios.get('http://localhost:3001/user'); // Update endpoint
-                const usersMap = response.data.reduce((acc: Record<string, string>, user: { id: string, name: string }) => {
-                    acc[user.id] = user.name;
-                    return acc;
-                }, {});
-                setCoach(usersMap);
-                console.log(usersMap)
-            } catch (error) {
-                console.error('Error fetching users:', error);
-            }
-        };
-        fetchCoach();
-    }, []);
-
-    // Fetch appointment
-    useEffect(() => {
-        const fetchAppointments = async () => {
-            try {
-                const response = await axios.get('http://localhost:3001/scheduling'); // Update endpoint
-                const appointmentsWithClientNames = await Promise.all(response.data.map(async (appointment) => {
-                    const clientResponse = await axios.get(`http://localhost:3001/user/${appointment.clientId}`);
-                    return { ...appointment, name: clientResponse.data.name };
-                }));
-                setAppointment(appointmentsWithClientNames);
-            } catch (error) {
-                console.error('Error fetching appointments:', error);
-            }
-        };
-        fetchAppointments();
-    }, []);
-
-
-
-    //Used for updating the monthly schedule with the current events
-    useEffect(() => {
-        const currentSchedule = async () => {
-            try{
-                const events = await axios.get('http://localhost:3001/announcements')
-                const classes = await axios.get('http://localhost:3001/class')
-                const appointments = await axios.get('http://localhost:3001/scheduling')
-                setEvents(events.data)
-                setClasses(classes.data)
-                setAppointments(appointments.data)
-            }catch(error){
-                console.error("Error Fetching Schedule:", error)
-            }
-        };
-        currentSchedule();
-    }, []);
-
-    //Handler for making appointments
-    const onAppointmentSubmit = async (data) => {
-        console.log('Form Submitted:', data);
-        try {
-            // Assuming you already have clientId and coachId available (perhaps from user context or form input)
-            // const clientId = data.clientId;  // Replace with actual clientId from context or form
-            // const coachId = data.coachId;    // Replace with actual coachId from context or form
-    
-            // Create the appointment data matching the Prisma schema
-            const appointmentData = {
-                clientId: "d646464c-1a84-4273-be02-b6983b1ebc31",  // The ID of the client
-                coachId: "7dc28ab3-4983-47be-968f-d582e554a1d5",    // The ID of the coach
-                timeSlot: appDate,  // Adjust this to match your time format
-                date: appointmentDate?.toISOString(),
-            };
-    
-            // Send POST request to the database
-            const response = await axios.post('http://localhost:3001/scheduling', appointmentData);
-    
-            // Update local state with the response data
-            setSchedule([...schedule, response.data]);
-            console.log('Submitted:', response.data);
-    
-            // Reset form state
-            reset();
-            setAppointmentDate(undefined);
-        } catch (error) {
-            console.error('Error submitting appointment:', error);
-        }
-    };
-
-    // Handle form submission to save coach schedule
-    const onCoachSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        const scheduleData = {
-            coachId: "7dc28ab3-4983-47be-968f-d582e554a1d5", // You need to get the coach ID (probably from logged-in user)
-            timeSlot: timeslots,
-            date: coachDate?.toISOString(),
-        };
-
-        try {
-            const response = await axios.post('http://localhost:3001/coachAvailability', scheduleData);
-            console.log('Schedule saved:', response.data);
-            setTimeslots('');
-            setCoachDate(undefined);
-        } catch (error) {
-            console.error('Error submitting schedule:', error);
-        }
-    };
-
-    //Handler for checking day schedule (displays and update respective info)
+    //Handles day click and fetches data for the day
     const handleDayClick = async (date) => {
         console.log('Day clicked:', date);
         setSelectedDate(date);
         setIsDialogOpen(true);
-      
-        try {
-          const events = await axios.get('http://localhost:3001/announcements')
-          const classes = await axios.get('http://localhost:3001/class')
-          const appointments = await axios.get('http://localhost:3001/scheduling')
-          setEvents(events.data)
-          setClasses(classes.data)
-          setAppointments(appointments.data)
-        } catch (error) {
-          console.error('Error fetching schedule data:', error);
-        }
-      };
 
-      
+        const token = localStorage.getItem('accessToken');
+        if(token){
+            try{
+                const decodedToken = jwtDecode<CustomJwtPayload>(token);
+                const coachId = decodedToken.sub['id'];
+                const classes = await axios.get(`http://localhost:3001/class/coach/${coachId}`)
+                const appointments = await axios.get(`http://localhost:3001/appointments/user/${coachId}`)
+                setClasses(classes.data)
+                setAppointments(appointments.data)
+
+                const coachAva = await axios.get(`http://localhost:3001/coachAvailability/${coachId}`)
+
+                console.log('Coach availability:', coachAva.data);
+                console.log('Classes:', classes.data);
+                console.log('Appointments:', appointments.data);
+
+
+
+            }catch(error){
+                console.error('Error fetching schedule data:', error);
+            }
+        } else {
+            console.log("No token found")
+        }
+    };
+
+
+
+
+
+
+    //Handles form submission for creating a schedule
+    const handleNewSchedule = async () => {
+        console.log('Creating new schedule:', scheduleDate, startTime, endTime);
+
+        const token = localStorage.getItem('accessToken');
+        if(token){
+            try{
+                const decodedToken = jwtDecode<CustomJwtPayload>(token);
+                const coachId = decodedToken.sub['id'];
+
+                const formattedDate = date ? date.toISOString().split('T')[0] : '';
+
+                const availabilityData = {
+                    coachId: coachId,
+                    date: date,
+                    timeSlots: [{
+                        startTime: new Date(`${formattedDate}T${startTime}:00.000Z`).toISOString(),
+                        endTime: new Date(`${formattedDate}T${endTime}:00.000Z`).toISOString(),
+                    }]
+                };
+
+                const response = await axios.post(`http://localhost:3001/coachAvailability`, availabilityData );
+                console.log('New schedule created:', response.data);
+
+                //Reset form
+                setDate(undefined);
+                setStartTime('');
+                setEndTime('');
+
+            }catch(error){
+                console.error('Error creating new schedule:', error);
+            }
+        } else {
+            console.log("No token found")
+        }
+    }
+    
+
 
 
     return(
@@ -242,40 +231,9 @@ const Scheduler = () => {
                         <Tabs defaultValue="events" className="w-auto h-auto pt-5">
 
                             <TabsList className="flex flex-row bg-primary text-white border border-white">
-                                <TabsTrigger value="events" className='bg-primary w-full text-white hover:bg-gray-300'>Events</TabsTrigger>
                                 <TabsTrigger value="classes" className='bg-primary w-full text-white hover:bg-gray-300'>Classes</TabsTrigger>
                                 <TabsTrigger value="appointments" className='bg-primary w-full text-white hover:bg-gray-300'>Appointments</TabsTrigger>
                             </TabsList>
-
-                            <TabsContent value = "events">
-                                <Card className='bg-primary text-white'>
-                                    <Table>
-                                        <TableHeader className='flex flex-row w-full'>
-                                            <TableRow className='w-full'>
-                                                <TableHead className='text-lg w-full'>Event Name</TableHead>
-                                                <TableHead className='text-lg w-full'>Content</TableHead>
-                                            </TableRow>
-                                        </TableHeader>
-
-                                        <ScrollArea className="h-auto w-full p-4">
-                                            <TableBody className='flex flex-col w-full h-auto'>
-                                            {events?.length > 0 ? (
-                                                events.map((event) => (
-                                                    <TableRow key={event.title} className="w-full">
-                                                        <TableCell className="text-base w-full">{event.title}</TableCell>
-                                                        <TableCell className="text-base w-full">{event.content}</TableCell>
-                                                    </TableRow>
-                                                ))
-                                            ) : (
-                                                <TableRow>
-                                                    <TableCell colSpan={2}>No events available</TableCell>
-                                                </TableRow>
-                                            )}
-                                            </TableBody>
-                                        </ScrollArea>
-                                    </Table>
-                                </Card>
-                            </TabsContent>
 
                             <TabsContent value = "classes">
                                 <Card className='bg-primary text-white'>
@@ -289,7 +247,7 @@ const Scheduler = () => {
                                         </TableHeader>
 
                                         <ScrollArea className="h-auto w-full p-4">
-                                            <TableBody className='flex flex-col w-full h-auto'>
+                                            {/* <TableBody className='flex flex-col w-full h-auto'>
                                             {classes?.length > 0 ? (
                                                 classes.map((event) => (
                                                     <TableRow key={event.name} className="w-full">
@@ -303,7 +261,7 @@ const Scheduler = () => {
                                                     <TableCell colSpan={2}>No classes available</TableCell>
                                                 </TableRow>
                                             )}
-                                            </TableBody>
+                                            </TableBody> */}
                                         </ScrollArea>
                                     </Table>
                                 </Card>
@@ -315,12 +273,13 @@ const Scheduler = () => {
                                         <TableHeader className='flex flex-row w-full'>
                                             <TableRow className='w-full'>
                                                 <TableHead className='text-lg w-full'>Client</TableHead>
-                                                <TableHead className='text-lg w-full'>Time</TableHead>
+                                                <TableHead className='text-lg w-full'>Start Time</TableHead>
+                                                <TableHead className='text-lg w-full'>End Time</TableHead>
                                             </TableRow>
                                         </TableHeader>
 
                                         <ScrollArea className="h-auto w-full p-4">
-                                            <TableBody className='flex flex-col w-auto h-auto'>
+                                            {/* <TableBody className='flex flex-col w-auto h-auto'>
                                             {appointment?.length > 0 ? (
                                                 appointment.map((appointment) => (
                                                     <TableRow key={appointment.id} className="w-full">
@@ -333,103 +292,13 @@ const Scheduler = () => {
                                                     <TableCell colSpan={2}>No appointments available</TableCell>
                                                 </TableRow>
                                             )}
-                                            </TableBody>
+                                            </TableBody> */}
                                         </ScrollArea>
                                     </Table>
                                 </Card>
                             </TabsContent>
 
                         </Tabs>
-                    </DialogContent>
-                </Dialog>
-            </div>
-
-            <div className='mt-1'>
-                <Dialog>
-                    <DialogTrigger asChild>
-                        <Button variant="outline" className='bg-white text-black hover:bg-gray-300'>Create an Appointment</Button>
-                    </DialogTrigger>
-
-                    <DialogContent className="sm:max-w-md bg-black">
-                        <Card className="w-[350px] bg-black text-white border-none">
-                            <CardHeader>
-                                <CardTitle className='text-base'>Make an Appointment</CardTitle>
-                            </CardHeader>
-
-                            <CardContent>
-                                <form onSubmit={handleSubmit(onAppointmentSubmit)}>
-                                        <div className="grid w-full items-center gap-4">
-                                            <div className="flex flex-col space-y-1.5">
-                                                <Label htmlFor="name" className='mb-1'>Name</Label>
-                                                <Input id="name" placeholder="Your name" {...register('name')} />
-                                            </div>
-
-                                            <div className="flex flex-col space-y-1.5">
-                                                <Label htmlFor="coach" className='mb-1'>Coach Name</Label>
-                                                <Input id="coach" placeholder="Coach name" {...register('coach')} />
-                                            </div>
-
-                                            <div className="flex flex-col space-y-1.5 ">
-                                                <Label htmlFor="appointmentType">
-                                                    Appointment Type
-                                                </Label>
-
-                                                <Select onValueChange={(value) => setValue('appointmentType', value)}>
-                                                    <SelectTrigger id="appointmentType" className='border-solid border-white'>
-                                                        <SelectValue placeholder="Select" />
-                                                    </SelectTrigger>
-
-                                                    <SelectContent position="popper">
-                                                        <SelectItem value="inquiry">Inquiry</SelectItem>
-                                                        <SelectItem value="1-on-1">1-on-1</SelectItem>
-                                                    </SelectContent>
-                                                </Select>
-                                            </div>
-
-
-                                            <div className='flex flex-col space-y-1.5'>
-                                                <Label htmlFor="appointmentDate">Date</Label>
-                                                <Popover>
-                                                    <PopoverTrigger asChild>
-                                                        <Button
-                                                        variant={"outline"}
-                                                        className={cn(
-                                                            "w-[280px] justify-start text-left font-normal bg-black text-white border-solid border-white",
-                                                            !appointmentDate && "text-muted-foreground"
-                                                        )}
-                                                        >
-                                                        <CalendarIcon />
-                                                        {appointmentDate ? format(appointmentDate, "PPP") : <span>Pick a date</span>}
-                                                        </Button>
-                                                    </PopoverTrigger>
-                                                    <PopoverContent className="w-auto h-auto p-0">
-                                                        <div className='bg-black text-white'>
-                                                        <Calendar
-                                                        mode="single"
-                                                        selected={appointmentDate}
-                                                        onSelect={(date) => {
-                                                            setAppointmentDate(date);
-                                                            setValue('appointmentDate', date);
-                                                        }}
-                                                        initialFocus
-                                                        />
-                                                        </div>
-                                                        
-                                                    </PopoverContent>
-                                                </Popover>
-                                            </div>
-
-                                            <div className="flex flex-col space-y-1.5">
-                                                <Label htmlFor="coach" className='mb-1'>Time</Label>
-                                                <Input id="time" placeholder="Time" {...register('time')} />
-                                            </div>
-
-                                        </div>
-                                        <Button type = "submit" variant="outline" className='pt-4'>Submit</Button>
-                                    </form>
-                            </CardContent>
-
-                        </Card>
                     </DialogContent>
                 </Dialog>
             </div>
@@ -442,59 +311,93 @@ const Scheduler = () => {
                     </DialogTrigger>
 
                     <DialogContent className="sm:max-w-md bg-black">
-                        <Card className="w-[350px] bg-black text-white border-none">
-                            <CardHeader>
-                                <CardTitle className='text-base'>Day Schedule Details</CardTitle>
-                            </CardHeader>
+                        <DialogTitle>
+                            Create Day Schedule
+                        </DialogTitle>
 
-                            <CardContent>
-                                <form onSubmit={onCoachSubmit}>
-                                        <div className="grid w-full items-center gap-4">
-                                            <div className='flex flex-col space-y-1.5'>
-                                                <Label htmlFor="appointmentDate">Date</Label>
-                                                <Popover>
-                                                    <PopoverTrigger asChild>
-                                                        <Button
-                                                        variant={"outline"}
-                                                        className={cn(
-                                                            "w-[280px] justify-start text-left font-normal bg-black text-white border-solid border-white",
-                                                            !coachDate && "text-muted-foreground"
-                                                        )}
-                                                        >
-                                                        <CalendarIcon />
-                                                        {coachDate ? format(coachDate, "PPP") : <span>Pick a date</span>}
-                                                        </Button>
-                                                    </PopoverTrigger>
-                                                    <PopoverContent className="w-auto h-auto p-0">
-                                                        <div className='bg-black text-white'>
-                                                        <Calendar
-                                                        mode="single"
-                                                        selected={coachDate}
-                                                        onSelect={setCoachDate}
-                                                        initialFocus
-                                                        />
-                                                        </div>
-                                                    </PopoverContent>
-                                                </Popover>
+                        <DialogDescription>
+                            Create a schedule for a specific day. This will allow clients to book appointments with you.
+                            The start and end times will be available for booking.
+                        </DialogDescription>
 
-                                                <div className="flex flex-col space-y-1.5 pt-4">
-                                                    <Label htmlFor="name" className='mb-1'>Time Slots</Label>
-                                                    <Textarea 
-                                                    placeholder="Type your time slots (i.e 10AM - 5PM)..."
-                                                    value={timeslots}
-                                                    onChange={(e) => setTimeslots(e.target.value)}
-                                                    />
-                                                </div>
+                        <div>
+                            <div className='flex flex-col space-y-1.5'>
+                                <div className='flex flex-row justify-between'>
+                                    <Label className='text-2xl'>Date:</Label>
+                                    <Popover>
+                                        <PopoverTrigger asChild>
+                                            <Button
+                                            variant={"outline"}
+                                            className={cn(
+                                                "w-[280px] justify-start text-left font-normal bg-black text-white border-solid border-white",
+                                                !scheduleDate && "text-muted-foreground"
+                                            )}
+                                            >
+                                            <CalendarIcon />
+                                            {scheduleDate ? format(scheduleDate, "PPP") : <span>Pick a date</span>}
+                                            </Button>
+                                        </PopoverTrigger>
+                                        <PopoverContent className="w-auto h-auto p-0">
+                                            <div className='bg-black text-white'>
+                                            <Calendar
+                                            mode="single"
+                                            selected={scheduleDate}
+                                            onSelect={(date) => {
+                                                setScheduleDate(date);
+                                                setValue('appointmentDate', date);
+                                            }}
+                                            initialFocus
+                                            />
                                             </div>
-                                        </div>
-                                        <Button type="submit" variant="outline">Save Availability</Button>
-                                    </form>
-                            </CardContent>
-                        </Card>
+                                            
+                                        </PopoverContent>
+                                    </Popover>
+                                </div>
+                            </div>
+
+                            <div className="flex flex-col space-y-1.5 pt-4">
+                                {/* Start Time */}
+                                <div className="flex flex-row items-center justify-between">
+                                    <Label className='text-2xl'>Start Time:</Label>
+                                    <div className="flex items-center space-x-2">
+                                        <ClockIcon className="w-5 h-5" />
+                                        <Input
+                                        type="time"
+                                        id="startTime"
+                                        name="startTime"
+                                        value={startTime}
+                                        onChange={(e) => setStartTime(e.target.value)}
+                                        className='w-auto bg-black text-white border border-white'
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="flex flex-col space-y-1.5 pt-4">
+                                {/* End Time */}
+                                <div className="flex flex-row items-center justify-between">
+                                    <Label className='text-2xl'>End Time:</Label>
+                                    <div className="flex items-center space-x-2">
+                                        <ClockIcon className="w-5 h-5" />
+                                        <Input
+                                        type="time"
+                                        id="endTime"
+                                        name="endTime"
+                                        value={endTime}
+                                        onChange={(e) => setEndTime(e.target.value)}
+                                        className='w-auto bg-black text-white border border-white'
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className='pt-4'>
+                            <Button variant="outline" onClick={handleNewSchedule}>Save Schedule</Button>
+                        </div>
                     </DialogContent>
                 </Dialog>
             </div>
-            
         </div>
     );
 };

@@ -11,16 +11,14 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover"
 import {
-    Card,
-    CardContent,
-    CardHeader,
-    CardTitle,
+    Card
   } from "@/components/ui/card"
 import {
     Dialog,
     DialogContent,
     DialogTrigger,
     DialogTitle,
+    DialogDescription,
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -44,7 +42,8 @@ import {
     TableHeader,
     TableRow,
   } from "@/components/ui/table"
-
+import { jwtDecode } from 'jwt-decode';
+import { JwtPayload } from "jsonwebtoken";
 
 
 //Format data of appointment
@@ -55,190 +54,185 @@ const FormSchema = z.object({
     appointmentDate: z.date().refine(date => date !== undefined, 'Date is required'),
 });
 
+export type Class = {
+    id: string
+    name: string
+    description: string
+    currentlyEnrolledIn: number
+    coachId: string
+    date: string
+    startTime: string
+    endTime: string
+}
+
+export type Appointment = {
+    clientId: string
+    coachId: string
+    date: string
+    timeSlotId: string
+}
+
+export type Availability = {
+    id: string
+    date: Date
+    coachId: string
+    timeSlots: Timeslot[]
+}
+
+export type Timeslot = {
+    id: string
+    startTime: string
+    endTime: string
+    availabilityId: string
+    isBooked: boolean
+}
+
+export enum Role{
+    CLIENT = 'CLIENT',
+    COACH = 'COACH',
+    ADMIN = 'ADMIN'
+}
+
+interface CustomJwtPayload extends JwtPayload {
+    sub: string;
+}
+
 
 const Scheduler = () => {
 
-    //Used for current date of the monthly schedule
+
+    //Current date of the monthly schedule
     const [date, setDate] = useState<Date | undefined>(new Date());
     const [appointmentDate, setAppointmentDate] = React.useState<Date | undefined>()
 
-    //Used for appointment making
-    const [schedule, setSchedule] = useState([]);
+    //Monthly calendar constants
+    const [selectedDate, setSelectedDate] = useState(null); // The selected date
+    const [classes, setClasses] = useState<Class[]>([]); // The classes for the selected date
+    const [appointment, setAppointments] = useState<Appointment[]>([]); // The appointments for the selected date
 
-    //State handler for schedule viewing on EACH DAY ONLY
-    const [selectedDate, setSelectedDate] = useState(null);
+
+    //Create appointment constants
+    const [coachList, setCoachList] = useState<string[]>([]);
+    const [appointmentType, setAppointmentType] = useState<string | undefined>();
+    const [selectedCoach, setSelectedCoach] = useState<string | undefined>();
+    const [coachAvailability, setCoachAvailability] = useState<Availability[]>([]);
+    
+    //Dialog constants
     const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-    //Schedule viewer data (UNCOMMENT AFTER DB AND BACKEND API CALLS ARE IMPLEMENTED)
-    const [events, setEvents] = useState([]);
-    const [classes, setClasses] = useState([]);
-    const [appointments, setAppointments] = useState([]);
-    const [coach, setCoach] = useState<Record<string, string>>({});
-    const [appointment, setAppointment] = useState<any[]>([]);
 
-    //Coach availability
-    const [availability, setAvailability] = useState([]);
-    const [selectedCoachId, setSelectedCoachId] = useState<string | undefined>();
+
+
+
 
     //User Input Calendar Format
-    const { register, handleSubmit, formState: { errors }, reset, setValue, watch } = useForm({
+    const { register, handleSubmit, formState: {}, reset, setValue, watch } = useForm({
         resolver: zodResolver(FormSchema),
     });
 
-    // Fetch coach
+
+
+    //Handles day click and fetches data for the day
+    const handleDayClick = async (date) => {
+        console.log('Day clicked:', date);
+        setSelectedDate(date);
+        setIsDialogOpen(true);
+
+        const token = localStorage.getItem('accessToken');
+        if(token){
+            try{
+                const decodedToken = jwtDecode<CustomJwtPayload>(token);
+                const clientId = decodedToken.sub['id'];
+                const classes = await axios.get('http://localhost:3001/class')
+                const appointments = await axios.get(`http://localhost:3001/appointments/user/${clientId}`)
+                setClasses(classes.data)
+                setAppointments(appointments.data)
+            }catch(error){
+                console.error('Error fetching schedule data:', error);
+            }
+        } else {
+            console.log("No token found")
+        }
+      };
+
+
+
+    // Fetch List of Coaches
     useEffect(() => {
         const fetchCoach = async () => {
-            try {
-                const response = await axios.get('http://localhost:3001/user'); // Update endpoint
-                const usersMap = response.data.reduce((acc: Record<string, string>, user: { id: string, name: string }) => {
-                    acc[user.id] = user.name;
-                    return acc;
-                }, {});
-                setCoach(usersMap);
-                console.log(usersMap)
-            } catch (error) {
-                console.error('Error fetching users:', error);
+            const token = localStorage.getItem('accessToken');
+            if(token){
+                try{
+                    const response = await axios.get('http://localhost:3001/user?role=COACH');
+                    const usersMap = response.data.reduce((acc: Record<string, string>, user: { id: string, name: string }) => {
+                        acc[user.id] = user.name;
+                        return acc;
+                    }, {});
+                    setCoachList(usersMap);
+                    console.log(usersMap)
+                }catch(error){
+                    console.error('Error fetching coaches:', error);
+                }
+            } else {
+                console.log("No token found")
             }
         };
         fetchCoach();
     }, []);
 
-    // Fetch appointment
-    useEffect(() => {
-        const fetchAppointments = async () => {
-            try {
-                const response = await axios.get('http://localhost:3001/scheduling'); // Update endpoint
-                const appointmentsWithClientNames = await Promise.all(response.data.map(async (appointment) => {
-                    const clientResponse = await axios.get(`http://localhost:3001/user/${appointment.clientId}`);
-                    return { ...appointment, name: clientResponse.data.name };
-                }));
-                setAppointment(appointmentsWithClientNames);
-            } catch (error) {
-                console.error('Error fetching appointments:', error);
+
+
+
+//ANYTHING BEYOND THIS NEEDS FIXING----------------------------------------------------------------------------------------
+
+    // Fetch coach availability
+    const fetchCoachAvailability = async () => {
+        try{
+            const coachIds = await axios.get('http://localhost:3001/user?role=COACH');
+            const coach = coachIds.data.reduce((acc: Record<string, string>, user: { id: string, name: string }) => {
+                acc[user.id] = user.name;
+                return acc;
+            }, {});
+            const coachId = selectedCoach ? Object.keys(coach).find(key => coach[key] === selectedCoach) : undefined;
+            console.log('Coach:', coachId);
+
+
+            const response = await axios.get(`http://localhost:3001/coachAvailability/timeslots/${coachId}`);
+            const availability = response.data;
+
+            console.log('Coach availability:', availability);
+
+            // Filter availability by selected coach
+            if(selectedCoach){
+                const coachAvailability = availability.filter((slot: Availability) => slot.coachId === selectedCoach);
+                setCoachAvailability(coachAvailability);
+                console.log('Coach availability:', coachAvailability);
+            } else {
+                setCoachAvailability(availability);
             }
-        };
-        fetchAppointments();
-    }, []);
-
-    // Monitor the coach input to update selectedCoachId dynamically
-    useEffect(() => {
-        const coachName = watch('coach');
-        if (coachName && coach[coachName]) {
-            setSelectedCoachId(coach[coachName]);
-            console.log(coach)
+        }catch(error){
+            console.error('Error fetching coach availability:', error);
         }
-    }, [watch('coach'), coach]);
-
-    //fetches avaialbility of coaches for the respective date
-    const fetchAvailability = async () => {
-        if (appointmentDate) {
-            try {
-                const response = await axios.get(
-                    `http://localhost:3001/coachAvailability?coachId=${selectedCoachId}&date=${format(appointmentDate, 'yyyy-MM-dd')}`
-                );
-                setAvailability(response.data);
-            } catch (error) {
-                console.error("Error fetching availability:", error);
-            }
-        }
-    };
+    }
 
     useEffect(() => {
-        fetchAvailability();  // fetch availability when a coach and appointment date are set
-    }, [appointmentDate, selectedCoachId]);  // Only refetch when date or selected coach changes
+        fetchCoachAvailability();
+    }, [selectedCoach]);
 
-    // Fetch coach availability when selectedCoachId and appointmentDate change
-    useEffect(() => {
-        if (selectedCoachId && appointmentDate) {
-            const fetchAvailability = async () => {
-                try {
-                    const response = await axios.get(`http://localhost:3001/coachAvailability?coachId=${selectedCoachId}&date=${format(appointmentDate, 'yyyy-MM-dd')}`);
-                    setAvailability(response.data);
-                } catch (error) {
-                    console.error("Error fetching availability:", error);
-                }
-            };
-            fetchAvailability();
-        }
-    }, [selectedCoachId, appointmentDate]);
-
-
-
-    //Used for updating the monthly schedule with the current events
-    useEffect(() => {
-        const currentSchedule = async () => {
-            try{
-                const events = await axios.get('http://localhost:3001/announcements')
-                const classes = await axios.get('http://localhost:3001/class')
-                const appointments = await axios.get('http://localhost:3001/scheduling')
-                setEvents(events.data)
-                setClasses(classes.data)
-                setAppointments(appointments.data)
-            }catch(error){
-                console.error("Error Fetching Schedule:", error)
-            }
-        };
-        currentSchedule();
-    }, []);
-
-    const time = watch('time');
 
     //Handler for making appointments
     const onAppointmentSubmit = async (data) => {
-        console.log('Form Submitted:', data);
-        try {
-            // Assuming you already have clientId and coachId available (perhaps from user context or form input)
-            // const clientId = data.clientId;  // Replace with actual clientId from context or form
-            // const coachId = data.coachId;    // Replace with actual coachId from context or form
-
-    
-            // Create the appointment data matching the Prisma schema
-            const appointmentData = {
-                clientId: "d646464c-1a84-4273-be02-b6983b1ebc31",  // The ID of the client
-                coachId: "7dc28ab3-4983-47be-968f-d582e554a1d5",    // The ID of the coach
-                timeSlot: time,  // Adjust this to match your time format
-                date: appointmentDate?.toISOString(),
-            };
-
-            console.log("HELLO", appointmentData.timeSlot)
-    
-            // Send POST request to the database
-            const response = await axios.post('http://localhost:3001/scheduling', appointmentData);
-    
-            // Update local state with the response data
-            setSchedule([...schedule, response.data]);
-            console.log('Submitted:', response.data);
-    
-            // Reset form state
-            reset();
-            setAppointmentDate(undefined);
-        } catch (error) {
-            console.error('Error submitting appointment:', error);
-        }
+        
     };
 
-
-    //Handler for checking day schedule (displays and update respective info)
-    const handleDayClick = async (date) => {
-        console.log('Day clicked:', date);
-        setSelectedDate(date);
-        setIsDialogOpen(true);
-      
-        try {
-          const events = await axios.get('http://localhost:3001/announcements')
-          const classes = await axios.get('http://localhost:3001/class')
-          const appointments = await axios.get('http://localhost:3001/scheduling')
-          setEvents(events.data)
-          setClasses(classes.data)
-          setAppointments(appointments.data)
-        } catch (error) {
-          console.error('Error fetching schedule data:', error);
-        }
-      };
-
-      
+    
 
 
+
+
+
+
+    
     return(
         <div className='main flex w-full flex-col items-center justify-center'>
             
@@ -262,59 +256,32 @@ const Scheduler = () => {
                         <DialogTitle>
                             DAY SCHEDULE
                         </DialogTitle>
+                        <DialogDescription className='font-semibold'>
+                            Here you can find the available classes for the day. You can also find your appointments for the day.
+                        </DialogDescription>
 
                         <Tabs defaultValue="events" className="w-auto h-auto pt-5">
 
                             <TabsList className="flex flex-row bg-primary text-white border border-white">
-                                <TabsTrigger value="events" className='bg-primary w-full text-white hover:bg-gray-300'>Events</TabsTrigger>
                                 <TabsTrigger value="classes" className='bg-primary w-full text-white hover:bg-gray-300'>Classes</TabsTrigger>
                                 <TabsTrigger value="appointments" className='bg-primary w-full text-white hover:bg-gray-300'>Appointments</TabsTrigger>
                             </TabsList>
 
-                            <TabsContent value = "events">
-                                <Card className='bg-primary text-white'>
-                                    <Table>
-                                        <TableHeader className='flex flex-row w-full'>
-                                            <TableRow className='w-full'>
-                                                <TableHead className='text-lg w-full'>Event Name</TableHead>
-                                                <TableHead className='text-lg w-full'>Content</TableHead>
-                                            </TableRow>
-                                        </TableHeader>
-
-                                        <ScrollArea className="h-auto w-full p-4">
-                                            <TableBody className='flex flex-col w-full h-auto'>
-                                            {events?.length > 0 ? (
-                                                events.map((event) => (
-                                                    <TableRow key={event.title} className="w-full">
-                                                        <TableCell className="text-base w-full">{event.title}</TableCell>
-                                                        <TableCell className="text-base w-full">{event.content}</TableCell>
-                                                    </TableRow>
-                                                ))
-                                            ) : (
-                                                <TableRow>
-                                                    <TableCell colSpan={2}>No events available</TableCell>
-                                                </TableRow>
-                                            )}
-                                            </TableBody>
-                                        </ScrollArea>
-                                    </Table>
-                                </Card>
-                            </TabsContent>
-
                             <TabsContent value = "classes">
                                 <Card className='bg-primary text-white'>
                                     <Table>
-                                        <TableHeader className='flex flex-row w-full'>
+                                        <TableHeader className='flex-row flex w-full'>
                                             <TableRow className='w-full'>
-                                                <TableHead className='text-lg w-full'>Class Name</TableHead>
-                                                <TableHead className='text-lg w-full'>Coach</TableHead>
-                                                <TableHead className='text-lg w-full'>Start Time</TableHead>
+                                                <TableHead >Class</TableHead>
+                                                <TableHead >Coach</TableHead>
+                                                <TableHead >Time Slot</TableHead>
                                             </TableRow>
                                         </TableHeader>
 
                                         <ScrollArea className="h-auto w-full p-4">
                                             <TableBody className='flex flex-col w-full h-auto'>
-                                            {classes?.length > 0 ? (
+
+                                            {/* {classes?.length > 0 ? (
                                                 classes.map((event) => (
                                                     <TableRow key={event.name} className="w-full">
                                                         <TableCell className="text-base w-full">{event.name}</TableCell>
@@ -326,7 +293,8 @@ const Scheduler = () => {
                                                 <TableRow>
                                                     <TableCell colSpan={2}>No classes available</TableCell>
                                                 </TableRow>
-                                            )}
+                                            )} */}
+
                                             </TableBody>
                                         </ScrollArea>
                                     </Table>
@@ -345,7 +313,8 @@ const Scheduler = () => {
 
                                         <ScrollArea className="h-auto w-full p-4">
                                             <TableBody className='flex flex-col w-auto h-auto'>
-                                            {appointment?.length > 0 ? (
+
+                                            {/* {appointment?.length > 0 ? (
                                                 appointment.map((appointment) => (
                                                     <TableRow key={appointment.id} className="w-full">
                                                         <TableCell className="text-base w-full">{appointment.name}</TableCell>
@@ -356,7 +325,8 @@ const Scheduler = () => {
                                                 <TableRow>
                                                     <TableCell colSpan={2}>No appointments available</TableCell>
                                                 </TableRow>
-                                            )}
+                                            )} */}
+
                                             </TableBody>
                                         </ScrollArea>
                                     </Table>
@@ -368,105 +338,124 @@ const Scheduler = () => {
                 </Dialog>
             </div>
 
-            <div className='mt-1'>
+
+
+            {/* CREATE AN APPOINTMENT FUNCTION */}
+            <div className='mb-20 mt-1'>
                 <Dialog>
                     <DialogTrigger asChild>
                         <Button variant="outline" className='bg-white text-black hover:bg-gray-300'>Create an Appointment</Button>
                     </DialogTrigger>
 
-                    <DialogContent className="sm:max-w-md bg-black">
-                        <Card className="w-[350px] bg-black text-white border-none">
-                            <CardHeader>
-                                <CardTitle className='text-base'>Make an Appointment</CardTitle>
-                            </CardHeader>
+                    <DialogContent className="sm:max-w-md bg-black flex flex-col w-full h-auto">
+                        <DialogTitle className='text-base'>
+                            Create an Appointment
+                        </DialogTitle>
 
-                            <CardContent>
-                                <form onSubmit={handleSubmit(onAppointmentSubmit)}>
-                                        <div className="grid w-full items-center gap-4">
-                                            <div className="flex flex-col space-y-1.5">
-                                                <Label htmlFor="name" className='mb-1'>Name</Label>
-                                                <Input id="name" placeholder="Your name" {...register('name')} />
+                        <DialogDescription>
+                            Here you can make your appointment with a coach. You can choose the coach, the type of appointment, the date and the time slot.
+                            The timeslots are based on the coach availability.
+                        </DialogDescription>
+
+                        <form onSubmit={handleSubmit(onAppointmentSubmit)}>
+                            <div className="flex flex-col w-min gap-4">
+                                
+                                <div className="flex flex-col space-y-1.5">
+                                    <Label htmlFor="name" className='mb-1'>Name</Label>
+                                    <Input id="name" placeholder="Your name" {...register('name')} />
+                                </div>
+
+                                <div className="flex flex-col space-y-1.5">
+                                    <Label htmlFor="coach" className='mb-1'>Coach Name</Label>
+
+
+                                    <Select onValueChange={(value) => {setValue('coach', value); setSelectedCoach(value)}} >
+                                        <SelectTrigger id="coach" className='border-solid border-white'>
+                                            <SelectValue placeholder="Select coach" />
+                                        </SelectTrigger>
+
+                                        <SelectContent position="popper">
+                                            {Object.entries(coachList).map(([id, name]) => (
+                                                <SelectItem key={id} value={name}>{name}</SelectItem>
+                                            ))}
+                                        </SelectContent>
+
+                                    </Select>
+                                </div>
+
+                                <div className="flex flex-col space-y-1.5 ">
+                                    <Label htmlFor="appointmentType">
+                                        Appointment Type
+                                    </Label>
+
+                                    <Select onValueChange={(value) => setValue('appointmentType', value)}>
+                                        <SelectTrigger id="appointmentType" className='border-solid border-white'>
+                                            <SelectValue placeholder="Select" />
+                                        </SelectTrigger>
+
+                                        <SelectContent position="popper">
+                                            <SelectItem value="inquiry">Inquiry</SelectItem>
+                                            <SelectItem value="1-on-1">1-on-1</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+
+
+                                <div className='flex flex-col space-y-1.5'>
+                                    <Label htmlFor="appointmentDate">Date</Label>
+                                    <Popover>
+                                        <PopoverTrigger asChild>
+                                            <Button
+                                            variant={"outline"}
+                                            className={cn(
+                                                "w-[280px] justify-start text-left font-normal bg-black text-white border-solid border-white",
+                                                !appointmentDate && "text-muted-foreground"
+                                            )}
+                                            >
+                                            <CalendarIcon />
+                                            {appointmentDate ? format(appointmentDate, "PPP") : <span>Pick a date</span>}
+                                            </Button>
+                                        </PopoverTrigger>
+                                        <PopoverContent className="w-auto h-auto p-0">
+                                            <div className='bg-black text-white'>
+                                            <Calendar
+                                            mode="single"
+                                            selected={appointmentDate}
+                                            onSelect={(date) => {
+                                                setAppointmentDate(date);
+                                                setValue('appointmentDate', date);
+                                            }}
+                                            initialFocus
+                                            />
                                             </div>
+                                            
+                                        </PopoverContent>
+                                    </Popover>
+                                </div>
 
-                                            <div className="flex flex-col space-y-1.5">
-                                                <Label htmlFor="coach" className='mb-1'>Coach Name</Label>
-                                                <Input id="coach" placeholder="Coach name" {...register('coach')} />
-                                            </div>
+                                <div className="flex flex-col space-y-1.5">
+                                    <Label htmlFor="time" className='mb-1'>Timeslot</Label>
 
-                                            <div className="flex flex-col space-y-1.5 ">
-                                                <Label htmlFor="appointmentType">
-                                                    Appointment Type
-                                                </Label>
+                                    <Select onValueChange={(value) => setValue('time', value)}>
+                                        <SelectTrigger id="time" className='border-solid border-white'>
+                                            <SelectValue placeholder="Select time" />
+                                        </SelectTrigger>
 
-                                                <Select onValueChange={(value) => setValue('appointmentType', value)}>
-                                                    <SelectTrigger id="appointmentType" className='border-solid border-white'>
-                                                        <SelectValue placeholder="Select" />
-                                                    </SelectTrigger>
+                                        <SelectContent position="popper">
+                                            {coachAvailability.map((slot, index) => (
+                                                <SelectItem key={index} value={slot.date.toString()}>{new Date(slot.date).toDateString()}</SelectItem>
+                                            ))}
+                                        </SelectContent>
 
-                                                    <SelectContent position="popper">
-                                                        <SelectItem value="inquiry">Inquiry</SelectItem>
-                                                        <SelectItem value="1-on-1">1-on-1</SelectItem>
-                                                    </SelectContent>
-                                                </Select>
-                                            </div>
+                                    </Select>
+                                </div>
+                            </div>
 
+                            <div className='pt-4'>
+                                <Button type = "submit" variant="outline">Submit</Button>
+                            </div>
 
-                                            <div className='flex flex-col space-y-1.5'>
-                                                <Label htmlFor="appointmentDate">Date</Label>
-                                                <Popover>
-                                                    <PopoverTrigger asChild>
-                                                        <Button
-                                                        variant={"outline"}
-                                                        className={cn(
-                                                            "w-[280px] justify-start text-left font-normal bg-black text-white border-solid border-white",
-                                                            !appointmentDate && "text-muted-foreground"
-                                                        )}
-                                                        >
-                                                        <CalendarIcon />
-                                                        {appointmentDate ? format(appointmentDate, "PPP") : <span>Pick a date</span>}
-                                                        </Button>
-                                                    </PopoverTrigger>
-                                                    <PopoverContent className="w-auto h-auto p-0">
-                                                        <div className='bg-black text-white'>
-                                                        <Calendar
-                                                        mode="single"
-                                                        selected={appointmentDate}
-                                                        onSelect={(date) => {
-                                                            setAppointmentDate(date);
-                                                            setValue('appointmentDate', date);
-                                                        }}
-                                                        initialFocus
-                                                        />
-                                                        </div>
-                                                        
-                                                    </PopoverContent>
-                                                </Popover>
-                                            </div>
-
-                                            <div className="flex flex-col space-y-1.5">
-                                                <Label htmlFor="time" className='mb-1'>Time</Label>
-                                                <Input id="time" placeholder="Time" {...register("time")}/>
-                                            </div>
-
-                                            <div className="flex flex-col space-y-1.5">
-                                                <Label htmlFor="coachAvailability" className='mb-1'>Coach Availability</Label>
-                                                <Card className='flex bg-primary text-white'>
-                                                {availability.length > 0 ? (
-                                                    availability.map((slot, index) => (
-                                                        <div key={index} className="px-2">{slot.timeSlot}</div>
-                                                    ))
-                                                ) : (
-                                                    <div className="px-2">No availability</div>
-                                                )}
-                                                </Card>
-                                            </div>
-
-                                        </div>
-                                        <Button type = "submit" variant="outline" className='pt-4'>Submit</Button>
-                                    </form>
-                            </CardContent>
-
-                        </Card>
+                        </form>
                     </DialogContent>
                 </Dialog>
             </div>

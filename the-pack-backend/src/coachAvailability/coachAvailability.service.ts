@@ -34,6 +34,28 @@ export class CoachAvailabilityService {
     return this.prisma.coachAvailability.findMany();
   }
 
+  async getAllAvailabilitiesWithTimeSlots() {
+    return this.prisma.coachAvailability.findMany({
+      include: { timeSlots: true },
+    });
+  }
+
+  async getAvailabilityWithTimeSlotsById(availabilityId: string) {
+    const availability = await this.prisma.coachAvailability.findUnique({
+      where: { id: availabilityId },
+      include: { timeSlots: true },
+    });
+
+    if (!availability) {
+      throw new Error('Availability not found');
+    }
+
+    return availability.timeSlots.map(slot => ({
+      startTime: slot.startTime,
+      endTime: slot.endTime,
+    }));
+  }
+
   // Get all availability slots for a particular coach
   async getAvailabilityByCoach(coachId: string) {
     return this.prisma.coachAvailability.findMany({

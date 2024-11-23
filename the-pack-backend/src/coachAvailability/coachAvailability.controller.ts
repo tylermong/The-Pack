@@ -30,6 +30,8 @@ export class CoachAvailabilityController {
     return this.coachAvailabilityService.getAvailabilityByCoach(coachId);
   }
 
+  // Get 
+
   // Delete an availability slot by its ID
   @Delete(':id')
   async deleteAvailability(
@@ -45,5 +47,13 @@ export class CoachAvailabilityController {
     @Body() updateAvailabilityDto: UpdateAvailabilityDto,  // Extract data to update from the body
   ){
     return this.coachAvailabilityService.updateAvailability(availabilityId, updateAvailabilityDto);
+  }
+
+  //Get all availabilities with time slots for a coach
+  @Get('timeslots/:coachId')
+  async getAllAvailabilitiesWithTimeSlots(
+    @Param('coachId') coachId: string,
+  ){
+    return this.coachAvailabilityService.getAllAvailabilitiesWithTimeSlots();
   }
 }

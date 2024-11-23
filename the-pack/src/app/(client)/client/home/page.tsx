@@ -20,7 +20,6 @@ export default function Home()
                     <div className='pt-24'>
                         <Scheduler/>
                     </div>
-                    <Separator/>
                 </div>
             </main>
         </SidebarProvider>  
