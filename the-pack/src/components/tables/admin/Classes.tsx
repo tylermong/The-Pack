@@ -56,7 +56,15 @@ const ClassesListTable = () => {
         try{
             const response = await axios.get('http://localhost:3001/class');
             const classes = response.data;
-            setClasses(classes);
+            setClasses(classes.map((classItem: any) => ({
+                id: classItem.id,
+                name: classItem.name,
+                description: classItem.description,
+                currentlyEnrolled: classItem.currentlyEnrolled,
+                date: classItem.classDates[0].date['date'].split('T')[0],
+                startTime: classItem.classDates[0].startTime.split('T')[1].split(':')[0] + ':' + classItem.classDates[0].startTime.split('T')[1].split(':')[1],
+                endTime: classItem.classDates[0].endTime.split('T')[1].split(':')[0] + ':' + classItem.classDates[0].endTime.split('T')[1].split(':')[1],
+            })));
             console.log("Fetched classes:", classes);
         }catch(error){
             console.error("Error fetching classes:", error);

@@ -40,7 +40,17 @@ export class ClassService {
       
     
     async getAllClass() {
-        return this.prisma.class.findMany();
+        return this.prisma.class.findMany({ 
+          include: {
+            creator: true,
+            assignedCoach: true,
+            classDates: {
+              include: {
+                date: true,
+              }
+            },
+          }
+        });
     }
 
     async deleteClass(classId: string) {

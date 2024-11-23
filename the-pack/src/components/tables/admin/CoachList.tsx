@@ -28,8 +28,6 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table"
-import { jwtDecode } from 'jwt-decode';
-import { JwtPayload } from "jsonwebtoken";
 import { ArrowLeftIcon, Cross1Icon } from "@radix-ui/react-icons";
 import { useToast } from "@/hooks/use-toast"
 import { useRouter } from 'next/navigation'
@@ -50,9 +48,6 @@ export enum Role {
     ADMIN = "ADMIN",
 }
 
-interface CustomJwtPayload extends JwtPayload {
-    role: Role;
-}
 
 
 
@@ -73,40 +68,18 @@ const CoachListTable = () => {
 
     //JWT Token Call for coaches
     const getCoaches = async () => {
-        const token = localStorage.getItem('accessToken');
-        if (token) {
-            try {
-                // Decode the JWT token to get the coachId
-                const decodedToken = jwtDecode<CustomJwtPayload>(token);
-                const coachRole = decodedToken.role;
+        try {
+            // Fetch clients associated with the coach
+            const response = await axios.get(`http://localhost:3001/user?role=${'COACH'}`);
 
-                if (!coachRole) {
-                    console.error("Coach Roles not found in token.");
-                    return;
-                }
-
-                // Fetch clients associated with the coach
-                const response = await axios.get(`http://localhost:3001/user?coachRole=${coachRole}`, {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                });
-
-                const coaches = response.data; 
-                setCoach(coaches); 
-                console.log("Fetched clients:", coaches);
-            } catch (error) {
-                console.error("Error fetching coaches:", error);
-                toast({
-                    title: "Error",
-                    description: "Could not fetch coaches.",
-                    variant: "destructive",
-                });
-            }
-        } else {
+            const coaches = response.data; 
+            setCoach(coaches); 
+            console.log("Fetched clients:", coaches);
+        } catch (error) {
+            console.error("Error fetching coaches:", error);
             toast({
-                title: "No Token",
-                description: "Access token is missing. Please log in.",
+                title: "Error",
+                description: "Could not fetch coaches.",
                 variant: "destructive",
             });
         }
@@ -158,19 +131,22 @@ const CoachListTable = () => {
 
     //handler for deleting a coach
     const deleteSelectedCoaches = async () => {
-        const selectedIds = Object.keys(coachRowSelection).filter((id) => coachRowSelection[id]);
-        if (selectedIds.length === 0) {
-            toast({ title: "No Selection", description: "No coaches selected for deletion.", variant: "destructive"});
-            return;
-        }
+        //Get the ID of the coach to be deleted
+        const selectedIds = coachTable.getSelectedRowModel().rows.map((row) => row.original.id);
+
+        console.log("Selected coaches:", selectedIds);
 
         try {
             const token = localStorage.getItem('accessToken');
-            await axios.delete(`http://localhost:3001/user`, {
+
+            await axios.delete(`http://localhost:3001/user/${selectedIds}`, {
                 headers: { Authorization: `Bearer ${token}` },
-                data: { ids: selectedIds },
             });
+
+            console.log("Successfully deleted selected coaches");
+
             toast({ title: "Success", description: "Selected coaches deleted successfully.", variant: "default" });
+
             getCoaches(); // Refresh the list
         } catch (error) {
             console.error("Error deleting coaches:", error);
