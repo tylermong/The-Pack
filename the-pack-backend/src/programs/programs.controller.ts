@@ -32,6 +32,14 @@ export class ProgramsController {
     return this.programsService.createExercise(createExerciseDto)
   }
 
+  //LOOK SOMETING LIKE THIS CHANGE THE CREATEPROGRAMDTO TO HAVE: id: string,  name: string, description: string, tags: string[]
+  // @Post(':id')
+  // async createProgram(@Param('id') id: string, @Body() createProgramDto: CreateProgramDto){ 
+  //   return this.programsService.createProgram({ ...createProgramDto, id });
+  // }
+
+
+  
 @Patch('update/program/:programId')
 async updateProgram(
   @Param('programId') programId: string, 

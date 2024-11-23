@@ -28,8 +28,6 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table"
-import { jwtDecode } from 'jwt-decode';
-import { JwtPayload } from "jsonwebtoken";
 import { ArrowLeftIcon, Cross1Icon } from "@radix-ui/react-icons";
 import { useToast } from "@/hooks/use-toast"
 import { useRouter } from 'next/navigation'
@@ -131,19 +129,23 @@ const UsersListTable = () => {
 
     //handler for deleting a coach
     const deleteSelectedUser = async () => {
-        //get the user data from user that corresponds to the selected row
-        const selectedId = userTable.getSelectedRowModel();
-        console.log("Selected users:", selectedId['rows'][0]['original']['id']);
+        //Get the user ids of the selected users
+        const selectedIds = userTable.getSelectedRowModel().rows.map(row => row.original.id);
 
-        const id = selectedId['rows'][0]['original']['id'];
+        console.log("Selected user ids:", selectedIds);
+
+        if (selectedIds.length === 0) {
+            toast({ title: "No Selection", description: "No user selected for deletion.", variant: "destructive"});
+            return;
+        }
 
         try {
-            const token = localStorage.getItem('accessToken');
-            await axios.delete(`http://localhost:3001/user/${id}`, {
-                headers: { Authorization: `Bearer ${token}` },
-                data: { ids: selectedId },
-            });
+            await axios.delete(`http://localhost:3001/user/${selectedIds}`);
+
+            console.log("Selected users deleted successfully.");
+
             toast({ title: "Success", description: "Selected user deleted successfully.", variant: "default" });
+
             getUsers(); // Refresh the list
         } catch (error) {
             console.error("Error deleting user:", error);

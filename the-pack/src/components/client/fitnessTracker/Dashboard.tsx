@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { v4 as uuidv4 } from 'uuid'
 import Link from 'next/link'
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -9,7 +10,10 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
-import { PlusCircle, MoreVertical, Edit, Trash, Copy } from "lucide-react"
+import { PlusCircle, MoreVertical, Edit, Trash, Copy, X } from "lucide-react"
+import { jwtDecode } from 'jwt-decode';
+import { JwtPayload } from "jsonwebtoken";
+import axios from 'axios'
 
 interface Program {
   id: string;
@@ -18,31 +22,19 @@ interface Program {
   tags: string[];
 }
 
-const initialPrograms: Program[] = [
-  { 
-    id: "strength-building", 
-    name: "Strength Building", 
-    description: "A 12-week program focused on building overall strength.",
-    tags: ["4x/week", "Strength", "Intermediate"]
-  },
-  { 
-    id: "weight-loss", 
-    name: "Weight Loss", 
-    description: "An 8-week program designed for effective weight loss.",
-    tags: ["5x/week", "Cardio", "Beginner"]
-  },
-  { 
-    id: "muscle-gain", 
-    name: "Muscle Gain", 
-    description: "A 16-week program for muscle hypertrophy and mass gain.",
-    tags: ["6x/week", "Hypertrophy", "Advanced"]
-  },
-]
+interface CustomJwtPayload extends JwtPayload {
+  sub: string;
+}
 
 export default function ProgramList() {
-  const [programs, setPrograms] = useState<Program[]>(initialPrograms)
+  const [programs, setPrograms] = useState<Program[]>([])
   const [editingProgram, setEditingProgram] = useState<Program | null>(null)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [isNewProgramDialogOpen, setIsNewProgramDialogOpen] = useState(false)
+  const [newProgram, setNewProgram] = useState<Program>({ id: '', name: '', description: '', tags: [] })
+  const [newTag, setNewTag] = useState('');
+  const [editingTag, setEditingTag] = useState('');
+  const [newProgramErrors, setNewProgramErrors] = useState({ name: '', description: '' });
 
   const handleEditClick = (program: Program) => {
     setEditingProgram({ ...program })
@@ -71,18 +63,90 @@ export default function ProgramList() {
   }
 
   const handleCopy = (program: Program) => {
-    const newId = `${program.id}-copy-${Date.now()}`
+    const newId = uuidv4()
     const newProgram = { ...program, id: newId, name: `${program.name} (Copy)` }
     setPrograms(prev => [...prev, newProgram])
   }
+
+  const handleNewProgramChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target
+    setNewProgram(prev => ({ ...prev, [name]: value }))
+  }
+
+  const handleNewProgramTagsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const tags = e.target.value.split(',').map(tag => tag.trim())
+    setNewProgram(prev => ({ ...prev, tags }))
+  }
+  
+  const handleNewProgramSave = async () => {
+    const newId = uuidv4()
+    const programToAdd = { ...newProgram, id: newId }
+    setPrograms(prev => [...prev, programToAdd])
+    setIsNewProgramDialogOpen(false)
+
+    const token = localStorage.getItem('accessToken');
+
+    if (token) {
+      try {
+        const decodedToken = jwtDecode<CustomJwtPayload>(token);
+        const clientId = decodedToken.sub;
+        const id = clientId['id'];
+
+        console.log('ClientId:', id);
+
+        const response = await axios.post('http://localhost:3001/programs/${id}', 
+          programs, 
+          { headers: { Authorization: `Bearer ${token}` } }
+        )
+
+      } catch (error) {
+        console.error(error);
+      }
+    } else {
+      console.error('Token is null');
+    }
+
+    //Reset the new program form
+    setNewProgram({ id: '', name: '', description: '', tags: [] })
+  }
+
+  const handleAddTag = () => {
+    if (newTag.trim()) {
+      setNewProgram(prev => ({ ...prev, tags: [...prev.tags, newTag.trim()] }));
+      setNewTag('');
+    }
+  };
+
+  const handleRemoveTag = (index: number) => {
+    setNewProgram(prev => ({
+      ...prev,
+      tags: prev.tags.filter((_, i) => i !== index),
+    }));
+  };
+
+  const handleAddEditingTag = () => {
+    if (editingTag.trim() && editingProgram) {
+      setEditingProgram(prev => prev ? { ...prev, tags: [...prev.tags, editingTag.trim()] } : null);
+      setEditingTag('');
+    }
+  };
+
+  const handleRemoveEditingTag = (index: number) => {
+    if (editingProgram) {
+      setEditingProgram(prev => prev ? {
+        ...prev,
+        tags: prev.tags.filter((_, i) => i !== index),
+      } : null);
+    }
+  };
+
+
 
   return (
     <div className="flex flex-col mx-12">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Workout Programs</h1>
-        <Button>
-          <PlusCircle className="mr-2 h-4 w-4" /> New Program
-        </Button>
+        <Button onClick={() => setIsNewProgramDialogOpen(true)}><PlusCircle className="mr-2 h-4 w-4" />New Program</Button>
       </div>
       <div className="space-y-4">
         {programs.map((program) => (
@@ -116,12 +180,12 @@ export default function ProgramList() {
               <p className="text-sm text-muted-foreground">{program.description}</p>
               <div className="flex flex-wrap gap-2">
                 {program.tags.map((tag, index) => (
-                  <Badge key={index} variant="secondary">{tag}</Badge>
+                  <Badge key={index} variant="programTags">{tag}</Badge>
                 ))}
               </div>
               <div className="pt-2">
                 <Link href={`/client/fitness-tracker/programs/${program.id}`} passHref>
-                  <Button variant="outline" className="w-full sm:w-auto">View Details</Button>
+                  <Button variant="outline" className="bg-primary text-secondary hover:bg-primary/80 hover:text-secondary w-full sm:w-auto">View Details</Button>
                 </Link>
               </div>
             </div>
@@ -130,7 +194,7 @@ export default function ProgramList() {
       </div>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="bg-black sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>Edit Program</DialogTitle>
           </DialogHeader>
@@ -160,21 +224,123 @@ export default function ProgramList() {
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="tags" className="text-right">
+              <Label htmlFor="edit-tag-input" className="text-right">
                 Tags
               </Label>
-              <Input
-                id="tags"
-                name="tags"
-                value={editingProgram?.tags.join(', ') || ''}
-                onChange={handleTagsChange}
-                placeholder="Separate tags with commas"
-                className="col-span-3"
-              />
+              <div className="col-span-3 flex items-center space-x-2">
+                <Input
+                  id="edit-tag-input"
+                  value={editingTag}
+                  onChange={(e) => setEditingTag(e.target.value)}
+                  placeholder="Add a tag"
+                  className="w-full"
+                />
+                <Button type="button" onClick={handleAddEditingTag}>Add</Button>
+              </div>
+            </div>
+            <div className="grid grid-cols-4 items-start gap-4 mt-2">
+              <div></div> {/* Empty grid cell for alignment */}
+              <div className="col-span-3">
+                <div className="flex flex-wrap gap-2">
+                  {editingProgram?.tags.map((tag, index) => (
+                    <Badge key={index} variant="secondary">
+                      {tag}
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveEditingTag(index)}
+                        className="group -mr-0.5 ml-1 shrink-0 rounded-full p-0 h-4 w-4 flex items-center justify-center"
+                      >
+                        <X className="h-3 w-3 stroke-current" />
+                      </button>
+                    </Badge>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
           <DialogFooter>
             <Button type="submit" onClick={handleSave}>Save changes</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isNewProgramDialogOpen} onOpenChange={setIsNewProgramDialogOpen}>
+        <DialogContent className="bg-black sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>New Program</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="new-name" className="text-right">
+                Name
+              </Label>
+              <div className="col-span-3">
+                <Input
+                  id="new-name"
+                  name="name"
+                  value={newProgram.name}
+                  onChange={handleNewProgramChange}
+                  // Optionally, add 'required' attribute or styling
+                />
+                {newProgramErrors.name && (
+                  <p className="text-red-500 text-sm mt-1">{newProgramErrors.name}</p>
+                )}
+              </div>
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="new-description" className="text-right">
+                Description
+              </Label>
+              <div className="col-span-3">
+                <Textarea
+                  id="new-description"
+                  name="description"
+                  value={newProgram.description}
+                  onChange={handleNewProgramChange}
+                  // Optionally, add 'required' attribute or styling
+                />
+                {newProgramErrors.description && (
+                  <p className="text-red-500 text-sm mt-1">{newProgramErrors.description}</p>
+                )}
+              </div>
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="new-tag-input" className="text-right">
+                Tags
+              </Label>
+              <div className="col-span-3 flex items-center space-x-2">
+                <Input
+                  id="new-tag-input"
+                  value={newTag}
+                  onChange={(e) => setNewTag(e.target.value)}
+                  placeholder="Add a tag"
+                  className="w-full"
+                />
+                <Button type="button" onClick={handleAddTag}>Add</Button>
+              </div>
+            </div>
+            <div className="grid grid-cols-4 items-start gap-4 mt-2">
+              <div></div> {/* Empty grid cell for alignment */}
+              <div className="col-span-3">
+                <div className="flex flex-wrap gap-2">
+                  {newProgram.tags.map((tag, index) => (
+                    <Badge key={index} variant="secondary">
+                      {tag}
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveTag(index)}
+                        className="group -mr-0.5 ml-1 shrink-0 rounded-full p-0 h-4 w-4 flex items-center justify-center"
+                      >
+                        <X className="h-3 w-3 stroke-current" />
+                      </button>
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button type="submit" onClick={handleNewProgramSave}>Save Program</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
