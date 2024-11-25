@@ -30,12 +30,24 @@ let UserController = class UserController {
     findOne(id) {
         return this.userService.findOne(id);
     }
+    async getClientByName(name) {
+        return this.userService.getClientByName(name);
+    }
     async updatePassword(id, updateData) {
         const hashedPassword = await bcrypt.hash(updateData.password, 10);
         return this.userService.updatePassword(id, hashedPassword);
     }
     remove(id) {
         return this.userService.remove(id);
+    }
+    async addClassToUser(userId, { classId }) {
+        return this.userService.addClassToUser(userId, classId);
+    }
+    async removeClassFromUser(userId, classId) {
+        return this.userService.removeClassFromUser(userId, classId);
+    }
+    async getClientsByCoach(coachId) {
+        return this.userService.getClientsByCoach(coachId);
     }
 };
 exports.UserController = UserController;
@@ -61,6 +73,13 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], UserController.prototype, "findOne", null);
 __decorate([
+    (0, common_1.Get)('client/:name'),
+    __param(0, (0, common_1.Param)('name')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], UserController.prototype, "getClientByName", null);
+__decorate([
     (0, common_1.Patch)(':id'),
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, common_1.Body)()),
@@ -75,6 +94,29 @@ __decorate([
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", void 0)
 ], UserController.prototype, "remove", null);
+__decorate([
+    (0, common_1.Post)(':id/class'),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", Promise)
+], UserController.prototype, "addClassToUser", null);
+__decorate([
+    (0, common_1.Delete)(':id/class/:classId'),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Param)('classId')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String]),
+    __metadata("design:returntype", Promise)
+], UserController.prototype, "removeClassFromUser", null);
+__decorate([
+    (0, common_1.Get)('coach/:coachId'),
+    __param(0, (0, common_1.Param)('coachId')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], UserController.prototype, "getClientsByCoach", null);
 exports.UserController = UserController = __decorate([
     (0, common_1.Controller)('user'),
     __metadata("design:paramtypes", [user_service_1.UserService])

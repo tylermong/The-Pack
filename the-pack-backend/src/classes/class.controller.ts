@@ -43,4 +43,5 @@ export class ClassController {
     async getClassesByCoach(@Param('coachId') coachId: string) {
         return this.classService.getClassesByCoach(coachId);
     }
+
 }

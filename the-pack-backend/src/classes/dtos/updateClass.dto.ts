@@ -28,3 +28,5 @@ class UpdateClassDateDto {
   @IsDateString()
   endTime: string;
 }
+
+

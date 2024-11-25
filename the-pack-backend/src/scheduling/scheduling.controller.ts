@@ -52,4 +52,5 @@ export class SchedulingController {
   ) {
     return await this.schedulingService.modifyAppointment(appointmentId, updateAppointmentDto);
   }
+
 }

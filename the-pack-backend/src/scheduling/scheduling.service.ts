@@ -75,7 +75,7 @@ export class schedulingService {
     async getCoachAppointments(coachId: string) {
         return this.prisma.scheduling.findMany({
             where: { coachId },
-            include: { client: true }, // Include client details
+            include: { client: true, timeSlot: true }, // Include client details
         });
     }
     async getAllAppointments() {
@@ -140,5 +140,6 @@ export class schedulingService {
   
       return updatedAppointment;
   }  
-    
+
+
 }
