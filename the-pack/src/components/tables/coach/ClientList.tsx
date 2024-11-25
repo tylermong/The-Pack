@@ -42,10 +42,53 @@ export type Client = {
     programs: string[]
 }
 
+export type NutritionEntry = {
+    id: string
+    userID: string
+    date: Date
+    goals: number
+    calories: number
+    protein: number
+    carbohydrates: number
+    fats: number
+}
+
+export type ProgramEntry = {
+    id: string
+    programName: string
+    userID: string
+    weekEntries: programWeeks[]
+}
+
+export type programWeeks = {
+    id: string
+    numOfWeeks: number
+    programId: string
+    dayEntries: programDays[]
+}
+
+export type programDays = {
+    id: string
+    name: string
+    week: programWeeks
+    weekNum: string
+    exerciseEntries: dailyExercise[]
+}
+
+export type dailyExercise = {
+    id: string
+    name: programDays
+    dayNum: string
+    exerciseName: string
+    numOfSets: string
+    numOfReps: string
+    weightLifted: string
+}
+
 
 //Defining JWT token payload to contain a coachID
 interface CustomJwtPayload extends JwtPayload {
-    coachId: string;
+    sub: string;
 }
 
 
@@ -66,7 +109,8 @@ const ClientListTable = () => {
 
     //Constants for viewing client stats
     const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
-    const [dailyExercises, setDailyExercises] = useState<any[]>([])
+    const [dailyNutrition, setDailyNutrition] = useState<NutritionEntry[]>([])
+    const [programEntries, setProgramEntries] = useState<ProgramEntry[]>([])
 
 
     //JWT Token Call for Clients associated with the coach
@@ -76,23 +120,17 @@ const ClientListTable = () => {
             try {
                 // Decode the JWT token to get the coachId
                 const decodedToken = jwtDecode<CustomJwtPayload>(token);
-                const coachId = decodedToken.coachId;
+                const coachId = decodedToken.sub;
 
-                if (!coachId) {
-                    console.error("Coach ID not found in token.");
-                    return;
-                }
+                console.log("Decoded token:", coachId);
 
-                // Fetch clients associated with the coach
-                const response = await axios.get(`http://localhost:3001/user?coachId=${coachId}`, {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                });
+                // Fetch all clients
+                const response = await axios.get(`http://localhost:3001/user?role=${'CLIENT'}`);
 
                 const clients = response.data; 
                 setClient(clients); 
                 console.log("Fetched clients:", clients);
+
             } catch (error) {
                 console.error("Error fetching clients:", error);
                 toast({
@@ -151,24 +189,28 @@ const ClientListTable = () => {
         onRowSelectionChange: setClientRowSelection,
     });
 
-    // Fetch daily exercises for the selected client
+
+    // Fetch the nutrition entries for the selected client
     const fetchClientFitnessStats = async (clientId: string) => {
         try {
-            const response = await axios.get(
-                `http://localhost:3001/user?clientId=${clientId}`
-            ); 
-            // CHANGE THE LINKING TO CORRECT TABLE
+            // Fetch the nutrition entries for the selected client
+            const nutritionResponse = await axios.get(`http://localhost:3001/nutrition/${clientId}`);
+            const nutritionEntries = nutritionResponse.data;
+            setDailyNutrition(nutritionEntries);
 
-            setDailyExercises(response.data.programEntries.weekEntries.dayEntries.exerciseEntries || []);
+            // Fetch the program entries for the selected client
+            const programResponse = await axios.get(`http://localhost:3001/programs/${clientId}`);
+            const programEntries = programResponse.data;
+            setProgramEntries(programEntries);
         } catch (error) {
-            console.error("Error fetching fitness stats:", error);
+            console.error("Error fetching client fitness stats:", error);
             toast({
                 title: "Error",
                 description: "Could not fetch client fitness stats.",
                 variant: "destructive",
             });
         }
-    };
+    }
 
 
 
@@ -244,7 +286,11 @@ const ClientListTable = () => {
                     {/* View BUTTON */}
                     <Dialog>
                         <DialogTrigger asChild>
-                            <Button variant ="outline" onClick={handleViewClick}>
+                            <Button
+                                variant='outline'
+                                onClick={handleViewClick}
+                                disabled={clientTable.getSelectedRowModel().rows.length === 0}
+                            >
                                 <EyeOpenIcon/>
                                 View Client Stats
                             </Button>
@@ -261,20 +307,46 @@ const ClientListTable = () => {
                                 </DialogDescription>
                             </DialogHeader>
 
-                            {/* SHOWS CLIENT SPECIFIC FITNESS STATUS */}
-                            <div>
-                                {dailyExercises.length > 0 ? (
-                                    <ul>
-                                        {dailyExercises.map((exercise, index) => (
-                                            <li key={index}>
-                                                {exercise.name} - {exercise.reps} reps
-                                            </li>
-                                        ))}
-                                    </ul>
-                                ) : (
-                                    <p>No fitness data available.</p>
-                                )}
-                            </div>
+                            {/* SHOWS CLIENT SPECIFIC NUTRITION AND PROGRAM ENTRIES */}
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Nutrition Entry</TableHead>
+                                        <TableHead>Program Entry</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {dailyNutrition.map((entry) => (
+                                        <TableRow key={entry.id}>
+                                            <TableCell>{entry.date.toDateString()}</TableCell>
+                                            <TableCell>{entry.calories}</TableCell>
+                                            <TableCell>{entry.protein}</TableCell>
+                                            <TableCell>{entry.carbohydrates}</TableCell>
+                                            <TableCell>{entry.fats}</TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Program Name</TableHead>
+                                        <TableHead>Week Entries</TableHead>
+                                        <TableHead>Day Entries</TableHead>
+                                        <TableHead>Exercise Entries</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {programEntries.map((entry) => (
+                                        <TableRow key={entry.id}>
+                                            <TableCell>{entry.programName}</TableCell>
+                                            <TableCell>{entry.weekEntries.map(week => week.numOfWeeks).join(', ')}</TableCell>
+                                            <TableCell>{entry.weekEntries.map(week => week.dayEntries.map(day => day.name).join(', ')).join(', ')}</TableCell>
+                                            <TableCell>{entry.weekEntries.map(week => week.dayEntries.map(day => day.exerciseEntries.map(exercise => exercise.exerciseName).join(', ')).join(', ')).join(', ')}</TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
                         </DialogContent>
                     </Dialog>
                 </CardFooter>

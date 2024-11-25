@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Calendar } from "@/components/ui/calendar";
 import { Button } from '@/components/ui/button';
-import { format } from "date-fns"
+import { format, set } from "date-fns"
 import { Calendar as CalendarIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
 import {
@@ -37,7 +37,6 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import {
     Table,
     TableBody,
-    TableCell,
     TableHead,
     TableHeader,
     TableRow,
@@ -101,12 +100,11 @@ interface CustomJwtPayload extends JwtPayload {
 const Scheduler = () => {
 
 
-    //Current date of the monthly schedule
+    //Handles the current monthly date selected
     const [date, setDate] = useState<Date | undefined>(new Date());
-    const [appointmentDate, setAppointmentDate] = React.useState<Date | undefined>()
 
-    //Monthly calendar constants
-    const [selectedDate, setSelectedDate] = useState(null); // The selected date
+    //Monthly calendar constants for showing the data
+    const [selectedDate, setSelectedDate] = useState<Date | null>(null); // The selected date
     const [classes, setClasses] = useState<Class[]>([]); // The classes for the selected date
     const [appointment, setAppointments] = useState<Appointment[]>([]); // The appointments for the selected date
 
@@ -114,8 +112,11 @@ const Scheduler = () => {
     //Create appointment constants
     const [coachList, setCoachList] = useState<string[]>([]);
     const [appointmentType, setAppointmentType] = useState<string | undefined>();
-    const [selectedCoach, setSelectedCoach] = useState<string | undefined>();
+    const [selectedCoach, setSelectedCoach] = useState<string | undefined>();   
+    const [appointmentDate, setAppointmentDate] = useState<Date | undefined>();
     const [coachAvailability, setCoachAvailability] = useState<Availability[]>([]);
+    const [timeSlot, setTimeSlot] = useState<string[] | undefined>();
+    const [timeslotId, setTimeslotId] = useState<string | undefined>();
     
     //Dialog constants
     const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -126,38 +127,38 @@ const Scheduler = () => {
 
 
     //User Input Calendar Format
-    const { register, handleSubmit, formState: {}, reset, setValue, watch } = useForm({
+    const { register, handleSubmit, formState: {}, setValue } = useForm({
         resolver: zodResolver(FormSchema),
     });
 
 
 
     //Handles day click and fetches data for the day
-    const handleDayClick = async (date) => {
+    const handleDayClick = async (date: Date) => {
         console.log('Day clicked:', date);
         setSelectedDate(date);
         setIsDialogOpen(true);
 
         const token = localStorage.getItem('accessToken');
-        if(token){
-            try{
+        if (token) {
+            try {
                 const decodedToken = jwtDecode<CustomJwtPayload>(token);
-                const clientId = decodedToken.sub['id'];
-                const classes = await axios.get('http://localhost:3001/class')
-                const appointments = await axios.get(`http://localhost:3001/appointments/user/${clientId}`)
-                setClasses(classes.data)
-                setAppointments(appointments.data)
-            }catch(error){
+                const clientId = decodedToken.sub;
+                const classesResponse = await axios.get<Class[]>('http://localhost:3001/class');
+                const appointmentsResponse = await axios.get<Appointment[]>(`http://localhost:3001/appointments/user/${clientId}`);
+                setClasses(classesResponse.data);
+                setAppointments(appointmentsResponse.data);
+            } catch (error) {
                 console.error('Error fetching schedule data:', error);
             }
         } else {
-            console.log("No token found")
+            console.log("No token found");
         }
-      };
+    };
 
 
 
-    // Fetch List of Coaches
+    // Fetch List of Coaches For the Calendar Day
     useEffect(() => {
         const fetchCoach = async () => {
             const token = localStorage.getItem('accessToken');
@@ -169,7 +170,7 @@ const Scheduler = () => {
                         return acc;
                     }, {});
                     setCoachList(usersMap);
-                    console.log(usersMap)
+                    console.log("Calendar Day Coaches: ",usersMap)
                 }catch(error){
                     console.error('Error fetching coaches:', error);
                 }
@@ -185,44 +186,110 @@ const Scheduler = () => {
 
 //ANYTHING BEYOND THIS NEEDS FIXING----------------------------------------------------------------------------------------
 
+
     // Fetch coach availability
     const fetchCoachAvailability = async () => {
         try{
+
+            console.log('Appointment Date:', appointmentDate);
+
+            //Gets all the coaches
             const coachIds = await axios.get('http://localhost:3001/user?role=COACH');
             const coach = coachIds.data.reduce((acc: Record<string, string>, user: { id: string, name: string }) => {
                 acc[user.id] = user.name;
                 return acc;
             }, {});
             const coachId = selectedCoach ? Object.keys(coach).find(key => coach[key] === selectedCoach) : undefined;
-            console.log('Coach:', coachId);
 
-
+            //Gets all the availability of the selected coach
             const response = await axios.get(`http://localhost:3001/coachAvailability/timeslots/${coachId}`);
             const availability = response.data;
 
-            console.log('Coach availability:', availability);
+            if(appointmentDate){
+                //Filter the availability by the selected date
+                const availabilityDate = appointmentDate ? availability.filter((slot: Availability) => new Date(slot.date).toISOString().split('T')[0] === appointmentDate.toISOString().split('T')[0]) : [];
+                setCoachAvailability(availabilityDate);
 
-            // Filter availability by selected coach
-            if(selectedCoach){
-                const coachAvailability = availability.filter((slot: Availability) => slot.coachId === selectedCoach);
-                setCoachAvailability(coachAvailability);
-                console.log('Coach availability:', coachAvailability);
-            } else {
-                setCoachAvailability(availability);
+                console.log('Coach Availability:', coachAvailability);
+
+                //Loop through the availability to get the start times and end times per timeslot
+                for(let i = 1; i < coachAvailability.length; i++){
+
+                    //Lists the timeslot ids
+                    const timeslotId = coachAvailability[i].timeSlots.map((slot: Timeslot) => slot.id);
+                    timeslotId.map((id: string) => setTimeslotId(id));
+
+                    const startTime = coachAvailability[i].timeSlots.map((slot: Timeslot) => slot.startTime);
+                    const endTime = coachAvailability[i].timeSlots.map((slot: Timeslot) => slot.endTime);
+
+                    //Filter the start and end times to only the times not the date and only unique times
+                    const start = startTime.map((time: string) => time.split('T')[1].split('.')[0]).filter((value: string, index: number, self: string[]) => self.indexOf(value) === index);
+                    const end = endTime.map((time: string) => time.split('T')[1].split('.')[0]).filter((value: string, index: number, self: string[]) => self.indexOf(value) === index);
+
+                    //Fixes the time format to 12 hour format
+                    const start12 = start.map((time: string) => {
+                        const hour = parseInt(time.split(':')[0]);
+                        const minute = time.split(':')[1];
+                        return hour > 12 ? `${hour - 12}:${minute} PM` : `${hour}:${minute} AM`;
+                    });
+                    const end12 = end.map((time: string) => {
+                        const hour = parseInt(time.split(':')[0]);
+                        const minute = time.split(':')[1];
+                        return hour > 12 ? `${hour - 12}:${minute} PM` : `${hour}:${minute} AM`;
+                    });
+
+                    //Combine the start and end times
+                    const timeSlots = start12.map((time: string, index: number) => `${time} - ${end12[index]}`);
+                    console.log('Time Slots:', timeSlots);
+
+                    //Set the timeslots
+                    setTimeSlot(timeSlots);
+                }
             }
         }catch(error){
             console.error('Error fetching coach availability:', error);
         }
     }
 
+
     useEffect(() => {
-        fetchCoachAvailability();
-    }, [selectedCoach]);
+        if (appointmentDate && selectedCoach) {
+            fetchCoachAvailability();
+        }
+    }, [appointmentDate, selectedCoach]);
+
 
 
     //Handler for making appointments
-    const onAppointmentSubmit = async (data) => {
-        
+    const handleAppointmentSubmit = async () => {
+        try {
+            const token = localStorage.getItem('accessToken');
+            if (token) {
+                
+                const decodedToken = jwtDecode<CustomJwtPayload>(token);
+                const clientId = decodedToken.sub;
+                const coachId = Object.keys(coachList).find(key => coachList[key] === selectedCoach);
+
+                //Loop through the the list of timeslot id to get the correct timeslot id of the selected time
+                const timeSlotIDCurrent = timeslotId;
+
+                console.log('Time Slot ID:', timeSlotIDCurrent);
+
+                const createAppointmentDTO = {
+                    clientId: clientId['id'],
+                    coachId: coachId,
+                    timeSlotId: timeSlotIDCurrent,
+                };
+
+                const response = await axios.post('http://localhost:3001/appointments/schedule', createAppointmentDTO);
+
+                console.log('Appointment created:', response.data);
+            } else {
+                console.log('No token found');
+            }
+        } catch (error) {
+            console.error('Error creating appointment:', error);
+        }
     };
 
     
@@ -238,9 +305,11 @@ const Scheduler = () => {
             
             {/*SHOW CASE CURRENT MONTHLY SCHEDULE */}
             <div className='mb-2'>
+
                 <div className="mb-6">
                     <h3 className="text-white md:text-3xl text-2xl font-extrabold text-center max-md:text-center">MONTHLY SCHEDULE</h3>
                 </div>
+
                 <div className='calendar'>
                     <Calendar
                         mode="single"
@@ -357,8 +426,7 @@ const Scheduler = () => {
                             The timeslots are based on the coach availability.
                         </DialogDescription>
 
-                        <form onSubmit={handleSubmit(onAppointmentSubmit)}>
-                            <div className="flex flex-col w-min gap-4">
+                        <div className="flex flex-col w-min gap-4">
                                 
                                 <div className="flex flex-col space-y-1.5">
                                     <Label htmlFor="name" className='mb-1'>Name</Label>
@@ -369,7 +437,7 @@ const Scheduler = () => {
                                     <Label htmlFor="coach" className='mb-1'>Coach Name</Label>
 
 
-                                    <Select onValueChange={(value) => {setValue('coach', value); setSelectedCoach(value)}} >
+                                    <Select onValueChange={(value) => {setValue('coach', value); setSelectedCoach(value);}} >
                                         <SelectTrigger id="coach" className='border-solid border-white'>
                                             <SelectValue placeholder="Select coach" />
                                         </SelectTrigger>
@@ -402,7 +470,7 @@ const Scheduler = () => {
 
 
                                 <div className='flex flex-col space-y-1.5'>
-                                    <Label htmlFor="appointmentDate">Date</Label>
+                                    <Label htmlFor="appointmentDate">Date (Quadruple click the desired date) </Label>
                                     <Popover>
                                         <PopoverTrigger asChild>
                                             <Button
@@ -421,10 +489,7 @@ const Scheduler = () => {
                                             <Calendar
                                             mode="single"
                                             selected={appointmentDate}
-                                            onSelect={(date) => {
-                                                setAppointmentDate(date);
-                                                setValue('appointmentDate', date);
-                                            }}
+                                            onSelect={(date) => { setAppointmentDate(date); fetchCoachAvailability(); }}
                                             initialFocus
                                             />
                                             </div>
@@ -442,20 +507,17 @@ const Scheduler = () => {
                                         </SelectTrigger>
 
                                         <SelectContent position="popper">
-                                            {coachAvailability.map((slot, index) => (
-                                                <SelectItem key={index} value={slot.date.toString()}>{new Date(slot.date).toDateString()}</SelectItem>
+                                            {timeSlot?.map((time) => (
+                                                <SelectItem key={time} value={time}>{time}</SelectItem>
                                             ))}
                                         </SelectContent>
-
                                     </Select>
                                 </div>
                             </div>
 
                             <div className='pt-4'>
-                                <Button type = "submit" variant="outline">Submit</Button>
+                                <Button variant="outline" onClick={handleAppointmentSubmit}>Submit</Button>
                             </div>
-
-                        </form>
                     </DialogContent>
                 </Dialog>
             </div>

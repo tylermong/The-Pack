@@ -22,7 +22,6 @@ import {
 import {
     Dialog,
     DialogContent,
-    DialogFooter,
     DialogHeader,
     DialogTitle,
     DialogTrigger,
@@ -43,14 +42,6 @@ import {
 import { jwtDecode } from 'jwt-decode';
 import { JwtPayload } from "jsonwebtoken";
 import { ArrowLeftIcon, Pencil1Icon, Pencil2Icon, Cross1Icon } from "@radix-ui/react-icons";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast"
 import { Label } from "@/components/ui/label"
 import { useRouter } from 'next/navigation'
@@ -86,13 +77,6 @@ export type Class = {
 interface CustomJwtPayload extends JwtPayload {
     sub: string;
 }
-
-const FormSchema = z.object({
-    name: z.string().nonempty('Name is required'),
-    coach: z.string().nonempty('Coach name is required'),
-    appointmentType: z.string().nonempty('Appointment Type is required'),
-    appointmentDate: z.date().refine(date => date !== undefined, 'Date is required'),
-});
 
 
 
@@ -133,12 +117,6 @@ const ClassListTable = () => {
     const [client, setClient] = useState("");
 
 
-    //User Input Calendar Format
-    const { handleSubmit, formState: { errors }, reset, setValue } = useForm({
-        resolver: zodResolver(FormSchema),
-    });
-
-
     //JWT Token Call for Coach specific classes
     const getCoachClasses = async () => {
         const token = localStorage.getItem('accessToken');
@@ -160,6 +138,19 @@ const ClassListTable = () => {
 
                 const classes = response.data; 
 
+                console.log("Fetched Classes:", classes);
+
+                //Formatter for start and end time
+                const formatTime = (date: Date) => {
+                    let hours = date.getUTCHours();
+                    const minutes = date.getUTCMinutes();
+                    const ampm = hours >= 12 ? 'PM' : 'AM';
+                    hours = hours % 12;
+                    hours = hours ? hours : 12; // the hour '0' should be '12'
+                    const minutesStr = minutes < 10 ? '0' + minutes : minutes;
+                    return `${hours}:${minutesStr} ${ampm}`;
+                };
+
                 //Map the values to the classes constant for only name, description, date, start time, end time
                 setClasses(classes.map((classItem: any) => ({
                     id: classItem.id,
@@ -167,14 +158,20 @@ const ClassListTable = () => {
                     description: classItem.description,
                     currentlyEnrolled: classItem.currentlyEnrolled,
                     date: classItem.classDates[0].date['date'].split('T')[0],
-                    startTime: classItem.classDates[0].startTime.split('T')[1].split(':')[0] + ':' + classItem.classDates[0].startTime.split('T')[1].split(':')[1],
-                    endTime: classItem.classDates[0].endTime.split('T')[1].split(':')[0] + ':' + classItem.classDates[0].endTime.split('T')[1].split(':')[1],
+                    startTime: formatTime(new Date(classItem.classDates[0].startTime)),
+                    endTime: formatTime(new Date(classItem.classDates[0].endTime)),
+                    classDates: classItem.classDates.map((date: any) => ({
+                        id: date.id,
+                        date: date.date,
+                        startTime: date.startTime,
+                        endTime: date.endTime,
+                    }))
                 })));
 
-
-
                 
-                console.log("Fetched classes:", classes);
+
+                console.log("Classes:", classes);
+
             } catch (error) {
                 console.error("Error fetching classes:", error);
                 toast({
@@ -323,6 +320,8 @@ const ClassListTable = () => {
                 );
 
                 toast({ description: "Class deleted successfully" });
+
+                getCoachClasses();
             } catch (error) {
                 console.error("Error deleting class", error);
                 toast({ description: "Failed to delete class", variant: "destructive" });
@@ -347,29 +346,35 @@ const ClassListTable = () => {
         }
     };
 
+
     //handles completed editing
     const handleSaveChanges = async () => {
         const selectedClass = classTable.getSelectedRowModel().rows[0]?.original;
 
+        console.log("Selected Class:", selectedClass);
+
+        console.log("Selected Class ID:", selectedClass['classDates'][0]['date']['id']);
+
+
         if (selectedClass) {
             try {
+
                 const formattedDate = editDate ? editDate.toISOString().split('T')[0] : '';
 
                 const classData = {
-                    name: editName,
+                    name: editName, 
                     description: editDescription,
                     classDates: [{
-                        date: editDate,
+                        date: selectedClass['classDates'][0]['date']['id'],
                         startTime: new Date(`${formattedDate}T${editStartTime}:00.000Z`).toISOString(),
                         endTime: new Date(`${formattedDate}T${editEndTime}:00.000Z`).toISOString(),
                     }]
                 };
 
+
                 console.log("Updating class with data:", classData);
 
-                const response = await axios.patch(`http://localhost:3001/class/${selectedClass.id}`, classData, {
-                    headers: { Authorization: `Bearer ${localStorage.getItem("accessToken")}` }
-                });
+                const response = await axios.patch(`http://localhost:3001/class/${selectedClass.id}`, classData);
 
                 if (response.status === 200) {
                     alert("Class updated successfully!");
@@ -397,35 +402,33 @@ const ClassListTable = () => {
 
 
 
-
-
-
-
-    //UNTESTED FUNCTION---------------------------------------------------------------------
-
-
-
-
-
     //handles adding a client to a class
     const handleAddClient = async () => {
         // Get the selected class
         const selectedClass = classTable.getSelectedRowModel().rows[0]?.original;
 
         // Get the selected client
-        const selectedClient = client;
+        const clientData = await axios.get(`http://localhost:3001/user/client/${client}`);
+
+        const selectedClient = clientData['data'][0]['id'];
+
+        console.log("Selected Client:", selectedClient);
+        console.log("Selected Class:", selectedClass.id);
 
         if (selectedClass && selectedClient) {
             try {
-                // Make the request to the backend
-                await axios.post(`http://localhost:3001/class/${selectedClass.id}/client/${selectedClient.id}`, {
+                //Add class to user
+                await axios.post(`http://localhost:3001/user/${selectedClient}/class`, { classId: selectedClass.id }, {
                     headers: { Authorization: `Bearer ${localStorage.getItem("accessToken")}` }
                 });
 
+                console.log("Client added to class");
+
+                //Alert user of success 
                 toast({ description: "Client added successfully" });
             } catch (error) {
-                console.error("Error adding client to class", error);
-                toast({ description: "Failed to add client to class", variant: "destructive" });
+                console.error("Error adding removing client from class", error);
+                toast({ description: "Failed to remove client from claaa", variant: "destructive" });
             }
         }
     }
@@ -435,15 +438,20 @@ const ClassListTable = () => {
         // Get the selected class
         const selectedClass = classTable.getSelectedRowModel().rows[0]?.original;
 
-        // Get the selected client
-        const selectedClient = client;
+       // Get the selected client
+       const clientData = await axios.get(`http://localhost:3001/user/client/${client}`);
+
+       const selectedClient = clientData['data'][0]['id'];
+
+       console.log("Selected Client:", selectedClient);
+       console.log("Selected Class:", selectedClass.id);
 
         if (selectedClass && selectedClient) {
             try {
-                // Make the request to the backend
-                await axios.delete(`http://localhost:3001/class/${selectedClass.id}/client/${selectedClient.id}`, {
-                    headers: { Authorization: `Bearer ${localStorage.getItem("accessToken")}` }
-                });
+                // Remove class from user
+                await axios.delete(`http://localhost:3001/user/${selectedClient}/class/${selectedClass.id}`);
+
+                console.log("Client removed from class");
 
                 toast({ description: "Client removed successfully" });
             } catch (error) {
@@ -796,7 +804,9 @@ const ClassListTable = () => {
                                         Add a Client
                                     </DialogTitle>
                                     <DialogDescription>
-                                        Write the client name. Then submit.
+                                        This client will be added to the selected class.
+                                        Write the EXACT client name. 
+                                        Then press submit.
                                     </DialogDescription>
                                 </DialogHeader>
 
@@ -808,7 +818,7 @@ const ClassListTable = () => {
                                     <Input 
                                     type="text"
                                     placeholder="Client Name"
-                                    value={name}
+                                    value={client}
                                     onChange={(e) => setClient(e.target.value)}
                                     />
                                 </div>
@@ -832,7 +842,9 @@ const ClassListTable = () => {
                                         Remove a Client
                                     </DialogTitle>
                                     <DialogDescription>
-                                        Write the client name. Then submit.
+                                        This client will be removed from the selected class.
+                                        Write the EXACT client name. 
+                                        Then submit.
                                     </DialogDescription>
                                 </DialogHeader>
 
@@ -844,11 +856,11 @@ const ClassListTable = () => {
                                     <Input 
                                     type="text"
                                     placeholder="Client Name"
-                                    value={name}
+                                    value={client}
                                     onChange={(e) => setClient(e.target.value)}
                                     />
                                 </div>
-                                <Button variant='outline' onClick={handleRemoveClient}>Add</Button>
+                                <Button variant='outline' onClick={handleRemoveClient}>Remove</Button>
                             </DialogContent>
                         </Dialog>
                     </CardFooter>

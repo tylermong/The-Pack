@@ -31,6 +31,10 @@ let UserService = class UserService {
             return this.prismaSerivce.user.findMany({
                 where: {
                     role,
+                },
+                include: {
+                    nutritionEntries: true,
+                    programEntries: true,
                 }
             });
         return this.prismaSerivce.user.findMany();
@@ -83,6 +87,93 @@ let UserService = class UserService {
         return this.prismaSerivce.user.update({
             where: { id: userId },
             data: { password: hashedPassword },
+        });
+    }
+    async getClientByName(name) {
+        return this.prismaSerivce.user.findMany({
+            where: {
+                name: {
+                    contains: name
+                }
+            }
+        });
+    }
+    async addClassToUser(userId, classId) {
+        try {
+            const [user, classEntity] = await Promise.all([
+                this.prismaSerivce.user.findUnique({
+                    where: { id: userId }
+                }),
+                this.prismaSerivce.class.findUnique({
+                    where: { id: classId }
+                })
+            ]);
+            if (!user) {
+                throw new common_1.NotFoundException(`User with ID ${userId} not found`);
+            }
+            if (!classEntity) {
+                throw new common_1.NotFoundException(`Class with ID ${classId} not found`);
+            }
+            return await this.prismaSerivce.user.update({
+                where: { id: userId },
+                data: {
+                    classJoined: {
+                        create: {
+                            classId: classId
+                        }
+                    }
+                },
+                include: {
+                    classJoined: true
+                }
+            });
+        }
+        catch (error) {
+            console.error('Error adding class to user:', error);
+            throw error;
+        }
+    }
+    async removeClassFromUser(userId, classId) {
+        try {
+            const [user, classEntity] = await Promise.all([
+                this.prismaSerivce.user.findUnique({
+                    where: { id: userId },
+                    include: { classJoined: true }
+                }),
+                this.prismaSerivce.class.findUnique({
+                    where: { id: classId }
+                })
+            ]);
+            if (!user) {
+                throw new common_1.NotFoundException(`User with ID ${userId} not found`);
+            }
+            if (!classEntity) {
+                throw new common_1.NotFoundException(`Class with ID ${classId} not found`);
+            }
+            return await this.prismaSerivce.user.update({
+                where: { id: userId },
+                data: {
+                    classJoined: {
+                        deleteMany: {
+                            classId: classId
+                        }
+                    }
+                },
+                include: {
+                    classJoined: true
+                }
+            });
+        }
+        catch (error) {
+            console.error('Error removing class from user:', error);
+            throw error;
+        }
+    }
+    async getClientsByCoach(coachId) {
+        return this.prismaSerivce.user.findMany({
+            where: {
+                coachId: coachId
+            }
         });
     }
 };

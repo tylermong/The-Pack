@@ -60,36 +60,74 @@ export class ClassService {
         });
     }
 
-    async updateClass(classId: string, data: UpdateClassDto) {
-        const updatedClass = await this.prisma.class.update({
-          where: { id: classId },
-          data: {
-            name: data.name,
-            description: data.description,
-            assignedCoach: data.assignedCoachId
-              ? { connect: { id: data.assignedCoachId } }
-              : undefined, // Leave coach empty if not provided
-            classDates: {
-              // Delete existing class dates
-              deleteMany: {
-                classId: classId,
-              },
-              // Create new class dates
-              create: data.classDates?.map(({ date, startTime, endTime }) => ({
-                // If `date` is supposed to refer to another model, use `connect`
-                date: { connect: { id: date } }, // Assuming `date` refers to a classDates model or similar
-                startTime,
-                endTime,
-              })),
-            },
-          },
-          include: {
-            classDates: true,  // Include classDates in the response
-          },
-        });
+    // async updateClass(classId: string, data: UpdateClassDto) {
+    //     const updatedClass = await this.prisma.class.update({
+    //       where: { id: classId },
+    //       data: {
+    //         name: data.name,
+    //         description: data.description,
+    //         assignedCoach: data.assignedCoachId
+    //           ? { connect: { id: data.assignedCoachId } }
+    //           : undefined, // Leave coach empty if not provided
+    //         classDates: {
+    //           // Delete existing class dates
+    //           deleteMany: {
+    //             classId: classId,
+    //           },
+    //           // Create new class dates
+    //           create: data.classDates?.map(({ date, startTime, endTime }) => ({
+    //             // If `date` is supposed to refer to another model, use `connect`
+    //             date: { connect: { id: date } }, // Assuming `date` refers to a classDates model or similar
+    //             startTime,
+    //             endTime,
+    //           })),
+    //         },
+    //       },
+    //       include: {
+    //         classDates: true,  // Include classDates in the response
+    //       },
+    //     });
       
-        return updatedClass;
+    //     return updatedClass;
+    //   }
+
+    async updateClass(classId: string, data: UpdateClassDto) {
+      // Validate if the provided `classDates` exist in the database
+      for (const { date } of data.classDates || []) {
+        const existingDate = await this.prisma.classDates.findUnique({
+          where: { id: date },
+        });
+        if (!existingDate) {
+          throw new Error(`Date with ID ${date} does not exist.`);
+        }
       }
+    
+      const updatedClass = await this.prisma.class.update({
+        where: { id: classId },
+        data: {
+          name: data.name,
+          description: data.description,
+          assignedCoach: data.assignedCoachId
+            ? { connect: { id: data.assignedCoachId } }
+            : undefined,
+          classDates: {
+            // Remove all existing ClassOnDate records for this class
+            deleteMany: { classId },
+            // Add the new ClassOnDate records
+            create: data.classDates?.map(({ date, startTime, endTime }) => ({
+              date: { connect: { id: date } }, // Ensure this links to an existing classDates record
+              startTime,
+              endTime,
+            })),
+          },
+        },
+        include: {
+          classDates: true, // Include the updated classDates in the response
+        },
+      });
+    
+      return updatedClass;
+    }
       
       async getClassById(id: string) {
         const classData = await this.prisma.class.findUnique({
@@ -121,21 +159,20 @@ export class ClassService {
 
       async getClassesByCoach(coachId: string) {
         return this.prisma.class.findMany({
-          where: { 
-            assignedCoach: { id: coachId } 
+          where: {
+            assignedCoach: { id: coachId },
           },
           include: {
-            // Return all data of the creator
             creator: true,
-            // Return all data of the assigned coach
             assignedCoach: true,
-            // Return all data of the class dates
+            //include class dates and date
             classDates: {
               include: {
-                date: true, // Include related date information from classDates table
-              },
+                date: true,
+              }
             },
-          },
+          }
         });
       }
+
 }

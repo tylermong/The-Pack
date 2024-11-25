@@ -21,6 +21,10 @@ export class UserService {
     if (role) return this.prismaSerivce.user.findMany({
       where: {
         role,
+      },
+      include: {
+        nutritionEntries: true,
+        programEntries: true,
       }
     })
     return this.prismaSerivce.user.findMany()
@@ -84,5 +88,108 @@ export class UserService {
       data: { password: hashedPassword },
     });
   }
+
+  // Get client by name
+  async getClientByName(name: string) {
+    return this.prismaSerivce.user.findMany({
+        where: {
+            name: {
+                contains: name
+            }
+        }
+    });
+  }
+
+  //Add class to user
+  async addClassToUser(userId: string, classId: string) {
+    try {
+        // First verify both user and class exist
+        const [user, classEntity] = await Promise.all([
+            this.prismaSerivce.user.findUnique({
+                where: { id: userId }
+            }),
+            this.prismaSerivce.class.findUnique({
+                where: { id: classId }
+            })
+        ]);
+
+        if (!user) {
+            throw new NotFoundException(`User with ID ${userId} not found`);
+        }
+
+        if (!classEntity) {
+            throw new NotFoundException(`Class with ID ${classId} not found`);
+        }
+
+        // Update user with class connection
+        return await this.prismaSerivce.user.update({
+            where: { id: userId },
+            data: {
+                classJoined: {  // Make sure this matches your Prisma schema relation name
+                    create: {
+                        classId: classId
+                    }
+                }
+            },
+            include: {
+                classJoined: true
+            }
+        });
+    } catch (error) {
+        console.error('Error adding class to user:', error);
+        throw error;
+    }
+}
+
+//Remove class from user
+async removeClassFromUser(userId: string, classId: string) {
+  try {
+      // Verify entities exist
+      const [user, classEntity] = await Promise.all([
+          this.prismaSerivce.user.findUnique({
+              where: { id: userId },
+              include: { classJoined: true }
+          }),
+          this.prismaSerivce.class.findUnique({
+              where: { id: classId }
+          })
+      ]);
+
+      if (!user) {
+          throw new NotFoundException(`User with ID ${userId} not found`);
+      }
+
+      if (!classEntity) {
+          throw new NotFoundException(`Class with ID ${classId} not found`);
+      }
+
+      // Delete the connection in the join table
+      return await this.prismaSerivce.user.update({
+          where: { id: userId },
+          data: {
+              classJoined: {
+                  deleteMany: {
+                      classId: classId
+                  }
+              }
+          },
+          include: {
+              classJoined: true
+          }
+      });
+  } catch (error) {
+      console.error('Error removing class from user:', error);
+      throw error;
+  }
+}
+
+//Get client by their coach
+async getClientsByCoach(coachId: string) {
+  return this.prismaSerivce.user.findMany({
+      where: {
+          coachId: coachId
+      }
+  });
+}
   
 }

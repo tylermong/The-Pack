@@ -114,4 +114,60 @@ export declare class UserService {
         updatedAt: Date;
         coachId: string | null;
     }>;
+    getClientByName(name: string): Promise<{
+        id: string;
+        name: string;
+        email: string;
+        password: string;
+        phoneNum: number | null;
+        role: import(".prisma/client").$Enums.Role;
+        createdAt: Date;
+        updatedAt: Date;
+        coachId: string | null;
+    }[]>;
+    addClassToUser(userId: string, classId: string): Promise<{
+        classJoined: {
+            id: string;
+            classId: string;
+            clientId: string;
+        }[];
+    } & {
+        id: string;
+        name: string;
+        email: string;
+        password: string;
+        phoneNum: number | null;
+        role: import(".prisma/client").$Enums.Role;
+        createdAt: Date;
+        updatedAt: Date;
+        coachId: string | null;
+    }>;
+    removeClassFromUser(userId: string, classId: string): Promise<{
+        classJoined: {
+            id: string;
+            classId: string;
+            clientId: string;
+        }[];
+    } & {
+        id: string;
+        name: string;
+        email: string;
+        password: string;
+        phoneNum: number | null;
+        role: import(".prisma/client").$Enums.Role;
+        createdAt: Date;
+        updatedAt: Date;
+        coachId: string | null;
+    }>;
+    getClientsByCoach(coachId: string): Promise<{
+        id: string;
+        name: string;
+        email: string;
+        password: string;
+        phoneNum: number | null;
+        role: import(".prisma/client").$Enums.Role;
+        createdAt: Date;
+        updatedAt: Date;
+        coachId: string | null;
+    }[]>;
 }

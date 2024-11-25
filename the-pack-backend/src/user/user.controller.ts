@@ -26,6 +26,12 @@ export class UserController {
     return this.userService.findOne(id);
   }
 
+  //Get client by client name
+  @Get('client/:name')
+  async getClientByName(@Param('name') name: string) {
+      return this.userService.getClientByName(name);
+  }
+
   // @Patch(':id')
   // update(@Param('id') id: string, @Body() updateUserDto: Prisma.UserUpdateInput) {
   //   return this.userService.update(id, updateUserDto);
@@ -54,6 +60,25 @@ export class UserController {
   //     }
   //     return this.userService.findOne(id);
   // }
+
+  //Add class to user
+  @Post(':id/class')
+  async addClassToUser(@Param('id') userId: string, @Body() { classId }: { classId: string }) {
+      return this.userService.addClassToUser(userId, classId);
+  }
+
+  //Remove class from user
+  @Delete(':id/class/:classId')
+  async removeClassFromUser(@Param('id') userId: string, @Param('classId') classId: string) {
+      return this.userService.removeClassFromUser(userId, classId);
+  }
+
+  //Get clients by their coach
+  @Get('coach/:coachId')
+  async getClientsByCoach(@Param('coachId') coachId: string) {
+      return this.userService.getClientsByCoach(coachId);
+  }
+
 
   
 }

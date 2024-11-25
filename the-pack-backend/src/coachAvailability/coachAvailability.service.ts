@@ -60,6 +60,7 @@ export class CoachAvailabilityService {
   async getAvailabilityByCoach(coachId: string) {
     return this.prisma.coachAvailability.findMany({
       where: { coachId },
+      include: { timeSlots: true },
     });
   }
 

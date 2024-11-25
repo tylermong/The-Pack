@@ -47,7 +47,7 @@ export type Appointment = {
 }
 
 interface CustomJwtPayload extends JwtPayload {
-    coachId: string;
+    sub: string;
 }
 
 
@@ -67,6 +67,9 @@ const AppointmentsListTable = () => {
     const [appointmentRowSelection, setAppointmentRowSelection] = useState({});
 
 
+
+    //NEEED TO FIX AKA HAVE A SAMPLE OF AN APPOINTMENT WITH A TIMESLOT TOSEE DATA FORMAT AND DISPLAY TO THE TABLE!!!!!!!!!!!!!!!!!!!!!!!
+
     //JWT Token Call for Appointments associated with the coach
     const getAppointments = async () => {
         const token = localStorage.getItem('accessToken');
@@ -74,19 +77,12 @@ const AppointmentsListTable = () => {
             try {
                 // Decode the JWT token to get the coachId
                 const decodedToken = jwtDecode<CustomJwtPayload>(token);
-                const coachId = decodedToken.coachId;
+                const coachId = decodedToken.sub['id'];
 
-                if (!coachId) {
-                    console.error("Coach ID not found in token.");
-                    return;
-                }
+                console.log("Coach ID:", coachId);
 
-                // Fetch clients associated with the coach
-                const response = await axios.get(`http://localhost:3001/scheduling?coachId=${coachId}`, {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                });
+                // Fetch the appointments associated with the coach
+                const response = await axios.get(`http://localhost:3001/appointments/coach/${coachId}`);
 
                 const appointments = response.data; 
                 setAppointment(appointments); 
@@ -153,18 +149,21 @@ const AppointmentsListTable = () => {
 
     //Handler for deleting an appointment
     const handleDeleteAppointment = async () => {
-        const selectedSchedules = appointmentTable.getSelectedRowModel().rows;
-        const appointmentIds = selectedSchedules.map((row) => row.original.id);
+        //Get the selected appointment
+        const appointmentIds = appointmentTable.getSelectedRowModel().rows.map((row) => row.original.id);
+
+        console.log("Deleting appointments:", appointmentIds[0]);
+
+        const appId = appointmentIds[0];
 
         try {
             // Make the delete request to the backend
-            await axios.delete('http://localhost:3001/scheduling', {
-                data: { ids: appointmentIds },
-                headers: { Authorization: `Bearer ${localStorage.getItem("accessToken")}` }
-            });
+            await axios.delete(`http://localhost:3001/appointments/${appId}`);
 
             // Update local state to remove deleted schedules
             setAppointment((prev) => prev.filter((schedule) => !appointmentIds.includes(schedule.id)));
+
+            console.log("Appointment deleted successfully");
 
             // Optionally, show a success toast
             toast({ description: "Appointment deleted successfully" });
