@@ -10,4 +10,5 @@ export class CreateChatroomDto {
     @IsNotEmpty()
     @IsString()
     coachId: string 
+
 }

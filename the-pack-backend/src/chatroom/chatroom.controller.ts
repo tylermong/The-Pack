@@ -38,4 +38,10 @@ export class ChatroomController {
   findAnnouncementsByAuthor(@Param('coachId') coachId: string) {
     return this.chatroomService.findByCoach(coachId);
   }
+
+  //Gets all the chatrooms that a user is in
+  @Get('user/:userId')
+  async getUsersChatroom(@Param('userId') userId: string) {
+    return this.chatroomService.getUsersChatroom(userId);
+  }
 }

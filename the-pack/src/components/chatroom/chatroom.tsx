@@ -10,40 +10,52 @@ import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Separator } from "@/components/ui/separator"
 import io from 'socket.io-client';
-import SocketMock from 'socket.io-mock';
 import { Dialog, DialogContent, DialogTrigger, DialogTitle } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { v4 as uuidv4 } from 'uuid';
 import { format } from 'date-fns';
+import { jwtDecode } from 'jwt-decode';
+import { JwtPayload } from "jsonwebtoken";
+import { MessageSquare } from 'lucide-react';
 
 
 interface Message {
     id: string;
-    user: string;
     content: string;
-    timestamp: string;
-    chatroomId: string;
+    userID: string;
+    chatroomID: string;
+    createdAt: Date;
+}
+
+interface ChatroomParticipant {
+    id: string;
+    userID: string;
+    chatroomID: string;
+    joinedAt: Date;
 }
 
 interface Chatroom {
     id: string;
     name: string;
-    lastMessage: string;
-    users: string[];
+    coachId: string;
+    createdAt: Date;
+    chatroomParticipants: ChatroomParticipant[];
+    messages: Message[];
 }
 
+interface CreateChatroomDto {
+    name: string;
+}
+
+
+interface CustomJwtPayload extends JwtPayload {
+    sub: string;
+}
+
+
+
 //WebSocket for real time messaging
-//const socket = io('http://localhost:3001');  //UNCOMMENT ONCE DONE TESTING MOCK
-
-
-
-
-
-
-//WebSocket for testing without DB and Backend (DELETE ONCE DONE)
-const socket = process.env.NODE_ENV === 'test' ? new SocketMock() : io('http://localhost:3002');
-
-
+const socket = io('http://localhost:3002');  // Connect to the server
 
 
 
@@ -52,197 +64,216 @@ const socket = process.env.NODE_ENV === 'test' ? new SocketMock() : io('http://l
 
 const Chatroom = () =>{
 
-    //Messages related
-    const [messages, setMessages] = React.useState<Message[]>([]) //Content of messages
-    const [newMessage, setNewMessage] = React.useState("") //content of new messages
-
-    //Chatroom related
-    //const [chatrooms, setChatrooms] = useState<Chatroom[]>([]); //Current chatroom list
-    const [chatroomName, setChatroomName] = useState(''); //Chatroom name for creating new rooms
-    const [coachName, setCoachName] = useState(''); //Coach name for creating new rooms
-    const [participants, setParticipants] = useState(''); //List of participants for creating new rooms
-    const [selectedChatroomId, setSelectedChatroomId] = useState<string | null>(null); //Chatroom object for selecting current room user active in
-
     //For scroll view
     const messagesEndRef = React.useRef<HTMLDivElement>(null)
 
     //For Role handling (allow only coaches to make rooms)
-    const [userRole, setUserRole] = useState<'coach' | 'client'>('client');
+    const [userRole, setUserRole] = useState<'COACH' | 'CLIENT'>('CLIENT');
+
+    //States for chatrooms
+    const [messages, setMessages] = useState<Message[]>([]);
+    const [currentMessage, setCurrentMessage] = useState('');
+    const [chatrooms, setChatrooms] = useState<Chatroom[]>([]);
+    const [selectedRoom, setSelectedRoom] = useState<string>('');
+    const [newRoomName, setNewRoomName] = useState('');
+    const [participants, setParticipants] = useState<ChatroomParticipant[]>([]);
+    const [coachName, setCoachName] = useState('');
+    const [currentRoomName, setCurrentRoomName] = useState('');
 
 
-
-
-
-
-
-
-
-
-
-
-    //MOCK STUFF DELETE ONCE DONE TESTING
-    // Simulate the user role retrieval in a test environment
-    useEffect(() => {
-        if (process.env.NODE_ENV === 'test') {
-            // Mock user role as 'coach' or 'client' for testing
-            setUserRole('coach');
-        } else {
-            // Fetch actual user role if backend is running
-            const fetchUserRole = async () => {
-                try {
-                    const response = await axios.get('http://localhost:3001/user');
-                    setUserRole(response.data.role);
-                } catch (error) {
-                    console.error('Error fetching user role:', error);
-                }
-            };
-            fetchUserRole();
-        }
-    }, []);
-
-
-    // Set up mock chatroom data
-    const [chatrooms, setChatrooms] = useState<Chatroom[]>([
-        { id: '1', name: 'General', lastMessage: '', users: ['user1', 'user2'] },
-        { id: '2', name: 'Private', lastMessage: '', users: ['user1'] }
-    ]);
-
-
-    useEffect(() => {
-        if (process.env.NODE_ENV === 'test') {
-            // Mock receiving messages
-            socket.on('sendMessage', (messageData: Message) => {
-                setMessages((prevMessages) => [...prevMessages, messageData]);
-            });
-        } else {
-            socket.on('receiveMessage', (message: Message) => {
-                setMessages((prevMessages) => [...prevMessages, message]);
-            });
-        }
-
-        return () => {
-            socket.off('sendMessage');
-        };
-    }, []);
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        const participantsList = participants.split(',').map((p) => p.trim());
-
-        const newChatroom = {
-            name: chatroomName,
-            coach: coachName,
-            users: participantsList,
-            id: uuidv4(),
-            lastMessage: '',
-        };
-
-        if (process.env.NODE_ENV === 'test') {
-            // Directly update local chatrooms state for testing
-            setChatrooms([...chatrooms, newChatroom]);
-        } else {
-            // Actual API call to backend
-            try {
-                const newRoom = await axios.post('http://localhost:3001/chatrooms', newChatroom);
-                console.log("New chatroom created:", newRoom);
-                setChatrooms([...chatrooms, newChatroom]);
-            } catch (error) {
-                console.error('Error creating chatroom:', error);
-            }
-        }
-
-        setChatroomName('');
-        setCoachName('');
-        setParticipants('');
-    };
-
-    useEffect(() => {
-        // Listen for storage changes (when a new message is received in another tab)
-        const handleStorageChange = (event: StorageEvent) => {
-            if (event.key === 'newMessage') {
-                const messageData = JSON.parse(event.newValue || '{}');
-                setMessages((prevMessages) => [...prevMessages, messageData]);
-            }
-        };
-    
-        window.addEventListener('storage', handleStorageChange);
-    
-        return () => {
-            window.removeEventListener('storage', handleStorageChange);
-        };
-    }, []);
-
-
-
-
-
-
-
-
-
-
-
-
-    //Fetching current user role
+    //Gets the current role of the user
     useEffect(() => {
         const fetchUserRole = async () => {
-            try {
-                const response = await axios.get('http://localhost:3001/user');  
-                setUserRole(response.data.role);  
-            } catch (error) {
-                console.error('Error fetching user role:', error);
+            const token = localStorage.getItem('accessToken');
+            if(token){
+                const decodedToken = jwtDecode<CustomJwtPayload>(token);
+                const userRole = decodedToken.sub['role'];
+
+                if(userRole){
+                    setUserRole(userRole);
+                }
+            } else {
+                return;
             }
         };
-        fetchUserRole();  // Call the async function
+        fetchUserRole();
     }, []);
 
-    //handling participants when creating chatroom
-    const handleParticipantsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setParticipants(e.target.value);
+
+    //Gets all the chatrooms that a user is in
+    useEffect(() => {
+        const fetchUserChatrooms = async () => {
+            const token = localStorage.getItem('accessToken');
+
+            if (token) {
+                const decodedToken = jwtDecode<CustomJwtPayload>(token);
+                const userId = decodedToken.sub['id'];
+                console.log('User ID:', userId);
+
+                try {
+                    const response = await axios.get(`http://localhost:3001/chatroom/user/${userId}`);
+                    setChatrooms(response.data);
+                    console.log('Chatrooms:', response.data);
+                } catch (error) {
+                    console.error('Error fetching chatrooms:', error);
+                }
+            }
+        };
+
+        fetchUserChatrooms();
+
+        const intervalId = setInterval(fetchUserChatrooms, 5000); // Fetch chatrooms every 5 seconds
+
+        return () => clearInterval(intervalId); // Cleanup interval on component unmount
+    }, []);
+
+
+    //Only Coaches can create chatrooms
+    const createChatroom = async () => {
+
+        if (!newRoomName) return;
+
+        const token = localStorage.getItem('accessToken');
+
+        if(token){
+            const decodedToken = jwtDecode<CustomJwtPayload>(token);
+            const coachId = decodedToken.sub['id'];
+
+            const chatroomData: CreateChatroomDto = {
+                name: newRoomName,
+            };
+
+            //Creating a chatroom
+            const response = await axios.post('http://localhost:3001/chatroom', { coachId: coachId, ...chatroomData });
+
+            console.log('Chatroom created:', response.data);
+
+            //Adding participants to the chatroom
+            const chatroomID = response.data.id;
+            const participant = participants.map((participant) => ({ userID: participant.userID, chatroomID }));
+
+            console.log('Chatroom ID:', chatroomID);
+            console.log('Participants:', participants);
+
+            //Get all the participants userIds
+            const users = await axios.get(`http://localhost:3001/user?role=CLIENT`);
+            const coaches = await axios.get(`http://localhost:3001/user?role=COACH`);
+
+            console.log('Users:', users.data);
+            console.log('Coaches:', coaches.data);
+
+            //Get all the participants userIds and names
+            const participantsAll = users.data.map((user) => ({ userID: user.id, name: user.name }));
+            const coachesAll = coaches.data.map((coach) => ({ userID: coach.id, name: coach.name }));
+
+            console.log('Participants:', participantsAll);
+
+            //Check in participantsAll if the participants are in the list, if so, add them to the chatroom
+            const participantsToAdd: string[] = [];
+            for(let i = 0; i < participantsAll.length; i++){
+                for(let j = 0; j < participant.length; j++){
+                    if(participantsAll[i].name === participant[j].userID){
+                        participantsToAdd.push(participantsAll[i].userID);
+                    }
+                }
+            }
+
+            for(let i = 0; i < coachesAll.length; i++){
+                for(let j = 0; j < participant.length; j++){
+                    if(coachesAll[i].name === participant[j].userID){
+                        participantsToAdd.push(coachesAll[i].userID);
+                    }
+                }
+            }
+
+            //Join multiple users to the chatroom
+            await axios.post('http://localhost:3001/chatroom-participants/join-multiple', { userIds: participantsToAdd, chatroomId: chatroomID});
+
+            console.log('Participants added to chatroom:', participantsToAdd);
+    
+            await socket.emit('create_chatroom', chatroomData);
+
+            setNewRoomName('');
+            setParticipants([]);
+
+        }
+        else{
+            return;
+        }
+    };
+    
+    //Handler for updating current chatroom name to chosen chatroom
+    const handleRoomChange = (roomName: string) => {
+        setCurrentRoomName(roomName);
     };
 
-    //(UNCOMMENT ONCE DONE TESTING AND DELETE THE OTHER ONE)!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    // Handle form submission to create the chatroom 
-    // const handleSubmit = async (e: React.FormEvent) => {
-    //     e.preventDefault();  
-
-    //     // Convert the comma-separated participants string into an array
-    //     const participantsList = participants.split(',').map((participant) => participant.trim());
-
-    //     // New Room Details, pass to backend
-    //     const newChatroom = {
-    //         name: chatroomName,
-    //         coach: coachName,
-    //         users: participantsList,  
-    //         id: uuidv4(), //uniquely generated ID
-    //         lastMessage: '',
-    //     };
-
-    //     try {
-    //         // Send POST request to the database
-    //         const newRoom = await axios.post('http://localhost:3001/chatrooms', newChatroom);
-    //         console.log("New chatroom created:", newRoom);
-
-    //         // Update the state for local rendering
-    //         setChatrooms([...chatrooms, newChatroom]);
-
-    //         // Reset the form after successful submission
-    //         setChatroomName('');
-    //         setCoachName('');
-    //         setParticipants('');
-    //     } catch (error) {
-    //         console.error('Error creating chatroom:', error);
-    //     }
-    // };
+    //Automatic scrolling to the newest message
+    React.useEffect(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
+    }, [messages])
 
 
-    //Connecting to chatroom
-    useEffect(() => {
-        if (selectedChatroomId) {
-          socket.emit('joinChatroom', selectedChatroomId);
+
+
+
+    //ALL SOCKET.IO LISTENERS
+
+
+
+    //Send message to the chatroom
+    const sendMessage = async () => {
+        if (currentMessage.trim() && selectedRoom) {
+            const messageData: Partial<Message> = {
+                content: currentMessage,
+                chatroomID: selectedRoom,
+                userID: 'User',
+                createdAt: new Date()
+            };
+
+            await socket.emit('send_message', messageData);
+            setCurrentMessage('');
         }
-    }, [selectedChatroomId]);
- 
+    };
+
+    //Joining a chatroom
+    const joinRoom = (roomId: string) => {
+        socket.emit('join_room', roomId);
+        setSelectedRoom(roomId);
+    };
+
+
+
+    useEffect(() => {
+        // Listen for incoming messages
+        const handleMessage = (message: Message) => {
+            setMessages(prev => [...prev, message]);
+        };
+
+        // Listen for new chatroom creation
+        const handleChatroomCreated = (chatroom: Chatroom) => {
+            setChatrooms(prev => [...prev, chatroom]);
+        };
+
+        socket.on('receive_message', handleMessage);
+        socket.on('chatroom_created', handleChatroomCreated);
+
+        return () => {
+            socket.off('receive_message', handleMessage);
+            socket.off('chatroom_created', handleChatroomCreated);
+        };
+    }, []);
+
+
+
+    // Connecting to a chatroom (updates the room whenever a new room is created)
+    useEffect(() => {
+        if (selectedRoom) {
+            socket.emit('join_room', selectedRoom);
+        }
+    }, [selectedRoom]);
+
+
+
 
     //Listening for oncoming messages
     useEffect(() => {
@@ -255,49 +286,32 @@ const Chatroom = () =>{
         };
     }, []);
 
-    //Socket handler for messages
-    const handleSendMessage = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (newMessage.trim() && selectedChatroomId) {
-          const messageData = {
-            id: Date.now().toString(),
-            user: 'You',
-            content: newMessage.trim(),
-            timestamp: new Date().toISOString(),
-            chatroomId: selectedChatroomId,
-          };
-          socket.emit('sendMessage', messageData);
-
-
-          //TEMPORARY DELETE ONCE BACKEND AND DB IS IMPLEMENTED
-          // Save the message to localStorage to trigger updates in other tabs
-          localStorage.setItem('newMessage', JSON.stringify(messageData));
-
-
-
-
-          setMessages((prevMessages) => [...prevMessages, messageData]);
-          setNewMessage('');
+    //Fetching messages for the selected chatroom
+    useEffect(() => {
+        if (selectedRoom) {
+            axios.get(`http://localhost:3001/messages/${selectedRoom}`).then((response) => {
+                setMessages(response.data);
+            }).catch(console.error);
         }
+    }, [selectedRoom]);
+
+
+
+    //Handler for updating current chatroom name to chosen chatroom
+    const handleChatroomChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        setNewRoomName(event.target.value);
     };
 
 
     //Handler for updating current chatroom name to chosen chatroom
-    useEffect(() => {
-        // Find the selected chatroom from the list of chatrooms
-        const selectedChatroom = chatrooms.find(
-          (chatroom) => chatroom.id === selectedChatroomId
-        );
-        // If a chatroom is found, update the chatroom name
-        if (selectedChatroom) {
-          setChatroomName(selectedChatroom.name);
-        }
-      }, [selectedChatroomId, chatrooms]);
+    function handleParticipantsChange(event: React.ChangeEvent<HTMLInputElement>): void {
+        const participantsArray = event.target.value.split(',').map(participant => participant.trim());
+        setParticipants(participantsArray.map(userID => ({ id: uuidv4(), userID, chatroomID: selectedRoom, joinedAt: new Date() })));
+    }
 
-    //Automatic scrolling to the newest message
-    React.useEffect(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
-      }, [messages])
+
+
+
 
     return(
         <div className="flex h-screen">
@@ -313,106 +327,112 @@ const Chatroom = () =>{
                         {chatrooms.map((chatroom) => (
                             <div 
                             key={chatroom.id} 
-                            className={`flex items-center gap-3 px-4 py-2 ${selectedChatroomId === chatroom.id ? 'bg-gray-300 text-black' : 'hover:bg-accent hover:text-black'}`}
-                            onClick={() => setSelectedChatroomId(chatroom.id)}
+                            className={`flex items-center gap-3 px-4 py-2 ${selectedRoom === chatroom.id ? 'bg-gray-300 text-black' : 'hover:bg-accent hover:text-black'}`}
+                            onClick={() => { setSelectedRoom(chatroom.id); joinRoom(chatroom.id); handleRoomChange(chatroom['chatroom']['name']); handleChatroomChange(chatroom['chatroom']['name']); }}
                             >
                                 <Avatar>
-                                    <User className="content-center justify-center h-auto w-auto" />
+                                    <MessageSquare className="content-center justify-center h-auto w-auto" />
                                 </Avatar>
-                                <span>{chatroom.name}</span>
+                                <span>{chatroom['chatroom']['name']}</span>
                             </div>
                         ))}
                     </ScrollArea>
 
-                    {/*Buttons for making chatroom - COACH SPECIFIC (CLIENTS SHOULD NOT BE ABLE TO MAKE CHATROOMS)*/}
-                    <div className='flex mt-auto justify-center'>
-                        <Dialog>
-                            {userRole == 'coach' && (
-                                <DialogTrigger asChild>
-                                    <Button variant="outline" className='bg-white text-black hover:bg-gray-300'>Make a chatroom</Button>
-                                </DialogTrigger>
-                            )}
 
-                                {/* DELETE ONCE DONE TESTING*/}
+                    {/*Create chatroom button - Coach Specific*/}
+                    {userRole === 'COACH' && (
+                        <div className='flex mt-auto justify-center'>
+                            <Dialog>
                                 <DialogTrigger asChild>
-                                    <Button variant="outline" className='bg-white text-black hover:bg-gray-300'>Make a chatroom</Button>
+                                    <Button variant="outline" className='bg-white text-black hover:bg-gray-300'>Create Chatroom</Button>
                                 </DialogTrigger>
 
-                            <DialogContent className="sm:max-w-md bg-black">
-                                <DialogTitle>Make a Chatroom</DialogTitle>
-                                <Card className="w-[350px] bg-black text-white border-none">
+                                <DialogContent className="sm:max-w-md bg-black">
 
-                                    <CardHeader>
-                                        {/* DEAD SPACE */}
-                                    </CardHeader>
+                                    <DialogTitle>
+                                        Make a Chatroom
+                                    </DialogTitle>
 
-                                    <CardContent>
-                                        <form onSubmit={handleSubmit}>
+                                    <Card className="w-[350px] bg-black text-white border-none">
+
+                                        <CardHeader>
+                                            {/* DEAD SPACE */}
+                                        </CardHeader>
+
+                                        <CardContent>
                                             <div className="grid w-full items-center gap-4">
-                                            <div className="flex flex-col space-y-1.5">
-                                            <Label htmlFor="name" className="mb-1">Chatroom Name</Label>
-                                            <Input
-                                                id="name"
-                                                placeholder="Chatroom name"
-                                                value={chatroomName}
-                                                onChange={(e) => setChatroomName(e.target.value)}  // Handle input change
-                                            />
-                                        </div>
+                                                <div className="flex flex-col space-y-1.5">
+                                                    <Label htmlFor="name" className="mb-1">Chatroom Name</Label>
+                                                    <Input
+                                                        id="name"
+                                                        placeholder="Chatroom name"
+                                                        value={newRoomName}
+                                                        onChange={(e) => setNewRoomName(e.target.value)}  // Handle input change
+                                                    />
+                                                </div>
 
-                                        <div className="flex flex-col space-y-1.5">
-                                            <Label htmlFor="coach" className="mb-1">Coach Name</Label>
-                                            <Input
-                                                id="coach"
-                                                placeholder="Coach name"
-                                                value={coachName}
-                                                onChange={(e) => setCoachName(e.target.value)}  // Handle input change
-                                            />
-                                        </div>
+                                                <div className="flex flex-col space-y-1.5">
+                                                    <Label htmlFor="coach" className="mb-1">Coach Name</Label>
+                                                    <Input
+                                                        id="coach"
+                                                        placeholder="Coach name"
+                                                        value={coachName}
+                                                        onChange={(e) => setCoachName(e.target.value)}  // Handle input change
+                                                    />
+                                                </div>
 
-                                        <div className="flex flex-col space-y-1.5">
-                                            <Label htmlFor="participants" className="mb-1">Participants (comma separated)</Label>
-                                            <Input
-                                                id="participants"
-                                                placeholder="Enter participants"
-                                                value={participants}
-                                                onChange={handleParticipantsChange}  // Attach handleParticipantsChange here
-                                            />
-                                        </div>
+                                                <div className="flex flex-col space-y-1.5">
+                                                    <Label htmlFor="participants" className="mb-1">Participants (comma separated)</Label>
+                                                    <Input
+                                                        id="participants"
+                                                        placeholder="Enter participants"
+                                                        value={participants.map(p => p.userID).join(', ')}
+                                                        onChange={handleParticipantsChange}  // Attach handleParticipantsChange here
+                                                    />
+                                                </div>
+                                                
                                             </div>
-                                        </form>
-                                    </CardContent>
+                                        </CardContent>
 
-                                    <CardFooter className="flex justify-between">
-                                        <Button type = "submit" variant="outline">Create chatroom</Button>
-                                    </CardFooter>
-                                </Card>
-                            </DialogContent>
-                        </Dialog>
-                    </div>
+                                        <CardFooter className="flex justify-between">
+                                            <Button type="submit" variant="outline" onClick={createChatroom}>Create chatroom</Button>
+                                        </CardFooter>
+                                    </Card>
+                                </DialogContent>
+                            </Dialog>
+                        </div>
+                    )}
+
                 </Card>
+
 
                 {/*Selected Active chat rooms*/}
                 <div className="flex-1 flex flex-col text-base">
-                    {/* Chatroom Name (dynamically update based on current chatroom) */}
-                    <CardHeader className="border-b">
-                        <CardTitle>{chatroomName}</CardTitle>
-                    </CardHeader>
+
+                    {/* Chatroom Name (dynamically update based on the current selected chatroom) */}
+                    <Card className="rounded-none border-b bg-black">
+                        <CardHeader>
+                            <CardTitle className='text-white'>
+                                {currentRoomName}
+                            </CardTitle>
+                        </CardHeader>
+                    </Card>
+
+
+
 
                     {/* Chatroom Content */}
                     <ScrollArea className="flex-1 p-4">
-                        {messages .filter((message) => message.chatroomId == selectedChatroomId) .map((message, index) => (
-                            <div key={message.id} className="mb-4 last:mb-0">
-                                <div className="flex items-center gap-2 mb-1">
-
+                        {messages.map((message) => (
+                            <div key={message.id} className="flex gap-4">
                                 <Avatar>
-                                    <User className="content-center justify-center h-auto w-auto" />
+                                    <User />
                                 </Avatar>
-
-                                <span className="font-semibold">{message.user}</span>
-                                <span className="text-sm text-muted-foreground">{format(new Date(message.timestamp), 'MMM d, hh:mm a')}</span>
+                                <div className="flex flex-col">
+                                    <span className="text-white">{message.userID}</span>
+                                    <span className="text-gray-400">{format(new Date(message.createdAt), 'HH:mm')}</span>
+                                    <p className="text-white">{message.content}</p>
                                 </div>
-                                <p className="pl-10">{message.content}</p>
-                                {index < messages.length - 1 && <Separator className="mt-4" />}
                             </div>
                         ))}
                         <div ref={messagesEndRef} />
@@ -420,20 +440,19 @@ const Chatroom = () =>{
 
                     <Card className="rounded-none border-t bg-black">
                         <CardContent className="p-4">
-                            <form onSubmit={handleSendMessage} className="flex gap-2">
+                            <div className="flex gap-4 text-white">
                                 <Input
-                                placeholder="Type a message..."
-                                value={newMessage}
-                                onChange={(e) => setNewMessage(e.target.value)}
-                                className="flex-1 text-white"
+                                    placeholder="Type a message..."
+                                    value={currentMessage}
+                                    onChange={(e) => setCurrentMessage(e.target.value)}
                                 />
-                                <Button type="submit" size="icon" className='border-white'>
-                                    <Send className="h-4 w-4" />
-                                    <span className="sr-only">Send message</span>
+                                <Button onClick={sendMessage}>
+                                    <Send />
                                 </Button>
-                            </form>
+                            </div>
                         </CardContent>
                     </Card>    
+
                 </div>
             </div>
         </div>
