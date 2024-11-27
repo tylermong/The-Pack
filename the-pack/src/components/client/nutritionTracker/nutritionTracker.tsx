@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { ChevronDown, ChevronRight, Plus, X } from 'lucide-react'
+import { ChevronDown, ChevronRight, Plus, X, ChevronLeft } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
@@ -24,23 +24,51 @@ type FoodItem = {
   mealType: MealType
 }
 
-type Meals = {
+// Add this new interface for the form state
+interface FoodItemForm {
+  name: string
+  calories: string
+  protein: string
+  carbs: string
+  fat: string
+  mealType: MealType
+}
+
+type DailyMeals = {
   [key in MealType]: FoodItem[]
 }
 
+type NutritionLog = {
+  [date: string]: DailyMeals
+}
+
+type NutritionGoals = {
+  calories: number
+  protein: number
+  carbs: number
+  fat: number
+}
+
+type GoalsLog = {
+  [date: string]: NutritionGoals
+}
+
 export default function NutritionTracker() {
-  const [meals, setMeals] = useState<Meals>({
-    breakfast: [],
-    lunch: [],
-    dinner: [],
-    snacks: []
+  const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0])
+  const [nutritionLog, setNutritionLog] = useState<NutritionLog>({
+    [selectedDate]: {
+      breakfast: [],
+      lunch: [],
+      dinner: [],
+      snacks: []
+    }
   })
-  const [newItem, setNewItem] = useState<Omit<FoodItem, 'id'>>({
+  const [newItem, setNewItem] = useState<FoodItemForm>({
     name: '',
-    calories: 0,
-    protein: 0,
-    carbs: 0,
-    fat: 0,
+    calories: '',
+    protein: '',
+    carbs: '',
+    fat: '',
     mealType: 'breakfast'
   })
   const [isDialogOpen, setIsDialogOpen] = useState(false)
@@ -51,14 +79,42 @@ export default function NutritionTracker() {
     snacks: false
   })
 
-  // Example goals (temporary)
-  const dailyGoal = 2000 
-  const proteinGoal = 150
-  const carbsGoal = 250
-  const fatGoal = 65
+  const defaultGoals = {
+    calories: 2000,
+    protein: 150,
+    carbs: 250,
+    fat: 65
+  }
+
+  const [goalsLog, setGoalsLog] = useState<GoalsLog>({
+    [selectedDate]: defaultGoals
+  })
+  const [isGoalsDialogOpen, setIsGoalsDialogOpen] = useState(false)
+  const [newGoals, setNewGoals] = useState<NutritionGoals>(defaultGoals)
+
+  const changeDate = (offset: number) => {
+    const date = new Date(selectedDate)
+    date.setDate(date.getDate() + offset)
+    const newDate = date.toISOString().split('T')[0]
+    setSelectedDate(newDate)
+    
+    // Initialize the day if it doesn't exist
+    if (!nutritionLog[newDate]) {
+      setNutritionLog(prev => ({
+        ...prev,
+        [newDate]: {
+          breakfast: [],
+          lunch: [],
+          dinner: [],
+          snacks: []
+        }
+      }))
+    }
+    getCurrentGoals(newDate) // This will ensure goals exist for the new date
+  }
 
   const calculateTotals = () => {
-    return Object.values(meals).flat().reduce(
+    return Object.values(nutritionLog[selectedDate]).flat().reduce(
       (acc, item) => ({
         calories: acc.calories + item.calories,
         protein: acc.protein + item.protein,
@@ -72,20 +128,33 @@ export default function NutritionTracker() {
   const { calories: totalCalories, protein: totalProtein, carbs: totalCarbs, fat: totalFat } = calculateTotals()
 
   const handleAddItem = () => {
-    if (newItem.name && newItem.calories > 0) {
-      setMeals(prevMeals => ({
-        ...prevMeals,
-        [newItem.mealType]: [...prevMeals[newItem.mealType], { ...newItem, id: Date.now() }]
+    if (newItem.name && Number(newItem.calories) > 0) {
+      setNutritionLog(prev => ({
+        ...prev,
+        [selectedDate]: {
+          ...prev[selectedDate],
+          [newItem.mealType]: [...prev[selectedDate][newItem.mealType], {
+            ...newItem,
+            calories: Number(newItem.calories) || 0,
+            protein: Number(newItem.protein) || 0,
+            carbs: Number(newItem.carbs) || 0,
+            fat: Number(newItem.fat) || 0,
+            id: Date.now()
+          }]
+        }
       }))
-      setNewItem({ name: '', calories: 0, protein: 0, carbs: 0, fat: 0, mealType: 'breakfast' })
+      setNewItem({ name: '', calories: '', protein: '', carbs: '', fat: '', mealType: 'breakfast' })
       setIsDialogOpen(false)
     }
   }
 
   const handleRemoveItem = (id: number, mealType: MealType) => {
-    setMeals(prevMeals => ({
-      ...prevMeals,
-      [mealType]: prevMeals[mealType].filter(item => item.id !== id)
+    setNutritionLog(prev => ({
+      ...prev,
+      [selectedDate]: {
+        ...prev[selectedDate],
+        [mealType]: prev[selectedDate][mealType].filter(item => item.id !== id)
+      }
     }))
   }
 
@@ -94,6 +163,22 @@ export default function NutritionTracker() {
       ...prev,
       [mealType]: !prev[mealType]
     }))
+  }
+
+  const getCurrentGoals = (date: string): NutritionGoals => {
+    const dates = Object.keys(goalsLog)
+      .sort()
+      .filter(d => d <= date)
+    
+    return dates.length > 0 ? goalsLog[dates[dates.length - 1]] : defaultGoals
+  }
+
+  const handleSaveGoals = () => {
+    setGoalsLog(prev => ({
+      ...prev,
+      [selectedDate]: newGoals
+    }))
+    setIsGoalsDialogOpen(false)
   }
 
   const renderMealSection = (mealType: MealType, title: string) => (
@@ -125,7 +210,7 @@ export default function NutritionTracker() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {meals[mealType].map(item => (
+            {nutritionLog[selectedDate][mealType].map(item => (
               <TableRow key={item.id}>
                 <TableCell>{item.name}</TableCell>
                 <TableCell>{item.calories}</TableCell>
@@ -148,38 +233,75 @@ export default function NutritionTracker() {
   return (
     <Card className="w-full max-w-4xl mx-auto mb-8 bg-primary text-secondary">
       <CardHeader>
-        <CardTitle className="text-2xl font-bold">Nutrition Tracker</CardTitle>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <CardTitle className="text-2xl font-bold">Nutrition Tracker</CardTitle>
+            <Button variant="outline" onClick={() => {
+              setNewGoals(getCurrentGoals(selectedDate))
+              setIsGoalsDialogOpen(true)
+            }}>
+              Edit Goals
+            </Button>
+          </div>
+          <div className="flex items-center gap-4">
+            <Button variant="outline" size="icon" onClick={() => changeDate(-1)}>
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <Input
+              type="date"
+              value={selectedDate}
+              onChange={(e) => {
+                setSelectedDate(e.target.value)
+                if (!nutritionLog[e.target.value]) {
+                  setNutritionLog(prev => ({
+                    ...prev,
+                    [e.target.value]: {
+                      breakfast: [],
+                      lunch: [],
+                      dinner: [],
+                      snacks: []
+                    }
+                  }))
+                }
+              }}
+              className="w-40"
+            />
+            <Button variant="outline" size="icon" onClick={() => changeDate(1)}>
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
       </CardHeader>
       <CardContent>
         <div className="mb-6">
           <div className="flex justify-between mb-2">
             <span className="text-sm font-semibold">Calories</span>
-            <span className="text-sm">{totalCalories} / {dailyGoal}</span>
+            <span className="text-sm">{totalCalories} / {getCurrentGoals(selectedDate).calories}</span>
           </div>
-          <Progress value={(totalCalories / dailyGoal) * 100} className="h-3" />
+          <Progress value={(totalCalories / getCurrentGoals(selectedDate).calories) * 100} className="h-3" />
         </div>
 
         <div className="grid grid-cols-3 gap-4 mb-6">
           <div>
             <div className="flex justify-between mb-2">
             <span className="text-sm font-semibold">Protein</span>
-              <span className="text-sm">{totalProtein}g / {proteinGoal}g</span>
+              <span className="text-sm">{totalProtein}g / {getCurrentGoals(selectedDate).protein}g</span>
             </div>
-            <Progress value={(totalProtein / proteinGoal) * 100} className="h-2" />
+            <Progress value={(totalProtein / getCurrentGoals(selectedDate).protein) * 100} className="h-2" />
           </div>
           <div>
             <div className="flex justify-between mb-2">
               <span className="text-sm font-semibold">Carbs</span>
-              <span className="text-sm">{totalCarbs}g / {carbsGoal}g</span>
+              <span className="text-sm">{totalCarbs}g / {getCurrentGoals(selectedDate).carbs}g</span>
             </div>
-            <Progress value={(totalCarbs / carbsGoal) * 100} className="h-2" />
+            <Progress value={(totalCarbs / getCurrentGoals(selectedDate).carbs) * 100} className="h-2" />
           </div>
           <div>
             <div className="flex justify-between mb-2">
             <span className="text-sm font-semibold">Fat</span>
-              <span className="text-sm">{totalFat}g / {fatGoal}g</span>
+              <span className="text-sm">{totalFat}g / {getCurrentGoals(selectedDate).fat}g</span>
             </div>
-            <Progress value={(totalFat / fatGoal) * 100} className="h-2" />
+            <Progress value={(totalFat / getCurrentGoals(selectedDate).fat) * 100} className="h-2" />
           </div>
         </div>
 
@@ -219,7 +341,7 @@ export default function NutritionTracker() {
                   id="calories"
                   type="number"
                   value={newItem.calories}
-                  onChange={(e) => setNewItem({ ...newItem, calories: Number(e.target.value) })}
+                  onChange={(e) => setNewItem({ ...newItem, calories: e.target.value })}
                   className="col-span-3"
                 />
               </div>
@@ -231,7 +353,7 @@ export default function NutritionTracker() {
                   id="protein"
                   type="number"
                   value={newItem.protein}
-                  onChange={(e) => setNewItem({ ...newItem, protein: Number(e.target.value) })}
+                  onChange={(e) => setNewItem({ ...newItem, protein: e.target.value })}
                   className="col-span-3"
                 />
               </div>
@@ -243,7 +365,7 @@ export default function NutritionTracker() {
                   id="carbs"
                   type="number"
                   value={newItem.carbs}
-                  onChange={(e) => setNewItem({ ...newItem, carbs: Number(e.target.value) })}
+                  onChange={(e) => setNewItem({ ...newItem, carbs: e.target.value })}
                   className="col-span-3"
                 />
               </div>
@@ -255,7 +377,7 @@ export default function NutritionTracker() {
                   id="fat"
                   type="number"
                   value={newItem.fat}
-                  onChange={(e) => setNewItem({ ...newItem, fat: Number(e.target.value) })}
+                  onChange={(e) => setNewItem({ ...newItem, fat: e.target.value })}
                   className="col-span-3"
                 />
               </div>
@@ -285,6 +407,66 @@ export default function NutritionTracker() {
           </DialogContent>
         </Dialog>
       </CardFooter>
+      <Dialog open={isGoalsDialogOpen} onOpenChange={setIsGoalsDialogOpen}>
+        <DialogContent className='bg-primary text-secondary'>
+          <DialogHeader>
+            <DialogTitle>Edit Nutrition Goals</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="goalCalories" className="text-right">
+                Calories
+              </Label>
+              <Input
+                id="goalCalories"
+                type="number"
+                value={newGoals.calories}
+                onChange={(e) => setNewGoals(prev => ({ ...prev, calories: Number(e.target.value) }))}
+                className="col-span-3"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="goalProtein" className="text-right">
+                Protein (g)
+              </Label>
+              <Input
+                id="goalProtein"
+                type="number"
+                value={newGoals.protein}
+                onChange={(e) => setNewGoals(prev => ({ ...prev, protein: Number(e.target.value) }))}
+                className="col-span-3"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="goalCarbs" className="text-right">
+                Carbs (g)
+              </Label>
+              <Input
+                id="goalCarbs"
+                type="number"
+                value={newGoals.carbs}
+                onChange={(e) => setNewGoals(prev => ({ ...prev, carbs: Number(e.target.value) }))}
+                className="col-span-3"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="goalFat" className="text-right">
+                Fat (g)
+              </Label>
+              <Input
+                id="goalFat"
+                type="number"
+                value={newGoals.fat}
+                onChange={(e) => setNewGoals(prev => ({ ...prev, fat: Number(e.target.value) }))}
+                className="col-span-3"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button onClick={handleSaveGoals}>Save Goals</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Card>
   )
 }
