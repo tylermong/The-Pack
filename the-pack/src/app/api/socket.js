@@ -1,6 +1,9 @@
 import { Server } from 'socket.io';
 import express from 'express';
 import { createServer } from 'node:http';
+import axios from 'axios';
+
+
 
 const app = express();
 const server = createServer(app);
@@ -11,14 +14,42 @@ const io = new Server(server, {
   },
 });
 
-let chatrooms = [
-  {
-    id: 'room1',
-    name: 'General Chat',
-    users: ['user1', 'user2'],
-  },
-  // Add more chatrooms as needed
-];
+const chatrooms = await axios.get('http://localhost:3001/chatroom').then((res) => res.data);
+setInterval(async () => {
+  try {
+    const updatedChatrooms = await axios.get('http://localhost:3001/chatroom').then((res) => res.data);
+    chatrooms.length = 0;
+    chatrooms.push(...updatedChatrooms);
+    console.log('Chatrooms updated');
+  } catch (error) {
+    console.error('Error updating chatrooms:', error);
+  }
+}, 60000); // Refresh every 60 seconds
+
+
+
+socket.on('joinChatroom', async (chatroomId) => {
+  const user = getUserFromSocket(socket);
+  if (!user) {
+    emitError(socket, 'User not authenticated', 'AUTH_ERROR');
+    return;
+  }
+
+  const chatrooms = await getChatroomData();
+  const chatroom = chatrooms.find((room) => room.id === chatroomId);
+
+  if (!chatroom) {
+    emitError(socket, 'Chatroom not found', 'CHATROOM_NOT_FOUND');
+    return;
+  }
+
+  if (isUserInChatroom(user.id, chatroomId)) {
+    socket.join(chatroomId);
+    console.log(`User ${user.id} joined chatroom ${chatroomId}`);
+  } else {
+    emitError(socket, 'You are not authorized to join this chatroom', 'UNAUTHORIZED');
+  }
+});
 
 // Gets user from socket
 function getUserFromSocket(socket) {
@@ -34,9 +65,8 @@ function isUserInChatroom(userId, chatroomId) {
 }
 
 io.on('connection', (socket) => {
-  console.log('A user connected:', socket.id);
 
-  //socket.userId = '';  // EDIT THIS WITH ALEX'S AUTHENTICATION KEYS
+  console.log('A user connected:', socket.id);
 
   // Broadcast new messages to all clients in the chatroom
   socket.on('sendMessage', (messageData) => {
@@ -65,10 +95,12 @@ io.on('connection', (socket) => {
     }
 });
 
+
   socket.on('disconnect', () => {
     console.log('A user disconnected:', socket.id);
   });
 });
+
 
 server.listen(3002, () => {
   console.log('Socket.IO server is running on port 3002');

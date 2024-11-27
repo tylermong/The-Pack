@@ -23,5 +23,17 @@ export class ChatroomParticipantsController {
       return this.chatroomParticipantsService.leaveChatroom(userId, chatroomId);
   }
 
+  //Add multiple users to a chatroom
+    @Post('join-multiple')
+    async joinMultiple(@Body() body: { userIds: string[]; chatroomId: string }) {
+        const { userIds, chatroomId } = body;
+        if (!userIds || !Array.isArray(userIds)) {
+            throw new Error('userIds must be a non-empty array');
+        }
+        const responses = await Promise.all(userIds.map((userId) => this.chatroomParticipantsService.joinChatroom(userId, chatroomId)));
+        console.log("Added users: ",responses);
+        return responses;
+    }
+
   
 }

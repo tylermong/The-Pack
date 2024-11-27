@@ -49,5 +49,11 @@ export class ChatroomParticipantsService {
 
     return 'User successfully left the class';
 }
+
+//Add multiple users to a chatroom
+async joinMultiple(userId: string[], chatroomId: string): Promise<string[]> {
+  const responses = await Promise.all(userId.map((userId) => this.joinChatroom(userId, chatroomId)));
+  return responses;
+}
   
 }

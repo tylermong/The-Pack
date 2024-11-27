@@ -33,13 +33,13 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { ScrollArea } from "@/components/ui/scroll-area"
 import {
     Table,
     TableBody,
     TableHead,
     TableHeader,
     TableRow,
+    TableCell
   } from "@/components/ui/table"
 import { jwtDecode } from 'jwt-decode';
 import { JwtPayload } from "jsonwebtoken";
@@ -59,9 +59,16 @@ export type Class = {
     description: string
     currentlyEnrolledIn: number
     coachId: string
-    date: string
-    startTime: string
-    endTime: string
+    assignedCoach: {
+        name: string
+    }
+    classDates: {
+        startTime: string
+        endTime: string
+        date: {
+            date: string
+        }
+    }[]
 }
 
 export type Appointment = {
@@ -69,6 +76,13 @@ export type Appointment = {
     coachId: string
     date: string
     timeSlotId: string
+    timeSlot: {
+        startTime: string
+        endTime: string
+    }
+    appointmentHolder: {
+        name: string
+    }
 }
 
 export type Availability = {
@@ -111,7 +125,6 @@ const Scheduler = () => {
 
     //Create appointment constants
     const [coachList, setCoachList] = useState<string[]>([]);
-    const [appointmentType, setAppointmentType] = useState<string | undefined>();
     const [selectedCoach, setSelectedCoach] = useState<string | undefined>();   
     const [appointmentDate, setAppointmentDate] = useState<Date | undefined>();
     const [coachAvailability, setCoachAvailability] = useState<Availability[]>([]);
@@ -127,7 +140,7 @@ const Scheduler = () => {
 
 
     //User Input Calendar Format
-    const { register, handleSubmit, formState: {}, setValue } = useForm({
+    const { register, formState: {}, setValue } = useForm({
         resolver: zodResolver(FormSchema),
     });
 
@@ -143,11 +156,67 @@ const Scheduler = () => {
         if (token) {
             try {
                 const decodedToken = jwtDecode<CustomJwtPayload>(token);
-                const clientId = decodedToken.sub;
+                const clientId = decodedToken.sub['id'];
                 const classesResponse = await axios.get<Class[]>('http://localhost:3001/class');
                 const appointmentsResponse = await axios.get<Appointment[]>(`http://localhost:3001/appointments/user/${clientId}`);
-                setClasses(classesResponse.data);
-                setAppointments(appointmentsResponse.data);
+
+                const classesData = classesResponse.data;
+                const appointmentsData = appointmentsResponse.data;
+
+                //Map the class name, coach name, start time and end time to the existing class
+                const classData = classesData
+                    .map((classItem) => ({
+                        id: classItem.id,
+                        name: classItem.name,
+                        description: classItem.description,
+                        currentlyEnrolledIn: classItem.currentlyEnrolledIn,
+                        coachId: classItem.coachId,
+                        assignedCoach: {
+                            name: classItem.assignedCoach.name
+                        },
+                        classDates: classItem.classDates.map(dateItem => ({
+                            startTime: dateItem.startTime,
+                            endTime: dateItem.endTime,
+                            date: dateItem.date
+                        }))
+                    }));
+
+                //Map the coach name, start time and end time to the existing appointment
+                const appointmentData = appointmentsData
+                    .map((appointmentItem) => ({
+                        clientId: clientId,
+                        coachId: appointmentItem.coachId,
+                        date: appointmentItem.date,
+                        timeSlotId: appointmentItem.timeSlotId,
+                        appointmentHolder: {
+                            name: appointmentItem.appointmentHolder.name
+                        },
+                        timeSlot: {
+                            startTime: appointmentItem.timeSlot.startTime,
+                            endTime: appointmentItem.timeSlot.endTime,
+                            date: appointmentItem.timeSlot.startTime,
+                        },
+                    }));
+
+                //Get the date of appointments and classes
+                const classDate = classData.flatMap((classItem) => classItem.classDates.map(dateItem => dateItem.date.date));
+                const appointmentDate = appointmentData.map((appointmentItem) => appointmentItem.timeSlot.date);
+
+                console.log('Class Date:', classDate);
+                console.log('Appointment Date:', appointmentDate);
+
+                //For each class extract the date and compare it to the selected date
+                const classes = classData.filter((classItem) => classItem.classDates.some(dateItem => new Date(dateItem.date.date).toISOString().split('T')[0] === date.toISOString().split('T')[0]));
+
+                //For each appointment extract the date and compare it to the selected date
+                const appointments = appointmentData.filter((appointmentItem) => new Date(appointmentItem.timeSlot.date).toISOString().split('T')[0] === date.toISOString().split('T')[0]);
+
+                console.log('Classes:', classes);
+                console.log('Appointments:', appointments);
+
+                setClasses(classes);
+                setAppointments(appointments);
+
             } catch (error) {
                 console.error('Error fetching schedule data:', error);
             }
@@ -184,9 +253,6 @@ const Scheduler = () => {
 
 
 
-//ANYTHING BEYOND THIS NEEDS FIXING----------------------------------------------------------------------------------------
-
-
     // Fetch coach availability
     const fetchCoachAvailability = async () => {
         try{
@@ -212,38 +278,52 @@ const Scheduler = () => {
 
                 console.log('Coach Availability:', coachAvailability);
 
-                //Loop through the availability to get the start times and end times per timeslot
-                for(let i = 1; i < coachAvailability.length; i++){
+                //Check if the timeslot is booked or not
+                const booked = coachAvailability.map((slot: Availability) => slot.timeSlots.map((time: Timeslot) => time.isBooked));
 
-                    //Lists the timeslot ids
-                    const timeslotId = coachAvailability[i].timeSlots.map((slot: Timeslot) => slot.id);
-                    timeslotId.map((id: string) => setTimeslotId(id));
+                console.log('Booked:', booked[0][0]);
 
-                    const startTime = coachAvailability[i].timeSlots.map((slot: Timeslot) => slot.startTime);
-                    const endTime = coachAvailability[i].timeSlots.map((slot: Timeslot) => slot.endTime);
+                if(!booked[0][0]){
+                    //Loop through the availability to get the start times and end times per timeslot
+                    for(let i = 0; i < coachAvailability.length; i++){
 
-                    //Filter the start and end times to only the times not the date and only unique times
-                    const start = startTime.map((time: string) => time.split('T')[1].split('.')[0]).filter((value: string, index: number, self: string[]) => self.indexOf(value) === index);
-                    const end = endTime.map((time: string) => time.split('T')[1].split('.')[0]).filter((value: string, index: number, self: string[]) => self.indexOf(value) === index);
+                        //Lists the timeslot ids
+                        const timeslotId = coachAvailability[i].timeSlots.map((slot: Timeslot) => slot.id);
+                        timeslotId.map((id: string) => setTimeslotId(id));
 
-                    //Fixes the time format to 12 hour format
-                    const start12 = start.map((time: string) => {
-                        const hour = parseInt(time.split(':')[0]);
-                        const minute = time.split(':')[1];
-                        return hour > 12 ? `${hour - 12}:${minute} PM` : `${hour}:${minute} AM`;
-                    });
-                    const end12 = end.map((time: string) => {
-                        const hour = parseInt(time.split(':')[0]);
-                        const minute = time.split(':')[1];
-                        return hour > 12 ? `${hour - 12}:${minute} PM` : `${hour}:${minute} AM`;
-                    });
+                        const startTime = coachAvailability[i].timeSlots.map((slot: Timeslot) => slot.startTime);
+                        const endTime = coachAvailability[i].timeSlots.map((slot: Timeslot) => slot.endTime);
 
-                    //Combine the start and end times
-                    const timeSlots = start12.map((time: string, index: number) => `${time} - ${end12[index]}`);
-                    console.log('Time Slots:', timeSlots);
+                        //Filter the start and end times to only the times not the date and only unique times
+                        const start = startTime.map((time: string) => time.split('T')[1].split('.')[0]).filter((value: string, index: number, self: string[]) => self.indexOf(value) === index);
+                        const end = endTime.map((time: string) => time.split('T')[1].split('.')[0]).filter((value: string, index: number, self: string[]) => self.indexOf(value) === index);
 
-                    //Set the timeslots
-                    setTimeSlot(timeSlots);
+                        //Fixes the time format to 12 hour format
+                        const start12 = start.map((time: string) => {
+                            const hour = parseInt(time.split(':')[0]);
+                            const minute = time.split(':')[1];
+                            return hour > 12 ? `${hour - 12}:${minute} PM` : `${hour}:${minute} AM`;
+                        });
+                        const end12 = end.map((time: string) => {
+                            const hour = parseInt(time.split(':')[0]);
+                            const minute = time.split(':')[1];
+                            return hour > 12 ? `${hour - 12}:${minute} PM` : `${hour}:${minute} AM`;
+                        });
+
+                        //Combine the start and end times
+                        const timeSlots = start12.map((time: string, index: number) => `${time} - ${end12[index]}`);
+                        console.log('Time Slots:', timeSlots);
+
+                        //Set the timeslots
+                        setTimeSlot(timeSlots);
+                    }
+
+                    //Clear the timeslot id
+                    setTimeslotId(undefined);
+                    
+                } else{
+                    //Clear the timeslot
+                    setTimeSlot(undefined);
                 }
             }
         }catch(error){
@@ -321,7 +401,7 @@ const Scheduler = () => {
                 </div>
                 
                 <Dialog open = {isDialogOpen} onOpenChange={setIsDialogOpen}>
-                    <DialogContent className="sm:max-w-md flex flex-col w-full h-auto bg-black">
+                    <DialogContent className="sm:max-w-md flex flex-col w-auto h-auto bg-black">
                         <DialogTitle>
                             DAY SCHEDULE
                         </DialogTitle>
@@ -339,33 +419,37 @@ const Scheduler = () => {
                             <TabsContent value = "classes">
                                 <Card className='bg-primary text-white'>
                                     <Table>
-                                        <TableHeader className='flex-row flex w-full'>
-                                            <TableRow className='w-full'>
-                                                <TableHead >Class</TableHead>
-                                                <TableHead >Coach</TableHead>
-                                                <TableHead >Time Slot</TableHead>
+                                        <TableHeader>
+                                            <TableRow>
+                                                <TableHead className="w-auto">Class</TableHead>
+                                                <TableHead className="w-auto">Coach</TableHead>
+                                                <TableHead className="w-auto">Start Time</TableHead>
+                                                <TableHead className="w-auto">End Time</TableHead>
                                             </TableRow>
                                         </TableHeader>
 
-                                        <ScrollArea className="h-auto w-full p-4">
-                                            <TableBody className='flex flex-col w-full h-auto'>
+                                        <TableBody>
 
-                                            {/* {classes?.length > 0 ? (
-                                                classes.map((event) => (
-                                                    <TableRow key={event.name} className="w-full">
-                                                        <TableCell className="text-base w-full">{event.name}</TableCell>
-                                                        <TableCell className="text-base w-full">{coach[event.creatorId]}</TableCell>
-                                                        <TableCell className="text-base w-full">{event.time}</TableCell>
+                                            {classes?.length > 0 ? (
+                                                classes.map((classItem) => (
+                                                    <TableRow key={classItem.id} className="w-full">
+                                                        <TableCell className="text-base w-full">{classItem.name}</TableCell>
+                                                        <TableCell className="text-base w-full">{classItem['assignedCoach']['name']}</TableCell>
+                                                        <TableCell className="text-base w-full">
+                                                            {new Date(classItem['classDates'][0]['startTime']).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}
+                                                        </TableCell>
+                                                        <TableCell className="text-base w-full">
+                                                            {new Date(classItem['classDates'][0]['endTime']).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}
+                                                        </TableCell>
                                                     </TableRow>
                                                 ))
                                             ) : (
                                                 <TableRow>
-                                                    <TableCell colSpan={2}>No classes available</TableCell>
+                                                    <TableCell colSpan={4}>No classes available</TableCell>
                                                 </TableRow>
-                                            )} */}
-
-                                            </TableBody>
-                                        </ScrollArea>
+                                            )}
+                                        
+                                        </TableBody>
                                     </Table>
                                 </Card>
                             </TabsContent>
@@ -373,35 +457,38 @@ const Scheduler = () => {
                             <TabsContent value = "appointments">
                                 <Card className='bg-primary text-white'>
                                     <Table>
-                                        <TableHeader className='flex flex-row w-full'>
-                                            <TableRow className='w-full'>
-                                                <TableHead className='text-lg w-full'>Client</TableHead>
-                                                <TableHead className='text-lg w-full'>Time</TableHead>
+                                        <TableHeader>
+                                            <TableRow>
+                                                <TableHead className="w-auto">Coach</TableHead>
+                                                <TableHead className="w-auto">Start Time</TableHead>
+                                                <TableHead className="w-auto">End Time</TableHead>
                                             </TableRow>
                                         </TableHeader>
 
-                                        <ScrollArea className="h-auto w-full p-4">
-                                            <TableBody className='flex flex-col w-auto h-auto'>
+                                        <TableBody>
 
-                                            {/* {appointment?.length > 0 ? (
-                                                appointment.map((appointment) => (
-                                                    <TableRow key={appointment.id} className="w-full">
-                                                        <TableCell className="text-base w-full">{appointment.name}</TableCell>
-                                                        <TableCell className="text-base w-full">{appointment.timeSlot}</TableCell>
+                                            {appointment?.length > 0 ? (
+                                                appointment.map((appointmentItem) => (
+                                                    <TableRow key={appointmentItem.clientId} className="w-full">
+                                                        <TableCell className="text-base w-full">{appointmentItem.appointmentHolder['name']}</TableCell>
+                                                        <TableCell className="text-base w-full">
+                                                            {new Date(appointmentItem.timeSlot['startTime']).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}
+                                                        </TableCell>
+                                                        <TableCell className="text-base w-full">
+                                                            {new Date(appointmentItem.timeSlot['endTime']).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}
+                                                        </TableCell>
                                                     </TableRow>
                                                 ))
                                             ) : (
                                                 <TableRow>
-                                                    <TableCell colSpan={2}>No appointments available</TableCell>
+                                                    <TableCell colSpan={3}>No appointments available</TableCell>
                                                 </TableRow>
-                                            )} */}
+                                            )}
 
-                                            </TableBody>
-                                        </ScrollArea>
+                                        </TableBody>
                                     </Table>
                                 </Card>
                             </TabsContent>
-
                         </Tabs>
                     </DialogContent>
                 </Dialog>
@@ -423,7 +510,7 @@ const Scheduler = () => {
 
                         <DialogDescription>
                             Here you can make your appointment with a coach. You can choose the coach, the type of appointment, the date and the time slot.
-                            The timeslots are based on the coach availability.
+                            The timeslots are based on the coach availability. If no timeslots are available, please choose another date.
                         </DialogDescription>
 
                         <div className="flex flex-col w-min gap-4">
@@ -450,24 +537,6 @@ const Scheduler = () => {
 
                                     </Select>
                                 </div>
-
-                                <div className="flex flex-col space-y-1.5 ">
-                                    <Label htmlFor="appointmentType">
-                                        Appointment Type
-                                    </Label>
-
-                                    <Select onValueChange={(value) => setValue('appointmentType', value)}>
-                                        <SelectTrigger id="appointmentType" className='border-solid border-white'>
-                                            <SelectValue placeholder="Select" />
-                                        </SelectTrigger>
-
-                                        <SelectContent position="popper">
-                                            <SelectItem value="inquiry">Inquiry</SelectItem>
-                                            <SelectItem value="1-on-1">1-on-1</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-
 
                                 <div className='flex flex-col space-y-1.5'>
                                     <Label htmlFor="appointmentDate">Date (Quadruple click the desired date) </Label>

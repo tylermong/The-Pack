@@ -55,4 +55,14 @@ export class ChatroomService {
       where: {coachId},
     })
   }
+
+  async getUsersChatroom(userId: string) {
+    return this.prismaService.chatroomParticipants.findMany({
+        where: { userID: userId },
+        include: {
+            chatroom: true, // Include class details
+        },
+    });
+  }
+
 }
