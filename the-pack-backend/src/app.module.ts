@@ -20,13 +20,14 @@ import { TimeSlotModule } from './timeslot/timeslot.module';
 import { NutritionTrackerModule } from './nutritionTracker/nutritionTracker.module';
 import { AdminModule } from './admin/admin.module';
 import { ChatroomParticipantsModule } from './chatroom-participants/chatroom-participants.module';
+import { ChatModule } from './chat/chat.module';
 
 @Module({
   imports: [ConfigModule.forRoot({isGlobal: true}) ,PrismaModule, UserModule, 
     CoachModule, AnnouncementsModule, ClassModule, userClassesModule, 
     schedulingModule, AuthModule, ChatroomModule, MessagesModule, 
     CoachKeyModule, CoachAvailabilityModule, ProgramsModule, 
-    TimeSlotModule, NutritionTrackerModule, AdminModule, ChatroomParticipantsModule],
+    TimeSlotModule, NutritionTrackerModule, AdminModule, ChatroomParticipantsModule, ChatModule],
   
   controllers: [AppController],
   providers: [AppService, PrismaService],

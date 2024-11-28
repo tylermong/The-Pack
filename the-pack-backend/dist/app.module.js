@@ -29,6 +29,7 @@ const timeslot_module_1 = require("./timeslot/timeslot.module");
 const nutritionTracker_module_1 = require("./nutritionTracker/nutritionTracker.module");
 const admin_module_1 = require("./admin/admin.module");
 const chatroom_participants_module_1 = require("./chatroom-participants/chatroom-participants.module");
+const chat_module_1 = require("./chat/chat.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -38,7 +39,7 @@ exports.AppModule = AppModule = __decorate([
             coach_module_1.CoachModule, announcements_module_1.AnnouncementsModule, class_module_1.ClassModule, userClasses_module_1.userClassesModule,
             scheduling_module_1.schedulingModule, auth_module_1.AuthModule, chatroom_module_1.ChatroomModule, messages_module_1.MessagesModule,
             coach_key_module_1.CoachKeyModule, coachAvailability_module_1.CoachAvailabilityModule, programs_module_1.ProgramsModule,
-            timeslot_module_1.TimeSlotModule, nutritionTracker_module_1.NutritionTrackerModule, admin_module_1.AdminModule, chatroom_participants_module_1.ChatroomParticipantsModule],
+            timeslot_module_1.TimeSlotModule, nutritionTracker_module_1.NutritionTrackerModule, admin_module_1.AdminModule, chatroom_participants_module_1.ChatroomParticipantsModule, chat_module_1.ChatModule],
         controllers: [app_controller_1.AppController],
         providers: [app_service_1.AppService, prisma_service_1.PrismaService],
     })

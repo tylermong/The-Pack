@@ -51,13 +51,13 @@ export class MessagesService {
     })  
   }
 
-  // //Return all messages in a chatroom
-  // async getMessagesInChatroom(chatroomId: string) {
-  //   return this.prismaService.messages.findMany({
-  //     where: { chatroomId: chatroomId },
-  //     include: {
-  //       user: true, // Include user details
-  //     },
-  //   });
-  // }
+  //Return all messages in a chatroom
+  async getMessagesInChatroom(chatroomId: string) {
+    return this.prismaService.messages.findMany({
+      where: { chatroomID: chatroomId },
+      include: {
+        user: true, // Include user details
+      },
+    });
+  }
 }
