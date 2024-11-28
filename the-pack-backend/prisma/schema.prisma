@@ -250,7 +250,6 @@ model Messages{
     chatroomID      String 
 
     createdAt       DateTime         @default(now())
-    @@unique([userID, chatroomID]) //Composite unique constraint 
 }
 
 model CoachKey{

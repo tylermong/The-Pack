@@ -32,9 +32,9 @@ export class MessagesController {
     return this.messagesService.update(id, { content, chatroomId });
   }
 
-  // //Return all messages in a chatroom
-  // @Get('chatroom/:chatroomId')
-  // async getMessagesInChatroom(@Param('chatroomId') chatroomId: string) {
-  //   return this.messagesService.getMessagesInChatroom(chatroomId);
-  // }
+  //Return all messages in a chatroom
+  @Get('chatroom/:chatroomId')
+  async getMessagesInChatroom(@Param('chatroomId') chatroomId: string) {
+    return this.messagesService.getMessagesInChatroom(chatroomId);
+  }
 }
