@@ -58,4 +58,14 @@ export class NutritionTrackerService{
           where: { id },
         });
       }
+
+      // Get nutrition entry for a specific date
+      async getNutritionEntryByDate(userId: string, date: Date) {
+        return await this.prisma.nutritionTracker.findFirst({
+          where: {
+            userId,
+            date,
+          },
+        });
+      }
     }
