@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import { ChevronDown, ChevronRight, Plus, X, ChevronLeft } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { ChevronRight, Plus, X, ChevronLeft } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
@@ -11,6 +11,9 @@ import { Label } from "@/components/ui/label"
 import { Progress } from "@/components/ui/progress"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import axios from 'axios'
+import { jwtDecode } from 'jwt-decode';
+import { JwtPayload } from "jsonwebtoken";
 
 type MealType = 'breakfast' | 'lunch' | 'dinner' | 'snacks'
 
@@ -53,6 +56,17 @@ type GoalsLog = {
   [date: string]: NutritionGoals
 }
 
+enum MType {
+  Breakfast = 'BREAKFAST',
+  Lunch = 'LUNCH',
+  Dinner = 'DINNER',
+  Snacks = 'SNACK'
+}
+
+interface CustomJwtPayload extends JwtPayload {
+  sub: string;
+}
+
 export default function NutritionTracker() {
   const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0])
   const [nutritionLog, setNutritionLog] = useState<NutritionLog>({
@@ -91,6 +105,45 @@ export default function NutritionTracker() {
   })
   const [isGoalsDialogOpen, setIsGoalsDialogOpen] = useState(false)
   const [newGoals, setNewGoals] = useState<NutritionGoals>(defaultGoals)
+
+
+  //On mount get the data from the backend
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     const token = localStorage.getItem('accessToken');
+  //     if(token){
+  //       try {
+  //         const decodedToken = jwtDecode<CustomJwtPayload>(token);
+  //         const userId = decodedToken.sub['id'];
+  //         const ISODate = new Date(selectedDate).toISOString(); 
+  //         const breakfastData = await axios.get(`http://localhost:3001/nutritionTracker/${userId}/${ISODate}?mealType=BREAKFAST`);
+  //         const lunchData = await axios.get(`http://localhost:3001/nutritionTracker/${userId}/${ISODate}?mealType=LUNCH`);
+  //         const dinnerData = await axios.get(`http://localhost:3001/nutritionTracker/${userId}/${ISODate}?mealType=DINNER`);
+  //         const snacksData = await axios.get(`http://localhost:3001/nutritionTracker/${userId}/${ISODate}?mealType=SNACK`);
+
+  //         const nutritionLog = {
+  //           [selectedDate]: {
+  //             breakfast: breakfastData.data,
+  //             lunch: lunchData.data,
+  //             dinner: dinnerData.data,
+  //             snacks: snacksData.data
+  //           }
+  //         }
+  //         setNutritionLog(nutritionLog);
+  //         console.log('NUTRITION LOG', nutritionLog)
+
+  //       } catch (error) {
+  //         console.log('Error fetching data', error);
+  //       }
+  //     } else {
+  //       return;
+  //     }
+  //   };
+
+  //   fetchData();
+  // }, []);
+
+
 
   const changeDate = (offset: number) => {
     const date = new Date(selectedDate)
@@ -137,12 +190,73 @@ export default function NutritionTracker() {
             ...newItem,
             calories: Number(newItem.calories) || 0,
             protein: Number(newItem.protein) || 0,
-            carbs: Number(newItem.carbs) || 0,
+            carb: Number(newItem.carbs) || 0,
             fat: Number(newItem.fat) || 0,
             id: Date.now()
           }]
         }
       }))
+
+      const token = localStorage.getItem('accessToken');
+      if(token){
+        const decodedToken = jwtDecode<CustomJwtPayload>(token);
+        const userId = decodedToken.sub['id'];
+
+        const mealT = newItem.mealType;
+
+        //Check which meal type it is 
+        if(mealT === 'breakfast'){
+          const newEntry = {
+            userId: userId,
+            date: new Date(selectedDate),
+            calories: Number(newItem.calories) || 0,
+            protein: Number(newItem.protein) || 0,
+            carbohydrates: Number(newItem.carbs) || 0,
+            fats: Number(newItem.fat) || 0,
+            mealType: MType.Breakfast
+          }
+
+          axios.post('http://localhost:3001/nutritionTracker', newEntry)
+          console.log('New entry added', newEntry)
+        } else if(mealT === 'lunch'){
+          const newEntry = {
+            userId: userId,
+            date: new Date(selectedDate),
+            calories: Number(newItem.calories) || 0,
+            protein: Number(newItem.protein) || 0,
+            carbohydrates: Number(newItem.carbs) || 0,
+            fats: Number(newItem.fat) || 0,
+            mealType: MType.Lunch
+          }
+          axios.post('http://localhost:3001/nutritionTracker', newEntry)
+          console.log('New entry added', newEntry)
+        } else if(mealT === 'dinner'){
+          const newEntry = {
+            userId: userId,
+            date: new Date(selectedDate),
+            calories: Number(newItem.calories) || 0,
+            protein: Number(newItem.protein) || 0,
+            carbohydrates: Number(newItem.carbs) || 0,
+            fats: Number(newItem.fat) || 0,
+            mealType: MType.Dinner
+          }
+          axios.post('http://localhost:3001/nutritionTracker', newEntry)
+          console.log('New entry added', newEntry)
+        } else if(mealT === 'snacks'){
+          const newEntry = {
+            userId: userId,
+            date: new Date(selectedDate),
+            calories: Number(newItem.calories) || 0,
+            protein: Number(newItem.protein) || 0,
+            carbohydrates: Number(newItem.carbs) || 0,
+            fats: Number(newItem.fat) || 0,
+            mealType: MType.Snacks
+          }
+          axios.post('http://localhost:3001/nutritionTracker', newEntry)
+          console.log('New entry added', newEntry)
+        }
+      }
+      
       setNewItem({ name: '', calories: '', protein: '', carbs: '', fat: '', mealType: 'breakfast' })
       setIsDialogOpen(false)
     }

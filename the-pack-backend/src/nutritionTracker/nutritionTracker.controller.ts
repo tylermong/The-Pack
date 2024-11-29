@@ -23,7 +23,7 @@ async getNutritionEntries(
 @Post()
 async createNutritionEntry(@Body() createNutritionTrackerDto: CreateNutritionTrackerDto) {
     return await this.nutritionTrackerService.createNutritionEntry(createNutritionTrackerDto);
-}
+} 
   // Update an existing nutrition tracker entry
   @Patch(':id')
   async updateNutritionEntry(
@@ -37,5 +37,14 @@ async createNutritionEntry(@Body() createNutritionTrackerDto: CreateNutritionTra
   @Delete(':id')
   async deleteNutritionEntry(@Param('id') id: string) {
     return await this.nutritionTrackerService.deleteNutritionEntry(id);
+  }
+
+  //Get nutrition entry for a specific date
+  @Get(':userId/:date')
+  async getNutritionEntryByDate(
+    @Param('userId') userId: string,
+    @Param('date') date: Date,
+  ) {
+    return await this.nutritionTrackerService.getNutritionEntryByDate(userId, date);
   }
 }
