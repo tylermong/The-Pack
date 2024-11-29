@@ -2,9 +2,8 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { Calendar } from "@/components/ui/calendar";
 import { Card } from "@/components/ui/card"
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { ScrollArea } from "@/components/ui/scroll-area"
 import { Table, TableHead, TableHeader, TableRow, TableBody, TableCell } from "@/components/ui/table"
 import { jwtDecode } from 'jwt-decode';
 import { JwtPayload } from "jsonwebtoken";
@@ -16,9 +15,16 @@ export type Class = {
     description: string
     currentlyEnrolledIn: number
     coachId: string
-    date: string
-    startTime: string
-    endTime: string
+    assignedCoach: {
+        name: string
+    }
+    classDates: {
+        startTime: string
+        endTime: string
+        date: {
+            date: string
+        }
+    }[]
 }
 
 export type Appointment = {
@@ -26,17 +32,38 @@ export type Appointment = {
     coachId: string
     date: string
     timeSlotId: string
+    timeSlot: {
+        startTime: string
+        endTime: string
+    }
+    appointmentHolder: {
+        name: string
+    }
+    client: {
+        name: string
+    }
 }
 
-export type coachAvailability = {
-    id: string;
-    coachId: string;
-    date: Date;
-    timeSlots: {
-        startTime: string;
-        endTime: string;
-    }
-};
+export type Availability = {
+    id: string
+    date: Date
+    coachId: string
+    timeSlots: Timeslot[]
+}
+
+export type Timeslot = {
+    id: string
+    startTime: string
+    endTime: string
+    availabilityId: string
+    isBooked: boolean
+}
+
+export enum Role{
+    CLIENT = 'CLIENT',
+    COACH = 'COACH',
+    ADMIN = 'ADMIN'
+}
 
 interface CustomJwtPayload extends JwtPayload {
     sub: string;
@@ -55,62 +82,91 @@ const Scheduler = () => {
 
     //Schedule viewer data 
     const [classes, setClasses] = useState<Class[]>([]);
-    const [appointments, setAppointments] = useState<Appointment[]>([]);
+    const [appointment, setAppointments] = useState<Appointment[]>([]);
 
 
 
-    //Handles day click and fetches data for the day (clases and appointments of the current coach logged in)
+    //Handles day click and fetches data for the day
     const handleDayClick = async (date: Date) => {
-
         console.log('Day clicked:', date);
         setSelectedDate(date);
         setIsDialogOpen(true);
 
         const token = localStorage.getItem('accessToken');
-
-        if(token){
-
-            try{
-
+        if (token) {
+            try {
                 const decodedToken = jwtDecode<CustomJwtPayload>(token);
-                const coachId: string = decodedToken.sub['id'];
+                const coachId = decodedToken.sub['id'];
+                const classesResponse = await axios.get<Class[]>('http://localhost:3001/class');
+                const appointmentsResponse = await axios.get<Appointment[]>(`http://localhost:3001/appointments/coach/${coachId}`);
 
-                console.log('Coach ID:', coachId);
+                console.log('Appointment Response:', appointmentsResponse.data);
 
-                //Get the classes and appointments for the coach
-                const classesResponse = await axios.get(`http://localhost:3001/class/${coachId}`);
-                const appointmentsResponse = await axios.get(`http://localhost:3001/appointments/coach/${coachId}`);
+                const classesData = classesResponse.data;
+                const appointmentsData = appointmentsResponse.data;
 
-                console.log('Classes response:', classesResponse);
-                console.log('Appointments response:', appointmentsResponse);
+                //Map the class name, coach name, start time and end time to the existing class
+                const classData = classesData
+                    .map((classItem) => ({
+                        id: classItem.id,
+                        name: classItem.name,
+                        description: classItem.description,
+                        currentlyEnrolledIn: classItem.currentlyEnrolledIn,
+                        coachId: classItem.coachId,
+                        assignedCoach: {
+                            name: classItem.assignedCoach.name
+                        },
+                        classDates: classItem.classDates.map(dateItem => ({
+                            startTime: dateItem.startTime,
+                            endTime: dateItem.endTime,
+                            date: dateItem.date
+                        }))
+                    }));
 
-                //Set the classes and appointments state
-                setClasses(classesResponse.data);
-                setAppointments(appointmentsResponse.data);
+                //Map the coach name, start time and end time to the existing appointment
+                const appointmentData = appointmentsData
+                    .map((appointmentItem) => ({
+                        clientId: coachId,
+                        coachId: appointmentItem.coachId,
+                        date: appointmentItem.date,
+                        timeSlotId: appointmentItem.timeSlotId,
+                        appointmentHolder: {
+                            name: appointmentItem.appointmentHolder.name
+                        },
+                        timeSlot: {
+                            startTime: appointmentItem.timeSlot.startTime,
+                            endTime: appointmentItem.timeSlot.endTime,
+                            date: appointmentItem.timeSlot.startTime,
+                        },
+                        client: {
+                            name: appointmentItem.client.name
+                        }
+                    }));
+
+                //Get the date of appointments and classes
+                const classDate = classData.flatMap((classItem) => classItem.classDates.map(dateItem => dateItem.date.date));
+                const appointmentDate = appointmentData.map((appointmentItem) => appointmentItem.timeSlot.date);
+
+                console.log('Class Date:', classDate);
+                console.log('Appointment Date:', appointmentDate);
+
+                //For each class extract the date and compare it to the selected date
+                const classes = classData.filter((classItem) => classItem.classDates.some(dateItem => new Date(dateItem.date.date).toISOString().split('T')[0] === date.toISOString().split('T')[0]));
+
+                //For each appointment extract the date and compare it to the selected date
+                const appointments = appointmentData.filter((appointmentItem) => new Date(appointmentItem.timeSlot.date).toISOString().split('T')[0] === date.toISOString().split('T')[0]);
 
                 console.log('Classes:', classes);
                 console.log('Appointments:', appointments);
 
-                //Filter the classes and appointments for the selected date
-                const formattedDate = date.toISOString().split('T')[0];
+                setClasses(classes);
+                setAppointments(appointments);
 
-                //Loop through the classes and appointments to find the ones for the selected date
-                const classesForSelectedDate = Array.isArray(classes) ? classes.filter((cls) => cls.date === formattedDate) : [];
-                const appointmentsForSelectedDate = Array.isArray(appointments) ? appointments.filter((appointment) => appointment.date === formattedDate) : [];
-
-                setClasses(classesForSelectedDate);
-                setAppointments(appointmentsForSelectedDate);
-
-                console.log('Classes for selected date:', classesForSelectedDate);
-                console.log('Appointments for selected date:', appointmentsForSelectedDate);
-
-                
-
-            }catch(error){
+            } catch (error) {
                 console.error('Error fetching schedule data:', error);
             }
         } else {
-            console.log("No token found")
+            console.log("No token found");
         }
     };
     
@@ -136,10 +192,13 @@ const Scheduler = () => {
                 </div>
                 
                 <Dialog open = {isDialogOpen} onOpenChange={setIsDialogOpen}>
-                    <DialogContent className="sm:max-w-md flex flex-col w-full h-auto bg-black">
+                    <DialogContent className="sm:max-w-md flex flex-col w-auto h-auto bg-black">
                         <DialogTitle>
                             DAY SCHEDULE
                         </DialogTitle>
+                        <DialogDescription className='font-semibold'>
+                            Here you can find the available classes for the day. You can also find your appointments for the day.
+                        </DialogDescription>
 
                         <Tabs defaultValue="events" className="w-auto h-auto pt-5">
 
@@ -151,31 +210,37 @@ const Scheduler = () => {
                             <TabsContent value = "classes">
                                 <Card className='bg-primary text-white'>
                                     <Table>
-                                        <TableHeader className='flex flex-row w-full'>
-                                            <TableRow className='w-full'>
-                                                <TableHead className='text-lg w-full'>Class Name</TableHead>
-                                                <TableHead className='text-lg w-full'>Coach</TableHead>
-                                                <TableHead className='text-lg w-full'>Start Time</TableHead>
+                                        <TableHeader>
+                                            <TableRow>
+                                                <TableHead className="w-auto">Class</TableHead>
+                                                <TableHead className="w-auto">Coach</TableHead>
+                                                <TableHead className="w-auto">Start Time</TableHead>
+                                                <TableHead className="w-auto">End Time</TableHead>
                                             </TableRow>
                                         </TableHeader>
 
-                                        <ScrollArea className="h-auto w-full p-4">
-                                            <TableBody className='flex flex-col w-auto h-auto'>
+                                        <TableBody>
+
                                             {classes?.length > 0 ? (
-                                                classes.map((cls) => (
-                                                    <TableRow key={cls.id} className="w-full">
-                                                        <TableCell className="text-base w-full">{cls.name}</TableCell>
-                                                        <TableCell className="text-base w-full">{cls.coachId}</TableCell>
-                                                        <TableCell className="text-base w-full">{cls.startTime}</TableCell>
+                                                classes.map((classItem) => (
+                                                    <TableRow key={classItem.id} className="w-full">
+                                                        <TableCell className="text-base w-full">{classItem.name}</TableCell>
+                                                        <TableCell className="text-base w-full">{classItem['assignedCoach']['name']}</TableCell>
+                                                        <TableCell className="text-base w-full">
+                                                            {new Date(classItem['classDates'][0]['startTime']).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}
+                                                        </TableCell>
+                                                        <TableCell className="text-base w-full">
+                                                            {new Date(classItem['classDates'][0]['endTime']).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}
+                                                        </TableCell>
                                                     </TableRow>
                                                 ))
                                             ) : (
                                                 <TableRow>
-                                                    <TableCell colSpan={2}>No classes available</TableCell>
+                                                    <TableCell colSpan={4}>No classes available</TableCell>
                                                 </TableRow>
                                             )}
-                                            </TableBody>
-                                        </ScrollArea>
+                                        
+                                        </TableBody>
                                     </Table>
                                 </Card>
                             </TabsContent>
@@ -183,35 +248,38 @@ const Scheduler = () => {
                             <TabsContent value = "appointments">
                                 <Card className='bg-primary text-white'>
                                     <Table>
-                                        <TableHeader className='flex flex-row w-full'>
-                                            <TableRow className='w-full'>
-                                                <TableHead className='text-lg w-full'>Client</TableHead>
-                                                <TableHead className='text-lg w-full'>Start Time</TableHead>
-                                                <TableHead className='text-lg w-full'>End Time</TableHead>
+                                        <TableHeader>
+                                            <TableRow>
+                                                <TableHead className="w-auto">Client</TableHead>
+                                                <TableHead className="w-auto">Start Time</TableHead>
+                                                <TableHead className="w-auto">End Time</TableHead>
                                             </TableRow>
                                         </TableHeader>
 
-                                        <ScrollArea className="h-auto w-full p-4">
-                                            <TableBody className='flex flex-col w-auto h-auto'>
-                                            {appointments?.length > 0 ? (
-                                                appointments.map((appointment) => (
-                                                    <TableRow key={appointment.clientId} className="w-full">
-                                                        <TableCell className="text-base w-full">{appointment.clientId}</TableCell>
-                                                        <TableCell className="text-base w-full">{appointment.date}</TableCell>
-                                                        <TableCell className="text-base w-full">{appointment.timeSlotId}</TableCell>
+                                        <TableBody>
+
+                                            {appointment?.length > 0 ? (
+                                                appointment.map((appointmentItem) => (
+                                                    <TableRow key={appointmentItem.coachId} className="w-full">
+                                                        <TableCell className="text-base w-full">{appointmentItem.client['name']}</TableCell>
+                                                        <TableCell className="text-base w-full">
+                                                            {new Date(appointmentItem.timeSlot['startTime']).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}
+                                                        </TableCell>
+                                                        <TableCell className="text-base w-full">
+                                                            {new Date(appointmentItem.timeSlot['endTime']).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}
+                                                        </TableCell>
                                                     </TableRow>
                                                 ))
                                             ) : (
                                                 <TableRow>
-                                                    <TableCell colSpan={2}>No appointments available</TableCell>
+                                                    <TableCell colSpan={3}>No appointments available</TableCell>
                                                 </TableRow>
                                             )}
-                                            </TableBody>
-                                        </ScrollArea>
+
+                                        </TableBody>
                                     </Table>
                                 </Card>
                             </TabsContent>
-
                         </Tabs>
                     </DialogContent>
                 </Dialog>
