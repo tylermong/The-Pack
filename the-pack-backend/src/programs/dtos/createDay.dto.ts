@@ -3,7 +3,7 @@ import { IsString, IsNotEmpty, IsUUID } from "class-validator";
 export class CreateDayDto{
     @IsString()
     @IsNotEmpty()
-    name: string;
+    dayName: string;
 
     @IsUUID()
     weekId: string;

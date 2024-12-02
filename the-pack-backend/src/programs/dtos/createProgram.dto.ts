@@ -5,6 +5,12 @@ export class CreateProgramDto {
   @IsNotEmpty()
   programName: string;
 
+  @IsString()
+  programDecription: string;
+
+  @IsString()
+  programTags: string;
+
   @IsUUID()
   userId: string;
 }
