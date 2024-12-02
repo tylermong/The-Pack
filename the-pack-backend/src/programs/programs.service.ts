@@ -22,15 +22,16 @@ export class ProgramsService {
     return this.prisma.programs.create({
       data: {
         programName,
+        programDescription,
         userId,
       },
     });
   }
   async createWeek(createWeekDto:CreateWeekDto){
-    const{ numOfWeeks, programId} = createWeekDto
+    const{ weekName, programId} = createWeekDto
     return this.prisma.programWeeks.create({
         data: {
-            numOfWeeks,
+            weekName,
             programId
         }
     })
