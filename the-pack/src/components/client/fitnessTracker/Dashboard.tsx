@@ -94,7 +94,7 @@ export default function ProgramList() {
 
         console.log('ClientId:', id);
 
-        const response = await axios.post('http://localhost:3001/programs/${id}', 
+        const response = await axios.post(`http://localhost:3001/programs/${id}`, 
           programs, 
           { headers: { Authorization: `Bearer ${token}` } }
         )

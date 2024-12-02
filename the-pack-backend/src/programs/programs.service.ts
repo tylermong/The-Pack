@@ -17,10 +17,11 @@ export class ProgramsService {
 
 
   async create(createProgramDto: CreateProgramDto){
-    const { programName, userId } = createProgramDto;
+    const { programURL, programName, userId } = createProgramDto;
 
     return this.prisma.programs.create({
       data: {
+        programURL: programURL,
         programName,
         programDescription: '',
         programTags: '' ,

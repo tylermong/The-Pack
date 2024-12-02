@@ -165,7 +165,7 @@ model NutritionTracker {
 
 model Programs {
   id              String           @id @default(uuid())
-  
+  programURL      String           
   user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId          String
   
