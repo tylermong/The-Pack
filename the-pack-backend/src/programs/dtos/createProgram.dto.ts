@@ -6,8 +6,10 @@ export class CreateProgramDto {
   programName: string;
 
   @IsString()
-  @IsNotEmpty()
   programDecription: string;
+
+  @IsString()
+  programTags: string;
 
   @IsUUID()
   userId: string;

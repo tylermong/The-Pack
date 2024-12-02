@@ -11,13 +11,13 @@ export class UpdateExerciseDto {
 
   @IsString()
   @IsOptional()
-  numOfSets?: string; 
+  setNumber?: string; 
 
   @IsString()
   @IsOptional()
-  numOfReps?: string;  
+  reps?: string;  
 
   @IsString()
   @IsOptional()
-  weightLifted?: string; 
+  weight?: string; 
 }

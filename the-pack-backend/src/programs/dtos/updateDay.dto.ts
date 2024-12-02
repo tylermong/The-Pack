@@ -6,5 +6,5 @@ export class UpdateDayDto {
 
   @IsString()
   @IsOptional()
-  name?: string; 
+  dayName?: string; 
 }
