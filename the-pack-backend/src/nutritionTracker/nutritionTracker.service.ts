@@ -25,6 +25,7 @@ export class NutritionTrackerService{
       async createNutritionEntry(createNutritionTrackerDto: CreateNutritionTrackerDto) {
         return await this.prisma.nutritionTracker.create({
           data: {
+            name: createNutritionTrackerDto.name,
             userId: createNutritionTrackerDto.userId,
             date: createNutritionTrackerDto.date,
             goals: createNutritionTrackerDto.goals,
@@ -61,7 +62,7 @@ export class NutritionTrackerService{
 
       // Get nutrition entry for a specific date
       async getNutritionEntryByDate(userId: string, date: Date) {
-        return await this.prisma.nutritionTracker.findFirst({
+        return await this.prisma.nutritionTracker.findMany({
           where: {
             userId,
             date,
