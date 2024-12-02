@@ -126,6 +126,8 @@ const CoachScheduleListTable = () => {
                 const response = await axios.get(`http://localhost:3001/user/${coachId}`);
                 const coachData = await axios.get(`http://localhost:3001/coachAvailability/${coachId}`);
 
+                console.log('Coach Data:', coachData.data);
+
 
                 //Extract the date, start time, and end time from the response
                 const coachScheduleData = coachData.data.map((schedule: any) => ({

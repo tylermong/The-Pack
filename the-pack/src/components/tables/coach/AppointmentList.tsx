@@ -85,7 +85,68 @@ const AppointmentsListTable = () => {
                 const response = await axios.get(`http://localhost:3001/appointments/coach/${coachId}`);
 
                 const appointments = response.data; 
-                setAppointment(appointments); 
+
+
+                console.log("Appointments:", appointments);
+
+                //Extract date, start time, and end time from the response data
+                const appointmentData = appointments.map((appointment: any) => ({
+                    id: appointment.id,
+                    date: new Date(appointment.timeSlot.startTime),
+                    timeSlots:  appointment.timeSlot
+                }));
+
+                console.log("Appointment Data:", appointmentData);
+
+                //Extract the start and end times for each time slot
+                appointmentData.forEach((schedule: any, index: number) => {
+                    
+                    //Ensure index starts at 1
+                    if(index === 0){
+                        index = 1;
+                    } else {
+                        index = index;
+                    }
+
+                    //Format the date, start time, and end time for each scedule in a 12-hour format
+                    const formattedDate = schedule.date.toISOString().split('T')[0];
+                    let formattedStartTime = schedule['timeSlots']['startTime'];
+                    let formattedEndTime = schedule['timeSlots']['endTime'];
+
+                    // Convert to 12-hour format with AM/PM
+                    const startTimeDate = new Date(formattedStartTime);
+                    const endTimeDate = new Date(formattedEndTime);
+
+                    const formatTime = (date: Date) => {
+                        let hours = date.getUTCHours();
+                        const minutes = date.getUTCMinutes();
+                        const ampm = hours >= 12 ? 'PM' : 'AM';
+                        hours = hours % 12;
+                        hours = hours ? hours : 12; // the hour '0' should be '12'
+                        const minutesStr = minutes < 10 ? '0' + minutes : minutes;
+                        return `${hours}:${minutesStr} ${ampm}`;
+                    };
+
+                    formattedStartTime = formatTime(startTimeDate);
+                    formattedEndTime = formatTime(endTimeDate);
+                    
+                    //Update the date, start time, and end time for each schedule
+                    schedule.date = formattedDate;
+                    schedule['timeSlots']['startTime'] = formattedStartTime;
+                    schedule['timeSlots']['endTime'] = formattedEndTime;
+                });
+
+                //Make a new constant containing the scchedule data but with only the date, start time, and end time
+                const formattedAppointmentData = appointmentData.map((schedule: any) => ({
+                    id: schedule.id,
+                    date: schedule.date,
+                    startTime: schedule['timeSlots']['startTime'],
+                    endTime: schedule['timeSlots']['endTime']
+                }));
+
+
+
+                setAppointment(formattedAppointmentData); 
                 console.log("Fetched appointments:", appointments);
             } catch (error) {
                 console.error("Error fetching appointments:", error);
