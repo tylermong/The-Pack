@@ -22,39 +22,41 @@ export class ProgramsService {
     return this.prisma.programs.create({
       data: {
         programName,
+        programDescription: '',
+        programTags: '' ,
         userId,
       },
     });
   }
   async createWeek(createWeekDto:CreateWeekDto){
-    const{ numOfWeeks, programId} = createWeekDto
+    const{ weekName, programId} = createWeekDto
     return this.prisma.programWeeks.create({
         data: {
-            numOfWeeks,
+            weekName,
             programId
         }
     })
   }
 async createDay(createDayDto:CreateDayDto){
-    const{name, weekId} = createDayDto
+    const{dayName, weekId} = createDayDto
 
     return this.prisma.programDays.create({
         data:{
-            name,
-            weekNum: weekId,
+            dayName,
+            weekId,
         }
     })
 }
 
 async createExercise(createExerciseDto: CreateExerciseDto){
-    const { exerciseName, numOfSets, numOfReps, weightLifted, dayId } = createExerciseDto;
+    const { exerciseName, setNumber, reps, weight, dayId } = createExerciseDto;
     return this.prisma.dailyExercise.create({
         data:{
             exerciseName, 
-            numOfSets, 
-            numOfReps, 
-            weightLifted, 
-            dayNum: dayId
+            setNumber, 
+            reps, 
+            weight, 
+            dayId
         }
     })
 }
@@ -72,36 +74,37 @@ async createExercise(createExerciseDto: CreateExerciseDto){
     });
 }
   async updateProgramWeek(updateWeekDto: UpdateWeekDto) {
-    const { programId, numOfWeeks } = updateWeekDto;
+    const { programId, weekName } = updateWeekDto;
 
     return this.prisma.programWeeks.update({
       where: { id: programId },
       data: {
-        numOfWeeks,  
+        weekName,
       },
     });
+    
   }
 
   async updateProgramDay(updateDayDto: UpdateDayDto) {
-    const { dayId, name } = updateDayDto;
+    const { dayId, dayName } = updateDayDto;
 
     return this.prisma.programDays.update({
       where: { id: dayId },
       data: {
-        name,  
+        dayName,  
       },
     });
   }
   async updateExercise(exerciseId:string, updateExerciseDto: UpdateExerciseDto) {
-    const { exerciseName, numOfSets, numOfReps, weightLifted } = updateExerciseDto;
+    const { exerciseName, setNumber, reps, weight } = updateExerciseDto;
 
     return this.prisma.dailyExercise.update({
       where: { id: exerciseId },  
       data: {
         exerciseName,  
-        numOfSets,    
-        numOfReps,     
-        weightLifted,  
+        setNumber,    
+        reps,     
+        weight,  
       },
     });
   }
@@ -142,7 +145,7 @@ async createExercise(createExerciseDto: CreateExerciseDto){
 
   async deleteDay(dayId: string) {
     await this.prisma.dailyExercise.deleteMany({
-      where: { dayNum: dayId },
+      where: { dayId },
     });
 
     return this.prisma.programDays.delete({
@@ -152,7 +155,7 @@ async createExercise(createExerciseDto: CreateExerciseDto){
 
   async deleteWeek(weekId: string) {
     await this.prisma.programDays.deleteMany({
-      where: { weekNum: weekId },
+      where: { weekId },
     });
 
     return this.prisma.programWeeks.delete({

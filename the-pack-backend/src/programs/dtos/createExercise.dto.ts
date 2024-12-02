@@ -7,15 +7,15 @@ export class CreateExerciseDto {
 
   @IsString()
   @IsNotEmpty()
-  numOfSets: string;
+  setNumber: string;
 
   @IsString()
   @IsNotEmpty()
-  numOfReps: string;
+  reps: string;
 
   @IsString()
   @IsNotEmpty()
-  weightLifted: string;
+  weight: string;
 
   @IsUUID()
   dayId: string;

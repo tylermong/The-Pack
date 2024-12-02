@@ -6,5 +6,5 @@ export class UpdateWeekDto {
 
   @IsString()
   @IsOptional()
-  numOfWeeks: string;
+  weekName: string;
 }
