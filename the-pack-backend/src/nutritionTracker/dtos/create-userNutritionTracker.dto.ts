@@ -9,6 +9,9 @@ export class CreateNutritionTrackerDto {
     @IsDateString()  // Ensures the date is in the correct ISO format (YYYY-MM-DD)
     date: string;  // Date of the nutrition entry
 
+    @IsString()  // Ensures name is a string
+    name: string;  // Name of the food or meal
+
     @IsOptional()
     @IsInt()
     @Min(1)

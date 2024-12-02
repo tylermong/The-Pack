@@ -29,6 +29,7 @@ type FoodItem = {
 
 // Add this new interface for the form state
 interface FoodItemForm {
+  id: string
   name: string
   calories: string
   protein: string
@@ -78,6 +79,7 @@ export default function NutritionTracker() {
     }
   })
   const [newItem, setNewItem] = useState<FoodItemForm>({
+    id: '',
     name: '',
     calories: '',
     protein: '',
@@ -107,41 +109,83 @@ export default function NutritionTracker() {
   const [newGoals, setNewGoals] = useState<NutritionGoals>(defaultGoals)
 
 
-  //On mount get the data from the backend
-  // useEffect(() => {
-  //   const fetchData = async () => {
-  //     const token = localStorage.getItem('accessToken');
-  //     if(token){
-  //       try {
-  //         const decodedToken = jwtDecode<CustomJwtPayload>(token);
-  //         const userId = decodedToken.sub['id'];
-  //         const ISODate = new Date(selectedDate).toISOString(); 
-  //         const breakfastData = await axios.get(`http://localhost:3001/nutritionTracker/${userId}/${ISODate}?mealType=BREAKFAST`);
-  //         const lunchData = await axios.get(`http://localhost:3001/nutritionTracker/${userId}/${ISODate}?mealType=LUNCH`);
-  //         const dinnerData = await axios.get(`http://localhost:3001/nutritionTracker/${userId}/${ISODate}?mealType=DINNER`);
-  //         const snacksData = await axios.get(`http://localhost:3001/nutritionTracker/${userId}/${ISODate}?mealType=SNACK`);
+  //On mount get each entry for the day
+  useEffect(() => {
+    const fetchData = async () => {
+      const token = localStorage.getItem('accessToken');
+      if(token){
+        const decodedToken = jwtDecode<CustomJwtPayload>(token);
+        const userId = decodedToken.sub['id'];
 
-  //         const nutritionLog = {
-  //           [selectedDate]: {
-  //             breakfast: breakfastData.data,
-  //             lunch: lunchData.data,
-  //             dinner: dinnerData.data,
-  //             snacks: snacksData.data
-  //           }
-  //         }
-  //         setNutritionLog(nutritionLog);
-  //         console.log('NUTRITION LOG', nutritionLog)
+        console.log("Current date: ", selectedDate)
+        //Format selectedDate to an ISO-8601 DateTime. This is the format that the backend expects
+        const currentDate = new Date(selectedDate).toISOString();
+        console.log("Current formatted date: ", currentDate)
 
-  //       } catch (error) {
-  //         console.log('Error fetching data', error);
-  //       }
-  //     } else {
-  //       return;
-  //     }
-  //   };
+        try{
+          const response = await axios.get(`http://localhost:3001/nutritionTracker/${userId}/${currentDate}`)
+          console.log("Response", response.data)
 
-  //   fetchData();
-  // }, []);
+          //Check if response is empty
+          if(response.data.length === 0){
+            console.log("No entries found for this date")
+          } else {
+            //Iterate over each entry and make it into a FoodItemForm then add it to the nutritionLog
+            response.data.forEach((entry: any) => {
+              const mealType = entry.mealType;
+              let mealT: MealType = 'breakfast';
+
+              if(mealType === MType.Breakfast){
+                mealT = 'breakfast';
+              } else if(mealType === MType.Lunch){
+                mealT = 'lunch';
+              } else if(mealType === MType.Dinner){
+                mealT = 'dinner';
+              } else if(mealType === MType.Snacks){
+                mealT = 'snacks';
+              }
+
+              const newEntry: FoodItemForm = {
+                id: entry.id,
+                name: entry.name,
+                calories: entry.calories,
+                protein: entry.protein,
+                carbs: entry.carbohydrates,
+                fat: entry.fats,
+                mealType: mealT
+              }
+
+              //Check if nutritionLog already contains the entry
+              if(nutritionLog[selectedDate][mealT].find((item) => item.name === newEntry.name)){
+                console.log("Entry already exists")
+              } else {
+                setNutritionLog(prev => ({
+                  ...prev,
+                  [selectedDate]: {
+                    ...prev[selectedDate],
+                    [mealT]: [...prev[selectedDate][mealT], {
+                      ...newEntry,
+                      calories: Number(newEntry.calories) || 0,
+                      protein: Number(newEntry.protein) || 0,
+                      carbs: Number(newEntry.carbs) || 0,
+                      fat: Number(newEntry.fat) || 0,
+                      id: entry.id
+                    }]
+                  }
+                }))
+              }
+            })
+          }
+            
+
+        } catch (error){
+          console.log("ERROR", error)
+        }
+      }
+    };
+
+    fetchData();
+  }, [selectedDate])
 
 
 
@@ -190,7 +234,7 @@ export default function NutritionTracker() {
             ...newItem,
             calories: Number(newItem.calories) || 0,
             protein: Number(newItem.protein) || 0,
-            carb: Number(newItem.carbs) || 0,
+            carbs: Number(newItem.carbs) || 0,
             fat: Number(newItem.fat) || 0,
             id: Date.now()
           }]
@@ -208,6 +252,7 @@ export default function NutritionTracker() {
         if(mealT === 'breakfast'){
           const newEntry = {
             userId: userId,
+            name: newItem.name,
             date: new Date(selectedDate),
             calories: Number(newItem.calories) || 0,
             protein: Number(newItem.protein) || 0,
@@ -221,6 +266,7 @@ export default function NutritionTracker() {
         } else if(mealT === 'lunch'){
           const newEntry = {
             userId: userId,
+            name: newItem.name,
             date: new Date(selectedDate),
             calories: Number(newItem.calories) || 0,
             protein: Number(newItem.protein) || 0,
@@ -233,6 +279,7 @@ export default function NutritionTracker() {
         } else if(mealT === 'dinner'){
           const newEntry = {
             userId: userId,
+            name: newItem.name,
             date: new Date(selectedDate),
             calories: Number(newItem.calories) || 0,
             protein: Number(newItem.protein) || 0,
@@ -245,6 +292,7 @@ export default function NutritionTracker() {
         } else if(mealT === 'snacks'){
           const newEntry = {
             userId: userId,
+            name: newItem.name,
             date: new Date(selectedDate),
             calories: Number(newItem.calories) || 0,
             protein: Number(newItem.protein) || 0,
@@ -263,14 +311,41 @@ export default function NutritionTracker() {
   }
 
   const handleRemoveItem = (id: number, mealType: MealType) => {
-    setNutritionLog(prev => ({
-      ...prev,
-      [selectedDate]: {
-        ...prev[selectedDate],
-        [mealType]: prev[selectedDate][mealType].filter(item => item.id !== id)
+    const token = localStorage.getItem('accessToken');
+    if(token){
+      const decodedToken = jwtDecode<CustomJwtPayload>(token);
+      const userId = decodedToken.sub['id'];
+
+      const mealT = mealType;
+
+      //Find the entry in the nutritionlog with the id
+      const entry = nutritionLog[selectedDate][mealType].find((item) => item.id === id);
+      console.log("Entry", entry)
+
+      //Check which meal type it is 
+      if(mealT === 'breakfast'){
+        axios.delete(`http://localhost:3001/nutritionTracker/${id}`)
+        console.log('Entry deleted')
+      } else if(mealT === 'lunch'){
+        axios.delete(`http://localhost:3001/nutritionTracker/${id}`)
+        console.log('Entry deleted')
+      } else if(mealT === 'dinner'){
+        axios.delete(`http://localhost:3001/nutritionTracker/${id}`)
+        console.log('Entry deleted')
+      } else if(mealT === 'snacks'){
+        axios.delete(`http://localhost:3001/nutritionTracker/${id}`)
+        console.log('Entry deleted')
       }
-    }))
+
+      setNutritionLog(prev => ({
+        ...prev,
+        [selectedDate]: {
+          ...prev[selectedDate],
+          [mealType]: prev[selectedDate][mealType].filter(item => item.id !== id)
+        }
+      }))
   }
+}
 
   const toggleCollapse = (mealType: MealType) => {
     setCollapsedSections(prev => ({
@@ -285,14 +360,6 @@ export default function NutritionTracker() {
       .filter(d => d <= date)
     
     return dates.length > 0 ? goalsLog[dates[dates.length - 1]] : defaultGoals
-  }
-
-  const handleSaveGoals = () => {
-    setGoalsLog(prev => ({
-      ...prev,
-      [selectedDate]: newGoals
-    }))
-    setIsGoalsDialogOpen(false)
   }
 
   const renderMealSection = (mealType: MealType, title: string) => (
@@ -350,12 +417,6 @@ export default function NutritionTracker() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <CardTitle className="text-2xl font-bold">Nutrition Tracker</CardTitle>
-            <Button variant="outline" onClick={() => {
-              setNewGoals(getCurrentGoals(selectedDate))
-              setIsGoalsDialogOpen(true)
-            }}>
-              Edit Goals
-            </Button>
           </div>
           <div className="flex items-center gap-4">
             <Button variant="outline" size="icon" onClick={() => changeDate(-1)}>
@@ -387,36 +448,36 @@ export default function NutritionTracker() {
         </div>
       </CardHeader>
       <CardContent>
-        <div className="mb-6">
-          <div className="flex justify-between mb-2">
-            <span className="text-sm font-semibold">Calories</span>
-            <span className="text-sm">{totalCalories} / {getCurrentGoals(selectedDate).calories}</span>
-          </div>
-          <Progress value={(totalCalories / getCurrentGoals(selectedDate).calories) * 100} className="h-3" />
-        </div>
+        <div className='grid grid-cols-4 gap-4'>
 
-        <div className="grid grid-cols-3 gap-4 mb-6">
-          <div>
-            <div className="flex justify-between mb-2">
-            <span className="text-sm font-semibold">Protein</span>
-              <span className="text-sm">{totalProtein}g / {getCurrentGoals(selectedDate).protein}g</span>
+          <div className="mb-3">
+            <div className="flex mb-2 ">
+              <span className="text-sm font-semibold pr-3">Calories: </span>
+              <span className="text-sm">{totalCalories}</span>
             </div>
-            <Progress value={(totalProtein / getCurrentGoals(selectedDate).protein) * 100} className="h-2" />
           </div>
+
           <div>
-            <div className="flex justify-between mb-2">
-              <span className="text-sm font-semibold">Carbs</span>
-              <span className="text-sm">{totalCarbs}g / {getCurrentGoals(selectedDate).carbs}g</span>
+            <div className="flex mb-2">
+            <span className="text-sm font-semibold pr-3">Protein: </span>
+              <span className="text-sm">{totalProtein}g </span>
             </div>
-            <Progress value={(totalCarbs / getCurrentGoals(selectedDate).carbs) * 100} className="h-2" />
           </div>
+
           <div>
-            <div className="flex justify-between mb-2">
-            <span className="text-sm font-semibold">Fat</span>
-              <span className="text-sm">{totalFat}g / {getCurrentGoals(selectedDate).fat}g</span>
+            <div className="flex mb-2">
+              <span className="text-sm font-semibold pr-3">Carbs: </span>
+              <span className="text-sm">{totalCarbs}g </span>
             </div>
-            <Progress value={(totalFat / getCurrentGoals(selectedDate).fat) * 100} className="h-2" />
           </div>
+
+          <div>
+            <div className="flex mb-2">
+            <span className="text-sm font-semibold pr-3">Fat: </span>
+              <span className="text-sm">{totalFat}g </span>
+            </div>
+          </div>
+
         </div>
 
         {renderMealSection('breakfast', 'Breakfast')}
@@ -521,66 +582,6 @@ export default function NutritionTracker() {
           </DialogContent>
         </Dialog>
       </CardFooter>
-      <Dialog open={isGoalsDialogOpen} onOpenChange={setIsGoalsDialogOpen}>
-        <DialogContent className='bg-primary text-secondary'>
-          <DialogHeader>
-            <DialogTitle>Edit Nutrition Goals</DialogTitle>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="goalCalories" className="text-right">
-                Calories
-              </Label>
-              <Input
-                id="goalCalories"
-                type="number"
-                value={newGoals.calories}
-                onChange={(e) => setNewGoals(prev => ({ ...prev, calories: Number(e.target.value) }))}
-                className="col-span-3"
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="goalProtein" className="text-right">
-                Protein (g)
-              </Label>
-              <Input
-                id="goalProtein"
-                type="number"
-                value={newGoals.protein}
-                onChange={(e) => setNewGoals(prev => ({ ...prev, protein: Number(e.target.value) }))}
-                className="col-span-3"
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="goalCarbs" className="text-right">
-                Carbs (g)
-              </Label>
-              <Input
-                id="goalCarbs"
-                type="number"
-                value={newGoals.carbs}
-                onChange={(e) => setNewGoals(prev => ({ ...prev, carbs: Number(e.target.value) }))}
-                className="col-span-3"
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="goalFat" className="text-right">
-                Fat (g)
-              </Label>
-              <Input
-                id="goalFat"
-                type="number"
-                value={newGoals.fat}
-                onChange={(e) => setNewGoals(prev => ({ ...prev, fat: Number(e.target.value) }))}
-                className="col-span-3"
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button onClick={handleSaveGoals}>Save Goals</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </Card>
   )
 }

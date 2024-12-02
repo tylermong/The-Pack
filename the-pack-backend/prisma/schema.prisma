@@ -149,6 +149,7 @@ model TimeSlot {
 model NutritionTracker {
   id              String     @id @default(uuid())
   user            User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name            String
   userId          String
   date            DateTime
   goals           Int?
