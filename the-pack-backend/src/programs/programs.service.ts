@@ -17,15 +17,15 @@ export class ProgramsService {
 
 
   async create(createProgramDto: CreateProgramDto){
-    const { programURL, programName, userId } = createProgramDto;
+    const { programURL, programName, programDecription, programTags, userId } = createProgramDto;
 
     return this.prisma.programs.create({
       data: {
         programURL: programURL,
-        programName,
-        programDescription: '',
-        programTags: '' ,
-        userId,
+        programName: programName,
+        programDescription: programDecription,
+        programTags: programTags ,
+        userId: userId,
       },
     });
   }
