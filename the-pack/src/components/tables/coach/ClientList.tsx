@@ -5,14 +5,6 @@
 import React from 'react';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
-    DialogDescription,
-} from "@/components/ui/dialog"
 import { Card, CardFooter } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { useReactTable, getCoreRowModel, getPaginationRowModel, flexRender, ColumnDef  } from "@tanstack/react-table"
