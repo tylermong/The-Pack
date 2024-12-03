@@ -77,7 +77,7 @@ async updateProgram(
   }
 
   
-  @Get('all')
+  @Get() // Changed from @Get('all') to @Get()
   async getAllPrograms() {
     return this.programsService.getAllPrograms();
   }
