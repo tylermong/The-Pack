@@ -2,6 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { Plus } from 'lucide-react';
 import { Button } from "@/components/ui/button"
 import axios from 'axios';
+import { jwtDecode } from "jwt-decode";
+
+interface CustomJwtPayload {
+  sub: {
+    id: string;
+  };
+}
 
 const Dashboard = () => {
   const [notes, setNotes] = useState<string>('');
@@ -23,7 +30,19 @@ const Dashboard = () => {
 
   const saveNotes = async () => {
     try {
-      await axios.post('http://localhost:3001/workout-notes', { notes });
+      const token = localStorage.getItem('accessToken');
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+
+      const decodedToken = jwtDecode<CustomJwtPayload>(token);
+      const userId = decodedToken.sub.id;
+
+      await axios.post('http://localhost:3001/programs', {
+        userId: userId,
+        programDecription: notes
+      });
+      
       setSaveStatus('Saved successfully!');
       setTimeout(() => setSaveStatus(''), 3000);
     } catch (error) {
