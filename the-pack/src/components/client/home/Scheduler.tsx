@@ -350,20 +350,23 @@ const Scheduler = () => {
                 const clientId = decodedToken.sub;
                 const coachId = Object.keys(coachList).find(key => coachList[key] === selectedCoach);
 
-                //Loop through the the list of timeslot id to get the correct timeslot id of the selected time
-                const timeSlotIDCurrent = timeslotId;
+                //Loop through the the list of timeslot id to get the correct timeslot id of the selected time slot
+                const timeSlotIDCurrent = coachAvailability.map((slot: Availability) => slot.timeSlots.map((time: Timeslot) => time.id));
 
-                console.log('Time Slot ID:', timeSlotIDCurrent);
+                console.log('Time Slot ID:', timeSlotIDCurrent[0][0]);
+                console.log('Time slots:', timeSlot);
 
                 const createAppointmentDTO = {
                     clientId: clientId['id'],
                     coachId: coachId,
-                    timeSlotId: timeSlotIDCurrent,
+                    timeSlotId: timeSlotIDCurrent[0][0],
                 };
 
                 const response = await axios.post('http://localhost:3001/appointments/schedule', createAppointmentDTO);
 
                 console.log('Appointment created:', response.data);
+
+                setIsDialogOpen(false);
             } else {
                 console.log('No token found');
             }
