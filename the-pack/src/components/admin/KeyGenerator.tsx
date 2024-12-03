@@ -56,7 +56,7 @@ const KeyGenerator = () => {
 
         <div className='flex flex-col pb-24 w-full h-auto px-5'>
             {/* Reroute button to go back to dashboard */}
-            <div className='flex pt-5'>
+            <div className='flex py-5'>
                 <Button variant='outline' onClick={() => router.push('/admin/home')}>
                     <ArrowLeftIcon/>
                     Return to Dashboard
@@ -65,7 +65,7 @@ const KeyGenerator = () => {
 
             <div className='w-auto h-auto'>
                 <Card className='bg-primary text-white w-full h-full justify-center'>
-                    <CardTitle className='flex justify-center font-bold text-5xl pt-2'>
+                    <CardTitle className='flex justify-center font-bold text-5xl pt-8'>
                             Coach Key Generator
                         </CardTitle>
                     <CardContent className='flex flex-col justify-center items-center pt-20'>
@@ -81,7 +81,7 @@ const KeyGenerator = () => {
                                     </DrawerDescription>
                                 </DrawerHeader>
                                 <Card className='bg-primary flex flex-col items-center justify-center'>
-                                    <CardContent className='flex justify-center items-center text-white text-base'>
+                                    <CardContent className='flex pt-6 justify items-center text-white text-base'>
                                         {isKeyGenerated ? coachKey : 'Press Generate to create a new key.'}
                                     </CardContent>
                                 </Card>
