@@ -5,5 +5,5 @@ export class UpdateProgramDto {
   
   @IsString()
   @IsOptional()
-  programName?: string;  
+  programDescription?: string;  
 }

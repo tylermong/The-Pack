@@ -165,59 +165,13 @@ model NutritionTracker {
 
 model Programs {
   id              String           @id @default(uuid())
-  programURL      String           
+
   user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId          String
   
-  programName     String
-  //wanna add a description
   
   programDescription String
 
-  programTags String
-  
-  //
-  weekEntries   programWeeks[]
-
-}
-
-model programWeeks{
-  id String @id @default(uuid())
-  
-  programName Programs @relation(fields: [programId], references: [id], onDelete: Cascade)
-  programId String
-  
-  weekName String
-
-  daysEntries   programDays[]
-}
-
-model programDays{
-  id String @id @default(uuid())
-  
-  week programWeeks @relation(fields: [weekId], references: [id], onDelete: Cascade)
-  weekId String
-  
-  dayName String
-  
-  
-  
-  exerciseEntries   dailyExercise[]
-}
-
-model dailyExercise{
-  id String @id @default(uuid())
-  
-  day programDays @relation(fields: [dayId], references: [id], onDelete: Cascade)
-  dayId String
-  
-  exerciseName String
-
-  setNumber String
-  
-  reps String
-  
-  weight String
 }
 
 model Chatroom{
