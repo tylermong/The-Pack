@@ -212,7 +212,17 @@ const Profile = () => {
         };
     
         try {
-          await axios.put('http://localhost:3001/users', updatedProfile);
+            const token = localStorage.getItem('accessToken');
+            if (!token) {
+                throw new Error("Token is null");
+            }
+            const response = await axios.put(
+                `http://localhost:3001/user/${profile.id}`,
+                updatedProfile,
+                {
+                    headers: { Authorization: `Bearer ${token}` }
+                }
+            );
           setProfile(updatedProfile); // Update state with the new values
           setIsEditing(false);
         } catch (error) {

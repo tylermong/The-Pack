@@ -33,6 +33,9 @@ let UserController = class UserController {
     async getClientByName(name) {
         return this.userService.getClientByName(name);
     }
+    async update(id, updateUserDto) {
+        return this.userService.update(id, updateUserDto);
+    }
     async updatePassword(id, updateData) {
         const hashedPassword = await bcrypt.hash(updateData.password, 10);
         return this.userService.updatePassword(id, hashedPassword);
@@ -79,6 +82,14 @@ __decorate([
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", Promise)
 ], UserController.prototype, "getClientByName", null);
+__decorate([
+    (0, common_1.Put)(':id'),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", Promise)
+], UserController.prototype, "update", null);
 __decorate([
     (0, common_1.Patch)(':id'),
     __param(0, (0, common_1.Param)('id')),

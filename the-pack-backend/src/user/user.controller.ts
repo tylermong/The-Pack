@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UseGuards, Request, UnauthorizedException } from '@nestjs/common';
+import { Controller, Get, Put, Post, Body, Patch, Param, Delete, Query, UseGuards, Request, UnauthorizedException } from '@nestjs/common';
 import { UserService } from './user.service';
 import { Prisma, Role } from '@prisma/client';
 import { JwtGuard } from 'src/auth/guards/jwt.guard';
@@ -36,6 +36,11 @@ export class UserController {
   // update(@Param('id') id: string, @Body() updateUserDto: Prisma.UserUpdateInput) {
   //   return this.userService.update(id, updateUserDto);
   // }
+
+  @Put(':id')
+  async update(@Param('id') id: string, @Body() updateUserDto: Prisma.UserUpdateInput) {
+      return this.userService.update(id, updateUserDto);
+  }
 
   @Patch(':id')
   async updatePassword(@Param('id') id: string, @Body() updateData: { password: string }) {

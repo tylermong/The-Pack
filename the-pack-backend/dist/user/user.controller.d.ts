@@ -70,6 +70,17 @@ export declare class UserController {
         updatedAt: Date;
         coachId: string | null;
     }[]>;
+    update(id: string, updateUserDto: Prisma.UserUpdateInput): Promise<{
+        id: string;
+        name: string;
+        email: string;
+        password: string;
+        phoneNum: number | null;
+        role: import(".prisma/client").$Enums.Role;
+        createdAt: Date;
+        updatedAt: Date;
+        coachId: string | null;
+    }>;
     updatePassword(id: string, updateData: {
         password: string;
     }): Promise<{
