@@ -318,7 +318,6 @@ const Scheduler = () => {
 
                         //Combine the start and end times
                         const timeSlots = start12.map((time: string, index: number) => `${time} - ${end12[index]}`);
-                        console.log('Time Slots:', timeSlots);
 
                         //Set the timeslots
                         setTimeSlot(timeSlots);
