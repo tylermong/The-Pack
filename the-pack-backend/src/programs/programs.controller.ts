@@ -14,6 +14,18 @@ export class ProgramsController {
     return this.programsService.create(createProgramDto);
   }
 
+  @Patch(':userId')
+  async updateProgram(@Param('userId') userId: string, @Body() updateProgramDto: UpdateProgramDto) {
+    updateProgramDto.userId = userId;
+    return this.programsService.updateProgram(updateProgramDto);
+  }
+
+  // check if userId has an entry in the table, return true if it does, false if it doesn't
+  @Get(':userId')
+  async findOne(@Param('userId') userId: string) {
+    return this.programsService.findOne(userId);
+  }
+
   //LOOK SOMETING LIKE THIS CHANGE THE CREATEPROGRAMDTO TO HAVE: id: string,  name: string, description: string, tags: string[]
   // @Post(':id')
   // async createProgram(@Param('id') id: string, @Body() createProgramDto: CreateProgramDto){ 

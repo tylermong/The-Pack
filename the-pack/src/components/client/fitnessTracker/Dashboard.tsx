@@ -21,8 +21,18 @@ const Dashboard = () => {
 
   const loadNotes = async () => {
     try {
-      const response = await axios.get('http://localhost:3001/workout-notes');
-      setNotes(response.data.notes);
+      const token = localStorage.getItem('accessToken');
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+
+      const decodedToken = jwtDecode<CustomJwtPayload>(token);
+      const userId = decodedToken.sub.id;
+
+      const response = await axios.get(`http://localhost:3001/programs/${userId}`);
+      if (response.data) {
+        setNotes(response.data.programDescription);
+      }
     } catch (error) {
       console.error('Error loading notes:', error);
     }
@@ -37,6 +47,17 @@ const Dashboard = () => {
 
       const decodedToken = jwtDecode<CustomJwtPayload>(token);
       const userId = decodedToken.sub.id;
+
+      // if the user id is found in the table, update the notes, otherwise create a new record using @Get
+      const response = await axios.get(`http://localhost:3001/programs/${userId}`);
+      if (response.data) {
+        await axios.patch(`http://localhost:3001/programs/${userId}`, {
+          programDescription: notes
+        });
+        setSaveStatus('Updated successfully!');
+        setTimeout(() => setSaveStatus(''), 3000);
+        return;
+      }
 
       await axios.post('http://localhost:3001/programs', {
         userId: userId,

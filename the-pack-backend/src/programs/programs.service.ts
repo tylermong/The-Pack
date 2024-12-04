@@ -1,4 +1,3 @@
-
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service'; 
 import { CreateProgramDto } from './dtos/createProgram.dto';
@@ -21,14 +20,23 @@ export class ProgramsService {
   }
  
  async updateProgram(updateProgramDto: UpdateProgramDto) {
-    const { programId, programDescription } = updateProgramDto;
+    const { userId, programDescription } = updateProgramDto;
   
-    
+    // Find the program by userId first
+    const existingProgram = await this.prisma.programs.findFirst({
+      where: { userId }
+    });
+
+    if (!existingProgram) {
+      throw new Error('Program not found for this user');
+    }
+
+    // Update using the program's actual id
     return this.prisma.programs.update({
-      where: { id: programId },  
+      where: { id: existingProgram.id },  // Use the actual program id
       data: {
-        programDescription,  
-      },
+        programDescription
+      }
     });
 }
 
@@ -37,9 +45,9 @@ export class ProgramsService {
   }
 
 
-  async findOne(id: string){
-    return this.prisma.programs.findUnique({
-      where: { id },
+  async findOne(userId: string) {
+    return this.prisma.programs.findFirst({
+      where: { userId },
     });
   }
 
