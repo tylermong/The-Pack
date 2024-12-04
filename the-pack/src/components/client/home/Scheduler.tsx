@@ -283,7 +283,13 @@ const Scheduler = () => {
 
                 console.log('Booked:', booked[0][0]);
 
-                if(!booked[0][0]){
+                //Only include the timeslots that are not booked
+                const timeslots = coachAvailability.map((slot: Availability) => slot.timeSlots.filter((time: Timeslot) => time.isBooked === false).map((time: Timeslot) => time.startTime));
+                setTimeSlot(timeslots ? timeslots[0] : undefined);
+
+                console.log('Timeslots:', timeSlot);
+
+                if(timeslots){
                     //Loop through the availability to get the start times and end times per timeslot
                     for(let i = 0; i < coachAvailability.length; i++){
 
@@ -325,6 +331,8 @@ const Scheduler = () => {
                     //Clear the timeslot
                     setTimeSlot(undefined);
                 }
+
+                
             }
         }catch(error){
             console.error('Error fetching coach availability:', error);
